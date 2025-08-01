@@ -7,6 +7,7 @@ import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import CheckStatus from "./CheckStatus";
 
 // Enhanced helper functions
 const formatPrice = (price, hasDiscount, discountPercentage) => {
@@ -513,6 +514,7 @@ const TripPage = async ({ params, searchParams }) => {
           <div className="lg:col-span-1">
             <div className="sticky top-8">
               <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
+                <CheckStatus />
                 {/* Pricing Header */}
                 <div className="text-center mb-8 p-6 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl">
                   <div className="flex items-center justify-center gap-3 mb-2">
