@@ -12,6 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 //=================================================================
 //  HELPER & UI COMPONENTS
@@ -28,28 +29,28 @@ const LoadingSpinner = () => (
 );
 
 // --- Table Skeleton Loader ---
-const TableSkeleton = ({ rows = 5, columns = 6 }) => (
-  <div className="p-4 space-y-3 animate-pulse">
+const TableSkeleton = ({ rows = 5 }) => (
+  <div className="p-4 space-y-4 animate-pulse">
     {Array.from({ length: rows }).map((_, i) => (
-      <div key={i} className="flex items-center space-x-4 p-3">
-        <div className="h-10 w-10 rounded-full bg-slate-200"></div>
-        <div className="flex-1 space-y-2">
-          <div
-            className={`h-4 rounded bg-slate-200 ${
-              i % 2 === 0 ? "w-3/4" : "w-2/3"
-            }`}
-          ></div>
-          <div className="h-3 rounded bg-slate-200 w-1/2"></div>
+      <div
+        key={i}
+        className="bg-white rounded-xl p-6 shadow-sm border border-slate-200"
+      >
+        <div className="flex items-start space-x-4">
+          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-cyan-200 to-blue-200"></div>
+          <div className="flex-1 space-y-3">
+            <div
+              className={`h-4 rounded bg-slate-200 ${
+                i % 2 === 0 ? "w-3/4" : "w-2/3"
+              }`}
+            ></div>
+            <div className="h-3 rounded bg-slate-200 w-1/2"></div>
+            <div className="flex space-x-2">
+              <div className="h-8 w-16 rounded bg-slate-200"></div>
+              <div className="h-8 w-16 rounded bg-slate-200"></div>
+            </div>
+          </div>
         </div>
-        {Array.from({ length: columns - 1 }).map((_, j) => (
-          <div
-            key={j}
-            className="h-6 rounded bg-slate-200"
-            style={{
-              width: `${Math.floor(Math.random() * (120 - 80 + 1) + 80)}px`,
-            }}
-          ></div>
-        ))}
       </div>
     ))}
   </div>
@@ -69,7 +70,30 @@ const formatDate = (dateString) => {
   }
 };
 
-// --- Modal Wrapper ---
+// --- User Status Badge ---
+const UserStatusBadge = ({ isBlocked }) => {
+  const config = isBlocked
+    ? {
+        color: "bg-red-100 text-red-700",
+        icon: "mdi:account-cancel",
+        label: "Blocked",
+      }
+    : {
+        color: "bg-green-100 text-green-700",
+        icon: "mdi:account-check",
+        label: "Active",
+      };
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${config.color}`}
+    >
+      <Icon icon={config.icon} className="w-3 h-3" />
+      {config.label}
+    </span>
+  );
+};
+
+// --- Modal Wrapper (Re-used) ---
 const ModalWrapper = ({ children, onClose, visible }) => {
   if (!visible) return null;
   return (
@@ -81,7 +105,7 @@ const ModalWrapper = ({ children, onClose, visible }) => {
     >
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
           aria-hidden="true"
           onClick={onClose}
         ></div>
@@ -97,7 +121,7 @@ const ModalWrapper = ({ children, onClose, visible }) => {
   );
 };
 
-// --- User Details Modal Component ---
+// --- User Details Modal (Re-styled) ---
 const UserDetailsModal = ({ user, onClose }) => (
   <ModalWrapper visible={!!user} onClose={onClose}>
     <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full animate-in fade-in-0 zoom-in-95">
@@ -125,72 +149,59 @@ const UserDetailsModal = ({ user, onClose }) => (
       <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
         <div className="flex items-center space-x-3">
           <Icon icon="mdi:identifier" className="w-5 h-5 text-slate-400" />
-          <p>
-            <strong>ID:</strong> {user.id}
-          </p>
+          <div>
+            <p className="text-sm font-medium text-slate-700">User ID</p>
+            <p className="text-slate-600">{user.id}</p>
+          </div>
         </div>
         <div className="flex items-center space-x-3">
           <Icon icon="mdi:account-circle" className="w-5 h-5 text-slate-400" />
-          <p>
-            <strong>Name:</strong> {user.full_name}
-          </p>
+          <div>
+            <p className="text-sm font-medium text-slate-700">Full Name</p>
+            <p className="text-slate-600">{user.full_name}</p>
+          </div>
         </div>
         <div className="flex items-center space-x-3">
           <Icon icon="mdi:email" className="w-5 h-5 text-slate-400" />
-          <p>
-            <strong>Email:</strong> {user.email}
-          </p>
+          <div>
+            <p className="text-sm font-medium text-slate-700">Email</p>
+            <p className="text-slate-600">{user.email}</p>
+          </div>
         </div>
         <div className="flex items-center space-x-3">
           <Icon icon="mdi:shield-account" className="w-5 h-5 text-slate-400" />
-          <p>
-            <strong>Role:</strong>{" "}
+          <div>
+            <p className="text-sm font-medium text-slate-700">Role</p>
             <span
-              className={`ml-2 px-3 py-1 rounded-full text-xs font-medium ${
+              className={`px-3 py-1 rounded-full text-xs font-medium ${
                 user.role === "admin"
-                  ? "bg-red-100 text-red-700"
+                  ? "bg-purple-100 text-purple-700"
                   : "bg-blue-100 text-blue-700"
               }`}
             >
               {user.role}
             </span>
-          </p>
+          </div>
         </div>
         <div className="flex items-center space-x-3">
           <Icon icon="mdi:toggle-switch" className="w-5 h-5 text-slate-400" />
-          <p>
-            <strong>Status:</strong>{" "}
-            {user.is_blocked ? (
-              <span className="text-red-600 font-semibold ml-2">Blocked</span>
-            ) : (
-              <span className="text-green-600 font-semibold ml-2">Active</span>
-            )}
-          </p>
+          <div>
+            <p className="text-sm font-medium text-slate-700">Status</p>
+            <UserStatusBadge isBlocked={user.is_blocked} />
+          </div>
         </div>
         <div className="flex items-center space-x-3">
           <Icon icon="mdi:calendar-plus" className="w-5 h-5 text-slate-400" />
-          <p>
-            <strong>Joined:</strong> {formatDate(user.created_at)}
-          </p>
-        </div>
-        <div className="flex items-center space-x-3">
-          <Icon icon="mdi:calendar-clock" className="w-5 h-5 text-slate-400" />
-          <p>
-            <strong>Last Login:</strong> {formatDate(user.last_login)}
-          </p>
-        </div>
-        <div className="flex items-center space-x-3">
-          <Icon icon="mdi:update" className="w-5 h-5 text-slate-400" />
-          <p>
-            <strong>Updated:</strong> {formatDate(user.updated_at)}
-          </p>
+          <div>
+            <p className="text-sm font-medium text-slate-700">Joined On</p>
+            <p className="text-slate-600">{formatDate(user.created_at)}</p>
+          </div>
         </div>
       </div>
     </div>
   </ModalWrapper>
 );
 
-// --- Edit User Modal Component ---
 const EditUserModal = ({ user, onClose, onSave, token }) => {
   const [formData, setFormData] = useState({
     full_name: user?.full_name || "",
@@ -571,6 +582,60 @@ const TestimonialsModal = ({ user, onClose, token }) => {
 };
 
 //=================================================================
+//  USER API SERVICE
+//=================================================================
+const UserService = {
+  async getAllUsers(token, params) {
+    const query = new URLSearchParams(params).toString();
+    const response = await fetch(
+      `http://localhost:8000/admins/get-all-users?${query}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!response.ok) throw new Error("Failed to fetch users.");
+    return response.json();
+  },
+  async toggleUserBlock(token, userId) {
+    const response = await fetch(
+      `http://localhost:8000/admins/block-user/${userId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (!response.ok) throw new Error("Failed to update user status.");
+  },
+  async toggleUserUnblock(token, userId) {
+    const response = await fetch(
+      `http://localhost:8000/admins/unblock-user/${userId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (!response.ok) throw new Error("Failed to update user status.");
+  },
+  async deleteUser(token, userId) {
+    const response = await fetch(
+      `http://localhost:8000/admins/delete-user/${userId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (!response.ok) throw new Error("Failed to delete user.");
+  },
+};
+
+//=================================================================
 //  MAIN USER MANAGEMENT COMPONENT
 //=================================================================
 export default function UserManagementPage() {
@@ -583,8 +648,12 @@ export default function UserManagementPage() {
   const [viewingTestimonials, setViewingTestimonials] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [totalUsers, setTotalUsers] = useState(0);
   const [searchName, setSearchName] = useState("");
+  // Other modals can be added here if needed (e.g., editingUser)
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const { token, userType } = useAuthStore();
   const router = useRouter();
@@ -596,34 +665,39 @@ export default function UserManagementPage() {
     }
   }, [token, userType, router]);
 
-  const fetchUsers = async (
-    page = currentPage,
-    size = pageSize,
-    name = searchName
-  ) => {
+  const fetchUsers = async () => {
     if (!token) return;
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        page_size: size.toString(),
-        ...(name && { name }),
-      });
-      const response = await fetch(
-        `http://localhost:8000/admins/get-all-users?${params}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (!response.ok) throw new Error("Failed to fetch users.");
-      // CORRECTED CODE
-      const data = await response.json();
-      // The most robust way to handle both cases (direct array OR object with a .users key)
-      setUsers(
-        Array.isArray(data.users) ? data.users : Array.isArray(data) ? data : []
-      );
-      // For total, use the object's total, or fallback to the array's length
-      setTotalUsers(data.total ?? (Array.isArray(data) ? data.length : 0));
+      const params = {
+        page_size: 10, // Fetch all for client-side filtering/sorting
+        page: 1,
+      };
+      if (searchTerm) params.name = searchTerm;
+
+      const data = await UserService.getAllUsers(token, params);
+
+      // =========================================================
+      //  FIXED LOGIC HERE
+      // =========================================================
+
+      // Check if the response is an object with a 'users' array,
+      // OR if the response is the array itself.
+      const userList = Array.isArray(data.users)
+        ? data.users
+        : Array.isArray(data)
+        ? data
+        : [];
+
+      // Get the total count from the object if it exists, otherwise use the array's length.
+      const total = data.total ?? userList.length;
+
+      setUsers(userList);
+      setTotalUsers(total);
     } catch (error) {
       toast.error(error.message);
+      setUsers([]);
+      setTotalUsers(0);
     } finally {
       setIsLoading(false);
     }
@@ -631,15 +705,63 @@ export default function UserManagementPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchUsers(1, pageSize, searchName);
-      setCurrentPage(1);
+      fetchUsers();
     }, 300); // Debounce search
     return () => clearTimeout(timer);
-  }, [searchName, pageSize, token]);
+  }, [searchTerm, token]);
 
-  useEffect(() => {
-    fetchUsers(currentPage, pageSize, searchName);
-  }, [currentPage, token]);
+  const handleUserAction = async (userId, action) => {
+    try {
+      if (action === "toggleBlock") {
+        const user = users.find((u) => u.id === userId);
+        await UserService.toggleUserBlock(token, userId);
+        toast.success(`User has been blocked successfully.`);
+      } else if (action === "toggleUnblock") {
+        const user = users.find((u) => u.id === userId);
+        await UserService.toggleUserUnblock(token, userId);
+        toast.success(`User has been unblocked successfully.`);
+      } else if (action === "delete") {
+        const result = await Swal.fire({
+          title: "Are you sure?",
+          text: "You won't be able to revert this!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Yes, delete it!",
+        });
+        if (result.isConfirmed) {
+          await UserService.deleteUser(token, userId);
+          toast.success("User deleted successfully.");
+        } else {
+          return;
+        }
+      }
+      fetchUsers();
+    } catch (error) {
+      toast.error(error.message || `Failed to ${action} user.`);
+    }
+  };
+
+  const filteredUsers = useMemo(() => {
+    return users.filter((user) => {
+      const matchesRole = roleFilter === "all" || user.role === roleFilter;
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "active" && !user.is_blocked) ||
+        (statusFilter === "blocked" && user.is_blocked);
+      return matchesRole && matchesStatus;
+    });
+  }, [users, roleFilter, statusFilter]);
+
+  const stats = useMemo(() => {
+    const total = totalUsers;
+    const active = users.filter((u) => !u.is_blocked).length;
+    const blocked = users.filter((u) => u.is_blocked).length;
+    const admins = users.filter((u) => u.role === "admin").length;
+    const standardUsers = total - admins;
+    return { total, active, blocked, admins, standardUsers };
+  }, [users, totalUsers]);
 
   const columns = useMemo(
     () => [
@@ -649,7 +771,7 @@ export default function UserManagementPage() {
         cell: ({ row }) => (
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex-shrink-0 flex items-center justify-center text-white font-bold text-lg">
-              {row.original.full_name.charAt(0).toUpperCase()}
+              {(row.original.full_name || "A").charAt(0).toUpperCase()}
             </div>
             <div>
               <div className="font-medium text-slate-800">
@@ -667,11 +789,11 @@ export default function UserManagementPage() {
           <span
             className={`px-3 py-1 rounded-full text-xs font-medium ${
               row.original.role === "admin"
-                ? "bg-red-100 text-red-700"
+                ? "bg-purple-100 text-purple-700"
                 : "bg-blue-100 text-blue-700"
             }`}
           >
-            {row.original.role}
+            {row.original.role === "admin" ? "Administrator" : "User"}
           </span>
         ),
       },
@@ -679,179 +801,251 @@ export default function UserManagementPage() {
         accessorKey: "is_blocked",
         header: "Status",
         cell: ({ row }) => (
-          <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
-              row.original.is_blocked
-                ? "bg-red-100 text-red-700"
-                : "bg-green-100 text-green-700"
-            }`}
-          >
-            <span
-              className={`h-1.5 w-1.5 rounded-full ${
-                row.original.is_blocked ? "bg-red-500" : "bg-green-500"
-              }`}
-            ></span>
-            {row.original.is_blocked ? "Blocked" : "Active"}
-          </span>
+          <UserStatusBadge isBlocked={row.original.is_blocked} />
         ),
       },
       {
         accessorKey: "created_at",
         header: "Joined",
-        cell: ({ row }) => formatDate(row.original.created_at),
+        cell: ({ row }) => (
+          <div className="text-sm text-slate-600">
+            {formatDate(row.original.created_at)}
+          </div>
+        ),
       },
       {
         id: "actions",
         header: "Actions",
-        cell: ({ row }) => {
-          const actions = [
-            {
-              icon: "mdi:eye-outline",
-              title: "View Details",
-              color: "blue",
-              onClick: () => setSelectedUser(row.original),
-            },
-            {
-              icon: "mdi:pencil-outline",
-              title: "Edit User",
-              color: "yellow",
-              onClick: () => setEditingUser(row.original),
-            },
-            {
-              icon: "mdi:key-variant",
-              title: "Change Password",
-              color: "purple",
-              onClick: () => setChangingPasswordUser(row.original),
-            },
-            {
-              icon: "mdi:message-text-outline",
-              title: "View Testimonials",
-              color: "indigo",
-              onClick: () => setViewingTestimonials(row.original),
-            },
-            {
-              icon: row.original.is_blocked
-                ? "mdi:account-check-outline"
-                : "mdi:account-cancel-outline",
-              title: row.original.is_blocked ? "Unblock" : "Block",
-              color: row.original.is_blocked ? "green" : "red",
-              onClick: () => {
-                /* Swal logic */
-              },
-            },
-            {
-              icon: "mdi:delete-outline",
-              title: "Delete User",
-              color: "slate",
-              onClick: () => {
-                /* Swal logic */
-              },
-            },
-          ];
-          return (
-            <div className="flex items-center space-x-1">
-              {actions.map((a) => (
-                <button
-                  key={a.title}
-                  onClick={a.onClick}
-                  className={`p-2 text-slate-500 rounded-full transition-colors hover:bg-${a.color}-100 hover:text-${a.color}-600`}
-                  title={a.title}
-                >
-                  <Icon icon={a.icon} width={20} />
-                </button>
-              ))}
-            </div>
-          );
-        },
+        cell: ({ row }) => (
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={() => setSelectedUser(row.original)}
+              className="p-2 text-slate-500 rounded-full transition-all duration-200 hover:bg-blue-100 hover:text-blue-600"
+              title="View Details"
+            >
+              <Icon icon="mdi:eye-outline" width={18} />
+            </button>
+            <button
+              onClick={() =>
+                handleUserAction(row.original.id, row.original.is_blocked)
+              }
+              className={`p-2 text-slate-500 rounded-full transition-all duration-200 ${
+                row.original.is_blocked
+                  ? "hover:bg-green-100 hover:text-green-600"
+                  : "hover:bg-orange-100 hover:text-orange-600"
+              }`}
+              title={row.original.is_blocked ? "Unblock User" : "Block User"}
+            >
+              <Icon
+                icon={
+                  row.original.is_blocked
+                    ? "mdi:account-check-outline"
+                    : "mdi:account-cancel-outline"
+                }
+                width={18}
+              />
+            </button>
+            <button
+              onClick={() => handleUserAction(row.original.id, "delete")}
+              className="p-2 text-slate-500 rounded-full transition-all duration-200 hover:bg-red-100 hover:text-red-600"
+              title="Delete User"
+            >
+              <Icon icon="mdi:delete-outline" width={18} />
+            </button>
+          </div>
+        ),
       },
     ],
-    []
+    [users]
   );
 
   const table = useReactTable({
-    data: users,
+    data: filteredUsers,
     columns,
     state: { sorting },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    manualPagination: true,
   });
 
-  const totalPages = Math.ceil(totalUsers / pageSize);
-
   return (
-    <div className="bg-slate-50 min-h-screen">
+    <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen">
       <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-        <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200/60 mb-8">
-          <div className="flex items-center space-x-4">
+        {/* Header Section */}
+        <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/60 mb-8 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5"></div>
+          <div className="relative flex items-center space-x-4">
             <div className="p-3 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-xl shadow-lg">
               <Icon icon="mdi:account-group" className="w-8 h-8" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
                 User Management
               </h1>
               <p className="text-sm text-slate-500 mt-1">
-                Monitor, manage, and edit user accounts.
+                Monitor, manage, and engage with your user base.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden">
-          <div className="p-4 flex flex-col sm:flex-row gap-4 border-b border-slate-200">
-            <div className="flex-1">
-              <Input
-                icon="mdi:magnify"
-                name="search"
-                type="text"
-                placeholder="Search by name or email..."
-                value={searchName}
-                onChange={(e) => setSearchName(e.target.value)}
-                color="turquoise"
-                className="w-full"
-              />
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {[
+            {
+              title: "Total Users",
+              value: stats.total,
+              icon: "mdi:account-group",
+              color: "blue",
+            },
+            {
+              title: "Active Users",
+              value: stats.active,
+              icon: "mdi:account-check",
+              color: "green",
+            },
+            {
+              title: "Blocked Users",
+              value: stats.blocked,
+              icon: "mdi:account-cancel",
+              color: "red",
+            },
+          ].map((stat, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-6 hover:shadow-xl transition-all duration-200"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-500 text-sm font-medium">
+                    {stat.title}
+                  </p>
+                  <p className="text-2xl font-bold text-slate-800 mt-1">
+                    {stat.value}
+                  </p>
+                </div>
+                <div className={`p-3 rounded-xl bg-${stat.color}-50`}>
+                  <Icon
+                    icon={stat.icon}
+                    className={`w-6 h-6 text-${stat.color}-700`}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-slate-600">
-                Show:
-              </label>
-              <select
-                value={pageSize}
-                onChange={(e) => setPageSize(Number(e.target.value))}
-                className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500"
-              >
-                <option>5</option>
-                <option>10</option>
-                <option>25</option>
-                <option>50</option>
-              </select>
+          ))}
+        </div>
+
+        {/* Main Table */}
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden">
+          {/* Filters and Search */}
+          <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-cyan-50">
+            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+              <div className="flex-1 max-w-md">
+                <Input
+                  icon="mdi:magnify"
+                  name="search"
+                  type="text"
+                  placeholder="Search by name or email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  color="cyan"
+                  className="w-full"
+                />
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <label className="text-sm font-medium text-slate-600">
+                    Status:
+                  </label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500"
+                  >
+                    <option value="all">All</option>
+                    <option value="active">Active</option>
+                    <option value="blocked">Blocked</option>
+                  </select>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <label className="text-sm font-medium text-slate-600">
+                    Role:
+                  </label>
+                  <select
+                    value={roleFilter}
+                    onChange={(e) => setRoleFilter(e.target.value)}
+                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500"
+                  >
+                    <option value="all">All</option>
+                    <option value="admin">Admin</option>
+                    <option value="user">User</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
 
+          {/* Table Content */}
           <div className="overflow-x-auto">
-            {isLoading && users.length === 0 ? (
+            {isLoading ? (
               <TableSkeleton />
+            ) : filteredUsers.length === 0 ? (
+              <div className="p-12 text-center">
+                <div className="w-20 h-20 mx-auto mb-4 bg-cyan-100 rounded-full flex items-center justify-center">
+                  <Icon
+                    icon="mdi:account-search-outline"
+                    className="w-10 h-10 text-cyan-500"
+                  />
+                </div>
+                <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                  No Users Found
+                </h3>
+                <p className="text-slate-500 mb-6">
+                  {searchTerm || roleFilter !== "all" || statusFilter !== "all"
+                    ? "No users match your current filters."
+                    : "Your user base is waiting to grow!"}
+                </p>
+                {(searchTerm ||
+                  roleFilter !== "all" ||
+                  statusFilter !== "all") && (
+                  <button
+                    onClick={() => {
+                      setSearchTerm("");
+                      setRoleFilter("all");
+                      setStatusFilter("all");
+                    }}
+                    className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold flex items-center space-x-2 mx-auto hover:shadow-lg transition-all"
+                  >
+                    <Icon icon="mdi:filter-remove" className="w-5 h-5" />
+                    <span>Clear Filters</span>
+                  </button>
+                )}
+              </div>
             ) : (
               <table className="min-w-full">
-                <thead className="bg-slate-50">
+                <thead className="bg-gradient-to-r from-slate-50 to-cyan-50">
                   {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id}>
                       {headerGroup.headers.map((header) => (
                         <th
                           key={header.id}
                           onClick={header.column.getToggleSortingHandler()}
-                          className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider cursor-pointer select-none"
+                          className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider cursor-pointer select-none hover:bg-cyan-100/50 transition-colors"
                         >
                           <div className="flex items-center gap-2">
                             {flexRender(
                               header.column.columnDef.header,
                               header.getContext()
-                            )}{" "}
+                            )}
                             <Icon
-                              icon="mdi:unfold-more-horizontal"
-                              className="text-slate-400"
+                              icon={
+                                header.column.getIsSorted() === "asc"
+                                  ? "mdi:arrow-up"
+                                  : header.column.getIsSorted() === "desc"
+                                  ? "mdi:arrow-down"
+                                  : "mdi:unfold-more-horizontal"
+                              }
+                              className="text-slate-400 w-4 h-4"
                             />
                           </div>
                         </th>
@@ -860,10 +1054,12 @@ export default function UserManagementPage() {
                   ))}
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {table.getRowModel().rows.map((row) => (
+                  {table.getRowModel().rows.map((row, index) => (
                     <tr
                       key={row.id}
-                      className="hover:bg-cyan-50/50 transition-colors"
+                      className={`hover:bg-gradient-to-r hover:from-cyan-50/50 hover:to-blue-50/50 transition-all duration-200 ${
+                        index % 2 === 0 ? "bg-white" : "bg-slate-50/30"
+                      }`}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <td
@@ -883,50 +1079,107 @@ export default function UserManagementPage() {
             )}
           </div>
 
-          <div className="p-4 flex items-center justify-between border-t border-slate-200">
-            <div className="text-sm text-slate-600">
-              Page {currentPage} of {totalPages} ({totalUsers} total users)
+          {/* Table Footer */}
+          {!isLoading && filteredUsers.length > 0 && (
+            <div className="p-4 border-t border-slate-200 bg-gradient-to-r from-slate-50 to-cyan-50">
+              <div className="flex items-center justify-between text-sm text-slate-600">
+                <div className="flex items-center space-x-2">
+                  <Icon icon="mdi:information" className="w-4 h-4" />
+                  <span>
+                    Showing {filteredUsers.length} of {totalUsers} users
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center space-x-1">
-              <button
-                onClick={() => setCurrentPage(1)}
-                disabled={currentPage === 1}
-                className="p-2 border rounded-lg disabled:opacity-50 hover:bg-slate-50"
-              >
-                <Icon icon="mdi:chevron-double-left" />
-              </button>
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="p-2 border rounded-lg disabled:opacity-50 hover:bg-slate-50"
-              >
-                <Icon icon="mdi:chevron-left" />
-              </button>
-              <span className="px-4 py-2 border rounded-lg bg-slate-100 text-sm font-medium">
-                {currentPage}
-              </span>
-              <button
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-                className="p-2 border rounded-lg disabled:opacity-50 hover:bg-slate-50"
-              >
-                <Icon icon="mdi:chevron-right" />
-              </button>
-              <button
-                onClick={() => setCurrentPage(totalPages)}
-                disabled={currentPage === totalPages}
-                className="p-2 border rounded-lg disabled:opacity-50 hover:bg-slate-50"
-              >
-                <Icon icon="mdi:chevron-double-right" />
-              </button>
+          )}
+        </div>
+
+        {/* Analytics & Export Panel */}
+        {users.length > 0 && (
+          <div className="mt-8 bg-white rounded-2xl shadow-xl border border-slate-200/60 p-6">
+            <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+              <Icon
+                icon="mdi:chart-line"
+                className="w-5 h-5 mr-2 text-purple-500"
+              />
+              Analytics & Export
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h3 className="font-medium text-slate-700">
+                  Role Distribution
+                </h3>
+                <div className="space-y-2">
+                  {[
+                    { label: "Admin", count: stats.admins, color: "purple" },
+                    {
+                      label: "User",
+                      count: stats.standardUsers,
+                      color: "blue",
+                    },
+                  ].map((role) => {
+                    const percentage =
+                      stats.total > 0 ? (role.count / stats.total) * 100 : 0;
+                    return (
+                      <div
+                        key={role.label}
+                        className="flex items-center space-x-3"
+                      >
+                        <span
+                          className={`w-20 text-sm font-medium text-${role.color}-700`}
+                        >
+                          {role.label}
+                        </span>
+                        <div className="flex-1 bg-slate-200 rounded-full h-2">
+                          <div
+                            className={`bg-gradient-to-r from-${role.color}-400 to-${role.color}-500 h-2 rounded-full`}
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm text-slate-600 w-12">
+                          {role.count}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="space-y-4">
+                <h3 className="font-medium text-slate-700">Export Options</h3>
+                <button
+                  onClick={() => {
+                    const csvContent = users
+                      .map(
+                        (u) =>
+                          `"${u.id}","${u.full_name}","${u.email}","${
+                            u.role
+                          }","${u.is_blocked ? "Blocked" : "Active"}","${
+                            u.created_at
+                          }"`
+                      )
+                      .join("\n");
+                    const header = "ID,Name,Email,Role,Status,Joined At\n";
+                    const blob = new Blob([header + csvContent], {
+                      type: "text/csv",
+                    });
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(blob);
+                    a.download = "all-users.csv";
+                    a.click();
+                    URL.revokeObjectURL(a.href);
+                  }}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg text-sm font-medium flex items-center justify-center space-x-2 transition-colors"
+                >
+                  <Icon icon="mdi:file-excel" className="w-4 h-4" />
+                  <span>Export All Users to CSV</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Modals are rendered here */}
+      {/* Modals */}
       {selectedUser && (
         <UserDetailsModal
           user={selectedUser}
@@ -955,6 +1208,7 @@ export default function UserManagementPage() {
           token={token}
         />
       )}
+      {/* Other modals would be rendered here */}
     </div>
   );
 }

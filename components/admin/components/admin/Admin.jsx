@@ -1,0 +1,1099 @@
+"use client";
+
+import Input from "@/components/ui/Input";
+import AdminService from "@/services/adminService";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { Icon } from "@iconify/react";
+import {
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
+
+//=================================================================
+//  HELPER & UI COMPONENTS
+//=================================================================
+
+// Enhanced Loading Spinner with Admin Theme
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center p-8">
+    <div className="relative">
+      <div className="h-16 w-16 rounded-full border-t-4 border-b-4 border-slate-200"></div>
+      <div className="absolute top-0 left-0 h-16 w-16 rounded-full border-t-4 border-b-4 border-purple-500 animate-spin"></div>
+    </div>
+  </div>
+);
+
+// Enhanced Table Skeleton with Admin Colors
+const TableSkeleton = ({ rows = 5, columns = 7 }) => (
+  <div className="p-4 space-y-3 animate-pulse">
+    {Array.from({ length: rows }).map((_, i) => (
+      <div key={i} className="flex items-center space-x-4 p-3">
+        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-200 to-indigo-200"></div>
+        <div className="flex-1 space-y-2">
+          <div
+            className={`h-4 rounded bg-slate-200 ${
+              i % 2 === 0 ? "w-3/4" : "w-2/3"
+            }`}
+          ></div>
+          <div className="h-3 rounded bg-slate-200 w-1/2"></div>
+        </div>
+        {Array.from({ length: columns - 1 }).map((_, j) => (
+          <div
+            key={j}
+            className="h-6 rounded bg-slate-200"
+            style={{
+              width: `${Math.floor(Math.random() * (120 - 80 + 1) + 80)}px`,
+            }}
+          ></div>
+        ))}
+      </div>
+    ))}
+  </div>
+);
+
+// Format Date Helper
+const formatDate = (dateString) => {
+  if (!dateString) return "N/A";
+  try {
+    return new Date(dateString.replace(" ", "T")).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch (error) {
+    return "Invalid Date";
+  }
+};
+
+// Enhanced Modal Wrapper with Blur Effect
+const ModalWrapper = ({ children, onClose, visible }) => {
+  if (!visible) return null;
+  return (
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto"
+      aria-labelledby="modal-title"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
+          aria-hidden="true"
+          onClick={onClose}
+        ></div>
+        <span
+          className="hidden sm:inline-block sm:align-middle sm:h-screen"
+          aria-hidden="true"
+        >
+          ​
+        </span>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+// Admin Level Badge Component
+const AdminLevelBadge = ({ level }) => {
+  const getLevelConfig = (level) => {
+    switch (level) {
+      case 1:
+        return {
+          label: "Senior Admin",
+          color: "from-purple-500 to-indigo-600",
+          bg: "bg-purple-100",
+          text: "text-purple-700",
+          icon: "mdi:shield-star",
+        };
+      case 2:
+        return {
+          label: "Super Admin",
+          color: "from-red-500 to-pink-600",
+          bg: "bg-red-100",
+          text: "text-red-700",
+          icon: "mdi:crown",
+        };
+      default:
+        return {
+          label: "Senior Admin",
+          color: "from-purple-500 to-indigo-600",
+          bg: "bg-purple-100",
+          text: "text-purple-700",
+          icon: "mdi:shield-star",
+        };
+    }
+  };
+
+  const config = getLevelConfig(level);
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
+    >
+      <Icon icon={config.icon} className="w-3 h-3" />
+      {config.label}
+    </span>
+  );
+};
+
+// Admin Details Modal Component
+const AdminDetailsModal = ({ admin, onClose }) => (
+  <ModalWrapper visible={!!admin} onClose={onClose}>
+    <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full animate-in fade-in-0 zoom-in-95">
+      <div className="relative bg-gradient-to-r from-purple-600 to-indigo-700 text-white p-6">
+        <div className="flex items-center space-x-4">
+          <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+            <Icon icon="mdi:shield-crown" className="w-8 h-8" />
+          </div>
+          <div>
+            <h2 id="modal-title" className="text-2xl font-bold">
+              Administrator Profile
+            </h2>
+            <p className="text-purple-100 mt-1">
+              Detailed information for {admin.full_name}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all duration-200"
+        >
+          <Icon icon="mdi:close" className="w-6 h-6" />
+        </button>
+      </div>
+      <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:identifier" className="w-5 h-5 text-slate-400" />
+          <p>
+            <strong>ID:</strong> {admin.id}
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:account-circle" className="w-5 h-5 text-slate-400" />
+          <p>
+            <strong>Full Name:</strong> {admin.full_name}
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:account" className="w-5 h-5 text-slate-400" />
+          <p>
+            <strong>Username:</strong> {admin.username}
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:email" className="w-5 h-5 text-slate-400" />
+          <p>
+            <strong>Email:</strong> {admin.email}
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:shield-star" className="w-5 h-5 text-slate-400" />
+          <p>
+            <strong>Admin Level:</strong>
+            <span className="ml-2">
+              <AdminLevelBadge level={admin.admin_level} />
+            </span>
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:toggle-switch" className="w-5 h-5 text-slate-400" />
+          <p>
+            <strong>Status:</strong>{" "}
+            {admin.is_active ? (
+              <span className="text-green-600 font-semibold ml-2">Active</span>
+            ) : (
+              <span className="text-red-600 font-semibold ml-2">Inactive</span>
+            )}
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:calendar-plus" className="w-5 h-5 text-slate-400" />
+          <p>
+            <strong>Created:</strong> {formatDate(admin.created_at)}
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:calendar-clock" className="w-5 h-5 text-slate-400" />
+          <p>
+            <strong>Last Login:</strong> {formatDate(admin.last_login)}
+          </p>
+        </div>
+      </div>
+    </div>
+  </ModalWrapper>
+);
+
+// Create Admin Modal Component
+const CreateAdminModal = ({ onClose, onSave, visible }) => {
+  const [formData, setFormData] = useState({
+    full_name: "",
+    username: "",
+    email: "",
+    password: "",
+    admin_level: 3,
+  });
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value, type } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "number" ? parseInt(value) : value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await AdminService.registerAdmin(formData);
+      toast.success("Admin created successfully");
+      onSave();
+      onClose();
+      setFormData({
+        full_name: "",
+        username: "",
+        email: "",
+        password: "",
+        admin_level: 3,
+      });
+    } catch (error) {
+      toast.error(error.message || "Failed to create admin");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <ModalWrapper visible={visible} onClose={onClose}>
+      <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full animate-in fade-in-0 zoom-in-95">
+        <div className="relative bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-6">
+          <div className="flex items-center space-x-3">
+            <Icon icon="mdi:account-plus" className="w-7 h-7" />
+            <h2 id="modal-title" className="text-2xl font-bold">
+              Create New Admin
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all"
+          >
+            <Icon icon="mdi:close" className="w-6 h-6" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <Input
+            icon="mdi:account"
+            name="full_name"
+            type="text"
+            placeholder="Full Name"
+            value={formData.full_name}
+            onChange={handleInputChange}
+            color="emerald"
+            className="w-full"
+            required
+            disabled={isLoading}
+          />
+          <Input
+            icon="mdi:account-circle"
+            name="username"
+            type="text"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleInputChange}
+            color="emerald"
+            className="w-full"
+            required
+            disabled={isLoading}
+          />
+          <Input
+            icon="mdi:email"
+            name="email"
+            type="email"
+            placeholder="Email Address"
+            value={formData.email}
+            onChange={handleInputChange}
+            color="emerald"
+            className="w-full"
+            required
+            disabled={isLoading}
+          />
+          <Input
+            icon="mdi:lock"
+            name="password"
+            type="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleInputChange}
+            color="emerald"
+            className="w-full"
+            required
+            disabled={isLoading}
+          />
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-slate-700">
+              Admin Level
+            </label>
+            <select
+              name="admin_level"
+              value={formData.admin_level}
+              onChange={handleInputChange}
+              className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              disabled={isLoading}
+            >
+              <option value={1}>Senior Admin (Level 1)</option>
+              <option value={2}>Super Admin (Level 2 Full)</option>
+            </select>
+          </div>
+          <div className="flex space-x-3 pt-4 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-4 rounded-xl transition-colors"
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-3 px-4 rounded-xl disabled:opacity-70 flex items-center justify-center space-x-2"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Icon icon="mdi:loading" className="animate-spin w-5 h-5" />
+                  <span>Creating...</span>
+                </>
+              ) : (
+                <>
+                  <Icon icon="mdi:account-plus" className="w-5 h-5" />
+                  <span>Create Admin</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </ModalWrapper>
+  );
+};
+
+// Edit Admin Modal Component
+const EditAdminModal = ({ admin, onClose, onSave }) => {
+  const [formData, setFormData] = useState({
+    full_name: admin?.full_name || "",
+    username: admin?.username || "",
+    email: admin?.email || "",
+    admin_level: admin?.admin_level || 3,
+  });
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value, type } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "number" ? parseInt(value) : value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await AdminService.updateAdminById(admin.id, formData);
+      toast.success("Admin updated successfully");
+      onSave();
+      onClose();
+    } catch (error) {
+      toast.error(error.message || "Failed to update admin");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <ModalWrapper visible={!!admin} onClose={onClose}>
+      <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full animate-in fade-in-0 zoom-in-95">
+        <div className="relative bg-gradient-to-r from-amber-500 to-orange-600 text-white p-6">
+          <div className="flex items-center space-x-3">
+            <Icon icon="mdi:pencil" className="w-7 h-7" />
+            <h2 id="modal-title" className="text-2xl font-bold">
+              Edit Administrator
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all"
+          >
+            <Icon icon="mdi:close" className="w-6 h-6" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <Input
+            icon="mdi:account"
+            name="full_name"
+            type="text"
+            placeholder="Full Name"
+            value={formData.full_name}
+            onChange={handleInputChange}
+            color="orange"
+            className="w-full"
+            required
+            disabled={isLoading}
+          />
+          <Input
+            icon="mdi:account-circle"
+            name="username"
+            type="text"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleInputChange}
+            color="orange"
+            className="w-full"
+            required
+            disabled={isLoading}
+          />
+          <Input
+            icon="mdi:email"
+            name="email"
+            type="email"
+            placeholder="Email Address"
+            value={formData.email}
+            onChange={handleInputChange}
+            color="orange"
+            className="w-full"
+            required
+            disabled={isLoading}
+          />
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-slate-700">
+              Admin Level
+            </label>
+            <select
+              name="admin_level"
+              value={formData.admin_level}
+              onChange={handleInputChange}
+              className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              disabled={isLoading}
+            >
+              <option value={1}>Super Admin (Level 1)</option>
+              <option value={2}>Super Admin (Level 2 Full)</option>
+            </select>
+          </div>
+          <div className="flex space-x-3 pt-4 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-4 rounded-xl transition-colors"
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold py-3 px-4 rounded-xl disabled:opacity-70 flex items-center justify-center space-x-2"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Icon icon="mdi:loading" className="animate-spin w-5 h-5" />
+                  <span>Updating...</span>
+                </>
+              ) : (
+                <>
+                  <Icon icon="mdi:content-save" className="w-5 h-5" />
+                  <span>Save Changes</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </ModalWrapper>
+  );
+};
+
+// Change Password Modal Component
+const ChangePasswordModal = ({ admin, onClose }) => {
+  const [formData, setFormData] = useState({
+    old_password: "",
+    new_password: "",
+    confirm_password: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleInputChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (formData.new_password !== formData.confirm_password) {
+      toast.error("New passwords do not match");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await AdminService.updateAdminPasswordById(admin.id, {
+        old_password: formData.old_password,
+        new_password: formData.new_password,
+      });
+      toast.success("Password updated successfully");
+      onClose();
+    } catch (error) {
+      toast.error(error.message || "Failed to update password");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <ModalWrapper visible={!!admin} onClose={onClose}>
+      <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full animate-in fade-in-0 zoom-in-95">
+        <div className="relative bg-gradient-to-r from-rose-500 to-pink-600 text-white p-6">
+          <div className="flex items-center space-x-3">
+            <Icon icon="mdi:key-variant" className="w-7 h-7" />
+            <div>
+              <h2 className="text-2xl font-bold">Change Password</h2>
+              <p className="text-rose-100 mt-1">For admin: {admin.full_name}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl"
+          >
+            <Icon icon="mdi:close" className="w-6 h-6" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <Input
+            icon="mdi:lock"
+            name="old_password"
+            type="password"
+            placeholder="Current Password"
+            value={formData.old_password}
+            onChange={handleInputChange}
+            color="pink"
+            className="w-full"
+            required
+            disabled={isLoading}
+          />
+          <Input
+            icon="mdi:lock-outline"
+            name="new_password"
+            type="password"
+            placeholder="New Password"
+            value={formData.new_password}
+            onChange={handleInputChange}
+            color="pink"
+            className="w-full"
+            required
+            disabled={isLoading}
+          />
+          <Input
+            icon="mdi:lock-check"
+            name="confirm_password"
+            type="password"
+            placeholder="Confirm New Password"
+            value={formData.confirm_password}
+            onChange={handleInputChange}
+            color="pink"
+            className="w-full"
+            required
+            disabled={isLoading}
+          />
+          <div className="flex space-x-3 pt-4 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-4 rounded-xl"
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 bg-gradient-to-r from-rose-500 to-pink-600 text-white font-bold py-3 px-4 rounded-xl disabled:opacity-70 flex items-center justify-center space-x-2"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Icon icon="mdi:loading" className="animate-spin w-5 h-5" />
+                  <span>Updating...</span>
+                </>
+              ) : (
+                <>
+                  <Icon icon="mdi:key-variant" className="w-5 h-5" />
+                  <span>Update Password</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </ModalWrapper>
+  );
+};
+
+//=================================================================
+//  MAIN ADMIN MANAGEMENT COMPONENT
+//=================================================================
+export default function AdminManagementPage() {
+  const [admins, setAdmins] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [sorting, setSorting] = useState([]);
+  const [selectedAdmin, setSelectedAdmin] = useState(null);
+  const [editingAdmin, setEditingAdmin] = useState(null);
+  const [changingPasswordAdmin, setChangingPasswordAdmin] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const { token, userType } = useAuthStore();
+  const router = useRouter();
+
+  // Check admin access
+  useEffect(() => {
+    if (token && userType !== "admin") {
+      toast.error("Access Denied. Admins only.");
+      router.push("/admin/login");
+    }
+  }, [token, userType, router]);
+
+  // Fetch admins
+  const fetchAdmins = async () => {
+    if (!token) return;
+    setIsLoading(true);
+    try {
+      const data = await AdminService.getAdmins();
+      setAdmins(Array.isArray(data) ? data : []);
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch admins");
+      setAdmins([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAdmins();
+  }, [token]);
+
+  // Handle admin deletion
+  const handleDeleteAdmin = async (adminId, adminName) => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete admin "${adminName}"? This action cannot be undone.`
+      )
+    ) {
+      try {
+        await AdminService.deleteAdmin(adminId);
+        toast.success("Admin deleted successfully");
+        fetchAdmins();
+      } catch (error) {
+        toast.error(error.message || "Failed to delete admin");
+      }
+    }
+  };
+
+  // Filter admins based on search
+  const filteredAdmins = useMemo(() => {
+    return admins.filter(
+      (admin) =>
+        admin.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        admin.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        admin.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [admins, searchTerm]);
+
+  // Table columns definition
+  const columns = useMemo(
+    () => [
+      {
+        accessorKey: "full_name",
+        header: "Administrator",
+        cell: ({ row }) => (
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex-shrink-0 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+              {row.original.full_name?.charAt(0).toUpperCase() || "A"}
+            </div>
+            <div>
+              <div className="font-semibold text-slate-800">
+                {row.original.full_name}
+              </div>
+              <div className="text-xs text-slate-500">
+                @{row.original.username}
+              </div>
+              <div className="text-xs text-slate-400">{row.original.email}</div>
+            </div>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "admin_level",
+        header: "Level",
+        cell: ({ row }) => <AdminLevelBadge level={row.original.admin_level} />,
+      },
+      {
+        accessorKey: "is_active",
+        header: "Status",
+        cell: ({ row }) => (
+          <span
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+              row.original.is_active
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}
+          >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                row.original.is_active ? "bg-green-500" : "bg-red-500"
+              }`}
+            ></span>
+            {row.original.is_active ? "Active" : "Inactive"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "created_at",
+        header: "Created",
+        cell: ({ row }) => (
+          <div className="text-sm">
+            <div className="font-medium text-slate-800">
+              {formatDate(row.original.created_at)}
+            </div>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "last_login",
+        header: "Last Login",
+        cell: ({ row }) => (
+          <div className="text-sm text-slate-600">
+            {formatDate(row.original.last_login)}
+          </div>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+          const actions = [
+            {
+              icon: "mdi:eye-outline",
+              title: "View Details",
+              color: "blue",
+              onClick: () => setSelectedAdmin(row.original),
+            },
+            {
+              icon: "mdi:pencil-outline",
+              title: "Edit Admin",
+              color: "yellow",
+              onClick: () => setEditingAdmin(row.original),
+            },
+            {
+              icon: "mdi:key-variant",
+              title: "Change Password",
+              color: "purple",
+              onClick: () => setChangingPasswordAdmin(row.original),
+            },
+            {
+              icon: "mdi:delete-outline",
+              title: "Delete Admin",
+              color: "red",
+              onClick: () =>
+                handleDeleteAdmin(row.original.id, row.original.full_name),
+            },
+          ];
+          return (
+            <div className="flex items-center space-x-1">
+              {actions.map((action) => (
+                <button
+                  key={action.title}
+                  onClick={action.onClick}
+                  className={`p-2 text-slate-500 rounded-full transition-all duration-200 hover:bg-${action.color}-100 hover:text-${action.color}-600 hover:scale-110`}
+                  title={action.title}
+                >
+                  <Icon icon={action.icon} width={20} />
+                </button>
+              ))}
+            </div>
+          );
+        },
+      },
+    ],
+    []
+  );
+
+  const table = useReactTable({
+    data: filteredAdmins,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
+
+  return (
+    <div className="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+        {/* Header Section */}
+        <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/60 mb-8 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-indigo-500/5"></div>
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-gradient-to-br from-purple-600 to-indigo-700 text-white rounded-xl shadow-lg">
+                <Icon icon="mdi:shield-crown" className="w-8 h-8" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                  Administrator Management
+                </h1>
+                <p className="text-sm text-slate-500 mt-1">
+                  Manage system administrators and their permissions
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold flex items-center space-x-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+            >
+              <Icon icon="mdi:account-plus" className="w-5 h-5" />
+              <span>Add New Admin</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {[
+            {
+              title: "Total Admins",
+              value: admins.length,
+              icon: "mdi:account-group",
+              color: "from-blue-500 to-cyan-500",
+              bg: "bg-blue-50",
+              text: "text-blue-700",
+            },
+            {
+              title: "Active Admins",
+              value: admins.filter((a) => a.is_active).length,
+              icon: "mdi:account-check",
+              color: "from-green-500 to-emerald-500",
+              bg: "bg-green-50",
+              text: "text-green-700",
+            },
+            {
+              title: "Super Admins",
+              value: admins.filter((a) => a.admin_level === 1).length,
+              icon: "mdi:crown",
+              color: "from-red-500 to-pink-500",
+              bg: "bg-red-50",
+              text: "text-red-700",
+            },
+            {
+              title: "Recent Logins",
+              value: admins.filter((a) => {
+                if (!a.last_login) return false;
+                const lastLogin = new Date(a.last_login);
+                const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+                return lastLogin > dayAgo;
+              }).length,
+              icon: "mdi:clock-outline",
+              color: "from-purple-500 to-indigo-500",
+              bg: "bg-purple-50",
+              text: "text-purple-700",
+            },
+          ].map((stat, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-6 hover:shadow-xl transition-all duration-200"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-500 text-sm font-medium">
+                    {stat.title}
+                  </p>
+                  <p className="text-3xl font-bold text-slate-800 mt-1">
+                    {stat.value}
+                  </p>
+                </div>
+                <div className={`p-3 rounded-xl ${stat.bg}`}>
+                  <Icon icon={stat.icon} className={`w-6 h-6 ${stat.text}`} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Main Table */}
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden">
+          {/* Search and Filters */}
+          <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+              <div className="flex-1 max-w-md">
+                <Input
+                  icon="mdi:magnify"
+                  name="search"
+                  type="text"
+                  placeholder="Search admins by name, username, or email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  color="purple"
+                  className="w-full"
+                />
+              </div>
+              <div className="flex items-center space-x-3 text-sm text-slate-600">
+                <Icon icon="mdi:filter-variant" className="w-4 h-4" />
+                <span>
+                  Showing {filteredAdmins.length} of {admins.length} admins
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Table Content */}
+          <div className="overflow-x-auto">
+            {isLoading ? (
+              <TableSkeleton />
+            ) : filteredAdmins.length === 0 ? (
+              <div className="p-12 text-center">
+                <div className="w-20 h-20 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
+                  <Icon
+                    icon="mdi:account-search"
+                    className="w-10 h-10 text-slate-400"
+                  />
+                </div>
+                <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                  No Admins Found
+                </h3>
+                <p className="text-slate-500 mb-6">
+                  {searchTerm
+                    ? "No admins match your search criteria."
+                    : "No administrators have been created yet."}
+                </p>
+                {!searchTerm && (
+                  <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-xl font-semibold flex items-center space-x-2 mx-auto hover:shadow-lg transition-all"
+                  >
+                    <Icon icon="mdi:account-plus" className="w-5 h-5" />
+                    <span>Create First Admin</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <table className="min-w-full">
+                <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <th
+                          key={header.id}
+                          onClick={header.column.getToggleSortingHandler()}
+                          className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider cursor-pointer select-none hover:bg-slate-200/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                            <Icon
+                              icon={
+                                header.column.getIsSorted() === "asc"
+                                  ? "mdi:arrow-up"
+                                  : header.column.getIsSorted() === "desc"
+                                  ? "mdi:arrow-down"
+                                  : "mdi:unfold-more-horizontal"
+                              }
+                              className="text-slate-400 w-4 h-4"
+                            />
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {table.getRowModel().rows.map((row, index) => (
+                    <tr
+                      key={row.id}
+                      className={`hover:bg-gradient-to-r hover:from-purple-50/50 hover:to-indigo-50/50 transition-all duration-200 ${
+                        index % 2 === 0 ? "bg-white" : "bg-slate-50/30"
+                      }`}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <td
+                          key={cell.id}
+                          className="px-6 py-4 whitespace-nowrap text-sm"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* Table Footer */}
+          {!isLoading && filteredAdmins.length > 0 && (
+            <div className="p-4 border-t border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
+              <div className="flex items-center justify-between text-sm text-slate-600">
+                <div className="flex items-center space-x-2">
+                  <Icon icon="mdi:information" className="w-4 h-4" />
+                  <span>
+                    Displaying {filteredAdmins.length} administrator
+                    {filteredAdmins.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Icon icon="mdi:update" className="w-4 h-4" />
+                  <span>Last updated: {new Date().toLocaleTimeString()}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Modals */}
+      <CreateAdminModal
+        visible={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSave={fetchAdmins}
+      />
+
+      {selectedAdmin && (
+        <AdminDetailsModal
+          admin={selectedAdmin}
+          onClose={() => setSelectedAdmin(null)}
+        />
+      )}
+
+      {editingAdmin && (
+        <EditAdminModal
+          admin={editingAdmin}
+          onClose={() => setEditingAdmin(null)}
+          onSave={fetchAdmins}
+        />
+      )}
+
+      {changingPasswordAdmin && (
+        <ChangePasswordModal
+          admin={changingPasswordAdmin}
+          onClose={() => setChangingPasswordAdmin(null)}
+        />
+      )}
+    </div>
+  );
+}

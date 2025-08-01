@@ -7,12 +7,23 @@ import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 export default function AdminLoginPage() {
   const adminLogin = useAuthStore((state) => state.adminLogin);
   const router = useRouter();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const userType = useAuthStore((state) => state.userType);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+    }
+    if (userType === "admin") {
+      toast("Already logged in, redirecting...");
+      router.replace("/admin/dashboard");
+    }
+  }, [isAuthenticated, userType, router]);
 
   const [formData, setFormData] = useState({
     username_or_email: "",
@@ -65,6 +76,7 @@ export default function AdminLoginPage() {
           name: data.admin.full_name,
           email: data.admin.email,
           role: "admin",
+          admin_level: data.admin.admin_level,
         },
         token: data.token,
       });

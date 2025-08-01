@@ -1,8 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['www.marsaalamtours.com','hurghadadream.com','www.hurghadadiving.net','www.regal-diving.co.uk','static.wixstatic.com','sustainabletravel.org','res.cloudinary.com'],
-  }
+    domains: [
+      "www.marsaalamtours.com",
+      "hurghadadream.com",
+      "www.hurghadadiving.net",
+      "www.regal-diving.co.uk",
+      "static.wixstatic.com",
+      "sustainabletravel.org",
+      "res.cloudinary.com",
+      "images.unsplash.com",
+    ],
+  },
 };
 
 export default nextConfig;

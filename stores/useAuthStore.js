@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 const cookieStorage = {
   getItem: (name) => {
@@ -9,13 +9,13 @@ const cookieStorage = {
   setItem: (name, value) => {
     Cookies.set(name, value, {
       expires: 7,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
-      path: '/'
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+      path: "/",
     });
   },
   removeItem: (name) => {
-    Cookies.remove(name, { path: '/' });
+    Cookies.remove(name, { path: "/" });
   },
 };
 
@@ -29,32 +29,32 @@ export const useAuthStore = create(
       userType: null,
 
       login: ({ user, token }) => {
-        set({ 
-          isAuthenticated: true, 
-          user, 
+        set({
+          isAuthenticated: true,
+          user,
           token,
-          userType: 'user',
-          admin: null
+          userType: "user",
+          admin: null,
         });
       },
 
       adminLogin: ({ admin, token }) => {
-        set({ 
-          isAuthenticated: true, 
-          admin, 
+        set({
+          isAuthenticated: true,
+          admin,
           token,
-          userType: 'admin',
-          user: null
+          userType: "admin",
+          user: null,
         });
       },
 
       logout: () => {
-        set({ 
-          isAuthenticated: false, 
+        set({
+          isAuthenticated: false,
           user: null,
           admin: null,
           token: null,
-          userType: null
+          userType: null,
         });
       },
 
@@ -75,18 +75,18 @@ export const useAuthStore = create(
       },
       // --- 👆 نهاية الدالة المضافة 👆 ---
 
-      isAdmin: () => get().userType === 'admin' && get().admin !== null,
-      isUser: () => get().userType === 'user' && get().user !== null,
+      isAdmin: () => get().userType === "admin" && get().admin !== null,
+      isUser: () => get().userType === "user" && get().user !== null,
     }),
     {
-      name: 'auth-storage',
+      name: "auth-storage",
       storage: createJSONStorage(() => cookieStorage),
-      partialize: (state) => ({ 
+      partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         user: state.user,
         admin: state.admin,
         token: state.token,
-        userType: state.userType
+        userType: state.userType,
       }),
     }
   )

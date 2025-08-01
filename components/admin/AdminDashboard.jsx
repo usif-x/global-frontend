@@ -1,8 +1,10 @@
 "use client";
+import AdminManagementPage from "@/components/admin/components/admin/ModernAdmin";
 import AnalyticsContent from "@/components/admin/components/analytic/AnalyticsContent";
 import PackageManagement from "@/components/admin/components/package/Package";
+import TestimonialManagementPage from "@/components/admin/components/testimonial/Testimonial";
 import TripManagement from "@/components/admin/components/trip/Trip";
-import UserManagementPage from "@/components/admin/components/user/User";
+import UserManagementPage from "@/components/admin/components/user/ModernUser";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
@@ -111,9 +113,9 @@ const AdminDashboard = () => {
       case "users":
         return <UserManagementPage />;
       case "admins":
-        return <AdminsContent />;
+        return <AdminManagementPage />;
       case "testimonials":
-        return <TestimonialsContent />;
+        return <TestimonialManagementPage />;
       case "bookings":
         return <BookingsContent />;
       case "payments":
@@ -290,10 +292,7 @@ const DashboardContent = () => (
       ))}
     </div>
 
-    <Alert type="success" dismissible={true}>
-      {" "}
-      Hello World{" "}
-    </Alert>
+    <Alert dismissible={true}> Hello World </Alert>
 
     {/* Quick Actions */}
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
@@ -338,34 +337,6 @@ const DashboardContent = () => (
         ))}
       </div>
     </div>
-  </div>
-);
-
-const AdminsContent = () => (
-  <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-    <div className="flex items-center justify-between mb-6">
-      <h2 className="text-xl font-semibold text-gray-900">Admins Management</h2>
-      <button className="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 transition-colors">
-        <Icon icon="mdi:shield-plus" className="w-4 h-4 mr-2 inline" />
-        Add Admin
-      </button>
-    </div>
-    <p className="text-gray-600">Manage admin users and their privileges.</p>
-  </div>
-);
-
-const TestimonialsContent = () => (
-  <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-    <div className="flex items-center justify-between mb-6">
-      <h2 className="text-xl font-semibold text-gray-900">
-        Testimonials Management
-      </h2>
-      <button className="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 transition-colors">
-        <Icon icon="mdi:plus" className="w-4 h-4 mr-2 inline" />
-        Add Testimonial
-      </button>
-    </div>
-    <p className="text-gray-600">Manage customer reviews and testimonials.</p>
   </div>
 );
 

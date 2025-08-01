@@ -53,10 +53,7 @@ export default function LoginPage() {
       }
 
       login({
-        user: {
-          name: data.user.full_name,
-          email: data.user.email,
-        },
+        user: data.user,
         token: data.token,
       });
 
