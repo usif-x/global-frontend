@@ -120,10 +120,11 @@ export default async function DiveSitesPage() {
 
                   <div className="px-6 py-4 bg-sky-50/70 mt-auto">
                     <a
-                      href={`/destinations#map?lat=${site.latitude}&lng=${site.longitude}`}
+                      href={`https://www.google.com/search?q=${site.name}+dive+site`}
+                      target="_blank"
                       className="inline-flex items-center gap-2 text-blue-600 font-semibold hover:text-blue-800 transition-colors group"
                     >
-                      View on Interactive Map
+                      View on Google search
                       <Icon
                         icon="mdi:arrow-right"
                         className="transition-transform group-hover:translate-x-1"

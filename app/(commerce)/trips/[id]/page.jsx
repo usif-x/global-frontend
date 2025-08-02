@@ -1,13 +1,16 @@
 // app/trips/[id]/page.js
 
+"use client";
+
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
-import { getData, postData } from "@/lib/server-axios";
+import { getData, postData } from "@/lib/axios";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import CheckStatus from "./CheckStatus";
+import { useRouter } from "next/navigation";
+import { use, useEffect, useState } from "react";
 
 // Enhanced helper functions
 const formatPrice = (price, hasDiscount, discountPercentage) => {
@@ -78,153 +81,332 @@ const countries = [
   { value: "BE", label: "Belgium" },
 ];
 
-// Main Server Component
-const TripPage = async ({ params, searchParams }) => {
-  const { id } = params;
+const currencies = [
+  { value: "USD", label: "United States Dollar" },
+  { value: "EUR", label: "European Euro" },
+  { value: "EGP", label: "Egyption Pound" },
+];
 
-  // Enhanced error handling with better logging
-  let tripData = null;
-  let packageData = null;
-  let relatedTrips = null;
+// Payment Modal Component
+const PaymentModal = ({
+  isOpen,
+  onClose,
+  onPaymentMethodSelect,
+  totalAmount,
+  bookingData,
+}) => {
+  if (!isOpen) return null;
 
-  try {
-    // Fetch trip data
-    tripData = await getData(`/trips/${id}`);
+  const handlePaymentSelect = (method) => {
+    onPaymentMethodSelect(method);
+    onClose();
+  };
 
-    if (!tripData) {
-      console.warn(`Trip with ID ${id} not found`);
-      notFound();
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h3 className="text-2xl font-bold text-gray-800">
+            Choose Payment Method
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <Icon icon="lucide:x" className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Modal Body */}
+        <div className="p-6">
+          {/* Booking Summary */}
+          <div className="bg-gray-50 rounded-xl p-4 mb-6">
+            <h4 className="font-semibold text-gray-800 mb-2">
+              Booking Summary
+            </h4>
+            <div className="space-y-1 text-sm text-gray-600">
+              <div className="flex justify-between">
+                <span>Adults:</span>
+                <span>
+                  {bookingData.adults} × €{bookingData.adultPrice}
+                </span>
+              </div>
+              {bookingData.children > 0 && (
+                <div className="flex justify-between">
+                  <span>Children:</span>
+                  <span>
+                    {bookingData.children} × €{bookingData.childPrice}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2 text-gray-800">
+                <span>Total:</span>
+                <span>€{totalAmount}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Options */}
+          <div className="space-y-3">
+            {/* Pay Online */}
+            <button
+              onClick={() => handlePaymentSelect("online")}
+              className="w-full flex items-center justify-between p-4 border-2 border-blue-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-300 group"
+            >
+              <div className="flex items-center">
+                <div className="bg-blue-100 p-3 rounded-full mr-4 group-hover:bg-blue-200 transition-colors">
+                  <Icon
+                    icon="lucide:credit-card"
+                    className="w-6 h-6 text-blue-600"
+                  />
+                </div>
+                <div className="text-left">
+                  <h4 className="font-semibold text-gray-800">Pay Online</h4>
+                  <p className="text-sm text-gray-600">
+                    Secure payment via Stripe
+                  </p>
+                </div>
+              </div>
+              <Icon
+                icon="lucide:chevron-right"
+                className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors"
+              />
+            </button>
+
+            {/* Pay at Diving Center */}
+            <button
+              onClick={() => handlePaymentSelect("cash")}
+              className="w-full flex items-center justify-between p-4 border-2 border-green-200 rounded-xl hover:border-green-400 hover:bg-green-50 transition-all duration-300 group"
+            >
+              <div className="flex items-center">
+                <div className="bg-green-100 p-3 rounded-full mr-4 group-hover:bg-green-200 transition-colors">
+                  <Icon
+                    icon="lucide:banknote"
+                    className="w-6 h-6 text-green-600"
+                  />
+                </div>
+                <div className="text-left">
+                  <h4 className="font-semibold text-gray-800">
+                    Pay at Diving Center
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    Cash payment on arrival
+                  </p>
+                </div>
+              </div>
+              <Icon
+                icon="lucide:chevron-right"
+                className="w-5 h-5 text-gray-400 group-hover:text-green-600 transition-colors"
+              />
+            </button>
+          </div>
+
+          {/* Security Notice */}
+          <div className="mt-6 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+            <div className="flex items-start">
+              <Icon
+                icon="lucide:shield-check"
+                className="w-5 h-5 text-yellow-600 mr-2 mt-0.5 flex-shrink-0"
+              />
+              <div className="text-sm text-yellow-800">
+                <p className="font-semibold mb-1">Secure & Protected</p>
+                <p>
+                  Your booking is protected and can be cancelled up to 24 hours
+                  before the trip.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Main Client Component
+const TripPage = ({ params, searchParams }) => {
+  const { id } = use(params);
+  const { user, isAuthenticated } = useAuthStore();
+  const router = useRouter();
+
+  // State management
+  const [tripData, setTripData] = useState(null);
+  const [packageData, setPackageData] = useState(null);
+  const [relatedTrips, setRelatedTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    nationality: "",
+    hotelName: "",
+    roomNumber: "",
+    adults: 1,
+    children: 0,
+    preferredDate: "",
+    specialRequests: "",
+  });
+  const [formErrors, setFormErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Load trip data
+  useEffect(() => {
+    const loadTripData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch trip data
+        const trip = await getData(`/trips/${id}`);
+        if (!trip) {
+          setError("Trip not found");
+          return;
+        }
+        setTripData(trip);
+
+        // Fetch related data in parallel
+        const promises = [];
+
+        if (trip.package_id) {
+          promises.push(
+            getData(`/packages/${trip.package_id}`)
+              .then((data) => setPackageData(data))
+              .catch((err) => {
+                console.warn(
+                  `Package ${trip.package_id} not found:`,
+                  err.message
+                );
+                setPackageData(null);
+              })
+          );
+        }
+
+        // Fetch related trips
+        promises.push(
+          getData("/trips?limit=3&exclude=" + id)
+            .then((data) => setRelatedTrips(data))
+            .catch((err) => {
+              console.warn("Failed to fetch related trips:", err.message);
+              setRelatedTrips([]);
+            })
+        );
+
+        await Promise.allSettled(promises);
+      } catch (error) {
+        console.error(`Error fetching trip ${id}:`, error.message);
+        setError("Failed to load trip data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTripData();
+  }, [id]);
+
+  // Form validation
+  const validateForm = () => {
+    const errors = {};
+
+    if (!formData.fullName || formData.fullName.trim().length < 2) {
+      errors.fullName = "Full name is required (minimum 2 characters)";
     }
 
-    // Fetch related data in parallel
-    const promises = [];
-
-    if (tripData.package_id) {
-      promises.push(
-        getData(`/packages/${tripData.package_id}`)
-          .then((data) => (packageData = data))
-          .catch((err) => {
-            console.warn(
-              `Package ${tripData.package_id} not found:`,
-              err.message
-            );
-            packageData = null;
-          })
-      );
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = "Valid email address is required";
     }
 
-    // Fetch related trips (optional)
-    promises.push(
-      getData("/trips?limit=3&exclude=" + id)
-        .then((data) => (relatedTrips = data))
-        .catch((err) => {
-          console.warn("Failed to fetch related trips:", err.message);
-          relatedTrips = [];
-        })
+    if (!formData.phone || formData.phone.trim().length < 10) {
+      errors.phone = "Valid phone number is required";
+    }
+
+    if (!formData.nationality) {
+      errors.nationality = "Nationality is required";
+    }
+
+    if (!formData.hotelName || formData.hotelName.trim().length < 2) {
+      errors.hotelName = "Hotel name is required";
+    }
+
+    if (!formData.roomNumber || formData.roomNumber.trim().length < 1) {
+      errors.roomNumber = "Room number is required";
+    }
+
+    if (!formData.preferredDate) {
+      errors.preferredDate = "Preferred date is required";
+    } else {
+      const selectedDate = new Date(formData.preferredDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (selectedDate < today) {
+        errors.preferredDate = "Preferred date cannot be in the past";
+      }
+    }
+
+    const maxPersons = tripData?.maxim_person || 10;
+    if (formData.adults < 1 || formData.adults > maxPersons) {
+      errors.adults = `Number of adults must be between 1 and ${maxPersons}`;
+    }
+
+    if (formData.children < 0) {
+      errors.children = "Number of children cannot be negative";
+    }
+
+    if (formData.adults + formData.children > maxPersons) {
+      errors.total = `Total participants cannot exceed ${maxPersons}`;
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Calculate total price
+  const calculateTotalPrice = () => {
+    if (!tripData) return 0;
+
+    const adultPrice = tripData.adult_price || 0;
+    const childPrice = tripData.child_price || adultPrice * 0.5;
+
+    return Math.round(
+      formData.adults * adultPrice + formData.children * childPrice
     );
+  };
 
-    await Promise.allSettled(promises);
-  } catch (error) {
-    console.error(`Error fetching trip ${id}:`, error.message);
-    notFound();
-  }
+  // Handle form input changes
+  const handleInputChange = (name, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
 
-  // Enhanced Server Action for booking
-  async function handleBooking(formData) {
-    "use server";
+    // Clear specific error when user starts typing
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({
+        ...prev,
+        [name]: undefined,
+      }));
+    }
+  };
+
+  // Handle form submission (show payment modal)
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+
+    if (validateForm()) {
+      setShowPaymentModal(true);
+    }
+  };
+
+  // Handle payment method selection and booking submission
+  const handlePaymentMethodSelect = async (paymentMethod) => {
+    if (isSubmitting) return;
 
     try {
-      // Extract and validate form data
-      const bookingData = {
-        fullName: formData.get("fullName")?.toString().trim(),
-        email: formData.get("email")?.toString().trim().toLowerCase(),
-        phone: formData.get("phone")?.toString().trim(),
-        nationality: formData.get("nationality")?.toString(),
-        hotelName: formData.get("hotelName")?.toString().trim(),
-        roomNumber: formData.get("roomNumber")?.toString().trim(),
-        adults: parseInt(formData.get("adults")) || 1,
-        children: parseInt(formData.get("children")) || 0,
-        preferredDate: formData.get("preferredDate")?.toString(),
-        specialRequests:
-          formData.get("specialRequests")?.toString().trim() || "",
-      };
+      setIsSubmitting(true);
 
-      // Enhanced server-side validation
-      const errors = [];
-
-      if (!bookingData.fullName || bookingData.fullName.length < 2) {
-        errors.push("Full name is required (minimum 2 characters)");
-      }
-
-      if (
-        !bookingData.email ||
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.email)
-      ) {
-        errors.push("Valid email address is required");
-      }
-
-      if (!bookingData.phone || bookingData.phone.length < 10) {
-        errors.push("Valid phone number is required");
-      }
-
-      if (!bookingData.nationality) {
-        errors.push("Nationality is required");
-      }
-
-      if (!bookingData.hotelName) {
-        errors.push("Hotel name is required");
-      }
-
-      if (!bookingData.roomNumber) {
-        errors.push("Room number is required");
-      }
-
-      if (!bookingData.preferredDate) {
-        errors.push("Preferred date is required");
-      } else {
-        const selectedDate = new Date(bookingData.preferredDate);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        if (selectedDate < today) {
-          errors.push("Preferred date cannot be in the past");
-        }
-      }
-
-      if (
-        bookingData.adults < 1 ||
-        bookingData.adults > (tripData.maxim_person || 10)
-      ) {
-        errors.push(
-          `Number of adults must be between 1 and ${
-            tripData.maxim_person || 10
-          }`
-        );
-      }
-
-      if (bookingData.children < 0) {
-        errors.push("Number of children cannot be negative");
-      }
-
-      if (
-        bookingData.adults + bookingData.children >
-        (tripData.maxim_person || 10)
-      ) {
-        errors.push(
-          `Total participants cannot exceed ${tripData.maxim_person || 10}`
-        );
-      }
-
-      if (errors.length > 0) {
-        const errorMessage = errors.join(", ");
-        redirect(`/trips/${id}?error=${encodeURIComponent(errorMessage)}`);
-      }
-
-      // Calculate total price
-      const adultPrice = tripData.adult_price || 0;
-      const childPrice = tripData.child_price || adultPrice * 0.5;
-      const totalPrice =
-        bookingData.adults * adultPrice + bookingData.children * childPrice;
+      const totalPrice = calculateTotalPrice();
 
       // Prepare booking payload
       const bookingPayload = {
@@ -233,16 +415,35 @@ const TripPage = async ({ params, searchParams }) => {
         total_price: totalPrice,
         booking_date: new Date().toISOString(),
         status: "pending",
-        ...bookingData,
+        payment_method: paymentMethod,
+        ...formData,
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim().toLowerCase(),
+        phone: formData.phone.trim(),
+        hotelName: formData.hotelName.trim(),
+        roomNumber: formData.roomNumber.trim(),
+        specialRequests: formData.specialRequests.trim() || "",
       };
 
-      // Submit booking with auth if needed
+      // Submit booking
       const bookingResponse = await postData("/bookings", bookingPayload, true);
 
       console.log("Booking submitted successfully:", bookingResponse);
 
-      // Redirect to success page with booking ID
-      redirect(`/booking/success?booking=${bookingResponse.id || "confirmed"}`);
+      // Redirect based on payment method
+      if (paymentMethod === "online") {
+        // Redirect to payment gateway
+        router.push(
+          `/payment?booking=${bookingResponse.id}&amount=${totalPrice}`
+        );
+      } else {
+        // Redirect to success page for cash payment
+        router.push(
+          `/booking/success?booking=${
+            bookingResponse.id || "confirmed"
+          }&payment=cash`
+        );
+      }
     } catch (error) {
       console.error("Booking submission failed:", error);
 
@@ -256,8 +457,52 @@ const TripPage = async ({ params, searchParams }) => {
         errorMessage = "This time slot is no longer available";
       }
 
-      redirect(`/trips/${id}?error=${encodeURIComponent(errorMessage)}`);
+      setError(errorMessage);
+      setShowPaymentModal(false);
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Icon
+            icon="lucide:loader-2"
+            className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4"
+          />
+          <p className="text-gray-600">Loading trip details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !tripData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Icon
+            icon="lucide:alert-circle"
+            className="w-12 h-12 text-red-500 mx-auto mb-4"
+          />
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">
+            Trip Not Found
+          </h1>
+          <p className="text-gray-600 mb-4">
+            {error || "The requested trip could not be found."}
+          </p>
+          <Link
+            href="/trips"
+            className="text-blue-600 hover:text-blue-800 font-semibold"
+          >
+            ← Back to Trips
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   // Calculate pricing and options
@@ -267,6 +512,7 @@ const TripPage = async ({ params, searchParams }) => {
     tripData.discount_percentage
   );
   const maxPersons = tripData.maxim_person || 10;
+  const totalPrice = calculateTotalPrice();
 
   const adultOptions = Array.from({ length: maxPersons }, (_, i) => ({
     value: i + 1,
@@ -514,7 +760,6 @@ const TripPage = async ({ params, searchParams }) => {
           <div className="lg:col-span-1">
             <div className="sticky top-8">
               <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
-                <CheckStatus />
                 {/* Pricing Header */}
                 <div className="text-center mb-8 p-6 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl">
                   <div className="flex items-center justify-center gap-3 mb-2">
@@ -542,7 +787,7 @@ const TripPage = async ({ params, searchParams }) => {
                 </div>
 
                 {/* Enhanced Booking Form */}
-                <form action={handleBooking} className="space-y-6">
+                <form onSubmit={handleFormSubmit} className="space-y-6">
                   <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
                     <Icon
                       icon="lucide:calendar-check"
@@ -552,11 +797,8 @@ const TripPage = async ({ params, searchParams }) => {
                   </h3>
 
                   {/* Error Display */}
-                  {searchParams.error && (
-                    <div
-                      className="bg-red-50 border-l-4 border-red-400 text-red-700 p-4 rounded-lg"
-                      role="alert"
-                    >
+                  {(error || Object.keys(formErrors).length > 0) && (
+                    <div className="bg-red-50 border-l-4 border-red-400 text-red-700 p-4 rounded-lg">
                       <div className="flex">
                         <Icon
                           icon="lucide:alert-circle"
@@ -564,9 +806,14 @@ const TripPage = async ({ params, searchParams }) => {
                         />
                         <div>
                           <strong className="font-bold">Booking Error:</strong>
-                          <span className="block sm:inline ml-1">
-                            {decodeURIComponent(searchParams.error)}
-                          </span>
+                          <div className="mt-1">
+                            {error && <p>{error}</p>}
+                            {Object.values(formErrors).map((err, index) => (
+                              <p key={index} className="text-sm">
+                                {err}
+                              </p>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -576,83 +823,153 @@ const TripPage = async ({ params, searchParams }) => {
                   <div className="space-y-4">
                     <Input
                       name="fullName"
+                      value={isAuthenticated ? user?.name : formData.fullName}
+                      onChange={(e) =>
+                        handleInputChange("fullName", e.target.value)
+                      }
                       placeholder="Full Name *"
                       required
                       icon="mdi:account-outline"
                       className="text-lg"
+                      error={formErrors.fullName}
                     />
 
                     <Input
                       name="email"
                       type="email"
+                      value={isAuthenticated ? user?.email : formData.email}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
                       placeholder="Email Address *"
                       required
                       icon="mdi:email-outline"
                       className="text-lg"
+                      error={formErrors.email}
                     />
 
                     <Input
                       name="phone"
                       type="tel"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        handleInputChange("phone", e.target.value)
+                      }
                       placeholder="Phone Number *"
                       required
                       icon="mdi:phone-outline"
                       className="text-lg"
+                      error={formErrors.phone}
                     />
 
                     <Select
                       name="nationality"
+                      value={formData.nationality}
+                      onChange={(value) =>
+                        handleInputChange("nationality", value)
+                      }
                       options={countries}
                       placeholder="Select Nationality *"
                       searchable={true}
                       icon="mdi:flag-outline"
                       required
+                      error={formErrors.nationality}
+                    />
+                    <Select
+                      name="currency"
+                      value={formData.currency}
+                      onChange={(value) => handleInputChange("currency", value)}
+                      options={currencies}
+                      placeholder="Select Currency *"
+                      searchable={true}
+                      icon="grommet-icons:currency"
+                      required
+                      error={formErrors.currency}
                     />
 
                     <Input
                       name="hotelName"
+                      value={formData.hotelName}
+                      onChange={(e) =>
+                        handleInputChange("hotelName", e.target.value)
+                      }
                       placeholder="Hotel Name *"
                       required
                       icon="mdi:hotel"
                       className="text-lg"
+                      error={formErrors.hotelName}
                     />
 
                     <Input
                       name="roomNumber"
+                      value={formData.roomNumber}
+                      onChange={(e) =>
+                        handleInputChange("roomNumber", e.target.value)
+                      }
                       placeholder="Room Number *"
                       required
                       icon="mdi:door"
                       className="text-lg"
+                      error={formErrors.roomNumber}
                     />
 
                     <div className="grid grid-cols-2 gap-4">
                       <Select
                         name="adults"
+                        value={formData.adults}
+                        onChange={({ value }) =>
+                          handleInputChange("adults", parseInt(value))
+                        }
                         options={adultOptions}
                         placeholder="Adults *"
                         defaultValue="1"
                         required
+                        error={formErrors.adults}
                       />
                       <Select
                         name="children"
+                        value={formData.children}
+                        onChange={({ value }) =>
+                          handleInputChange("children", parseInt(value))
+                        }
                         options={childrenOptions}
                         placeholder="Children"
                         defaultValue="0"
+                        error={formErrors.children}
                       />
                     </div>
+
+                    {formErrors.total && (
+                      <div className="text-red-600 text-sm flex items-center">
+                        <Icon
+                          icon="lucide:alert-circle"
+                          className="w-4 h-4 mr-1"
+                        />
+                        {formErrors.total}
+                      </div>
+                    )}
 
                     <Input
                       name="preferredDate"
                       type="date"
+                      value={formData.preferredDate}
+                      onChange={(e) =>
+                        handleInputChange("preferredDate", e.target.value)
+                      }
                       placeholder="Preferred Date *"
                       required
                       icon="mdi:calendar"
                       min={new Date().toISOString().split("T")[0]}
                       className="text-lg"
+                      error={formErrors.preferredDate}
                     />
 
                     <Input
                       name="specialRequests"
+                      value={formData.specialRequests}
+                      onChange={(e) =>
+                        handleInputChange("specialRequests", e.target.value)
+                      }
                       textarea
                       placeholder="Special Requests (Optional)"
                       icon="mdi:message-text-outline"
@@ -660,13 +977,69 @@ const TripPage = async ({ params, searchParams }) => {
                     />
                   </div>
 
+                  {/* Price Summary */}
+                  {(formData.adults > 0 || formData.children > 0) && (
+                    <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                      <h4 className="font-semibold text-gray-800">
+                        Price Summary
+                      </h4>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex justify-between text-gray-600">
+                          <span>Adults ({formData.adults}x):</span>
+                          <span>
+                            €
+                            {Math.round(
+                              (tripData.adult_price || 0) * formData.adults
+                            )}
+                          </span>
+                        </div>
+                        {formData.children > 0 && (
+                          <div className="flex justify-between text-gray-600">
+                            <span>Children ({formData.children}x):</span>
+                            <span>
+                              €
+                              {Math.round(
+                                (tripData.child_price ||
+                                  (tripData.adult_price || 0) * 0.5) *
+                                  formData.children
+                              )}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-bold text-lg border-t pt-2 text-gray-800">
+                          <span>Total:</span>
+                          <span>€{totalPrice}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                    disabled={isSubmitting}
+                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:from-gray-400 disabled:to-gray-500 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 disabled:scale-100 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
                   >
-                    <Icon icon="lucide:calendar-check" className="w-5 h-5" />
-                    Book Now - €{pricing.discounted || pricing.original}
+                    {isSubmitting ? (
+                      <>
+                        <Icon
+                          icon="lucide:loader-2"
+                          className="w-5 h-5 animate-spin"
+                        />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Icon
+                          icon="lucide:calendar-check"
+                          className="w-5 h-5"
+                        />
+                        Book Now - €
+                        {totalPrice > 0
+                          ? totalPrice
+                          : pricing.discounted || pricing.original}
+                      </>
+                    )}
                   </button>
                 </form>
 
@@ -684,7 +1057,7 @@ const TripPage = async ({ params, searchParams }) => {
                       icon="lucide:credit-card"
                       className="w-5 h-5 mr-2 text-blue-600"
                     />
-                    <span>Pay on Arrival Available</span>
+                    <span>Pay Online or on Arrival</span>
                   </div>
                   <div className="flex items-center justify-center text-gray-600 text-sm">
                     <Icon
@@ -699,6 +1072,22 @@ const TripPage = async ({ params, searchParams }) => {
           </div>
         </div>
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onPaymentMethodSelect={handlePaymentMethodSelect}
+        totalAmount={totalPrice}
+        bookingData={{
+          adults: formData.adults,
+          children: formData.children,
+          adultPrice: Math.round(tripData?.adult_price || 0),
+          childPrice: Math.round(
+            tripData?.child_price || (tripData?.adult_price || 0) * 0.5
+          ),
+        }}
+      />
     </div>
   );
 };

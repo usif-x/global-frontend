@@ -1,6 +1,7 @@
 "use client";
 
 import Input from "@/components/ui/Input";
+import { putData } from "@/lib/axios";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Icon } from "@iconify/react";
 import {
@@ -70,25 +71,53 @@ const formatDate = (dateString) => {
   }
 };
 
+// --- Format Last Login Helper ---
+const formatLastLogin = (lastLogin) => {
+  if (!lastLogin) return "Never";
+  try {
+    const date = new Date(lastLogin);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return `${diffDays} days ago`;
+
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } catch (error) {
+    return "Invalid Date";
+  }
+};
+
 // --- User Status Badge ---
-const UserStatusBadge = ({ isBlocked }) => {
-  const config = isBlocked
-    ? {
-        color: "bg-red-100 text-red-700",
-        icon: "mdi:account-cancel",
-        label: "Blocked",
-      }
-    : {
-        color: "bg-green-100 text-green-700",
-        icon: "mdi:account-check",
-        label: "Active",
-      };
+const UserStatusBadge = ({ isActive, isBlocked }) => {
+  if (isBlocked) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+        <Icon icon="mdi:account-cancel" className="w-3 h-3" />
+        Blocked
+      </span>
+    );
+  }
+
+  if (isActive) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+        <Icon icon="mdi:account-check" className="w-3 h-3" />
+        Active
+      </span>
+    );
+  }
+
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${config.color}`}
-    >
-      <Icon icon={config.icon} className="w-3 h-3" />
-      {config.label}
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+      <Icon icon="mdi:account-outline" className="w-3 h-3" />
+      Inactive
     </span>
   );
 };
@@ -187,7 +216,10 @@ const UserDetailsModal = ({ user, onClose }) => (
           <Icon icon="mdi:toggle-switch" className="w-5 h-5 text-slate-400" />
           <div>
             <p className="text-sm font-medium text-slate-700">Status</p>
-            <UserStatusBadge isBlocked={user.is_blocked} />
+            <UserStatusBadge
+              isActive={user.is_active}
+              isBlocked={user.is_blocked}
+            />
           </div>
         </div>
         <div className="flex items-center space-x-3">
@@ -197,17 +229,40 @@ const UserDetailsModal = ({ user, onClose }) => (
             <p className="text-slate-600">{formatDate(user.created_at)}</p>
           </div>
         </div>
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:login" className="w-5 h-5 text-slate-400" />
+          <div>
+            <p className="text-sm font-medium text-slate-700">Last Login</p>
+            <p className="text-slate-600">{formatLastLogin(user.last_login)}</p>
+          </div>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:update" className="w-5 h-5 text-slate-400" />
+          <div>
+            <p className="text-sm font-medium text-slate-700">Last Updated</p>
+            <p className="text-slate-600">{formatDate(user.updated_at)}</p>
+          </div>
+        </div>
+        {user.testimonials && user.testimonials.length > 0 && (
+          <div className="md:col-span-2 flex items-center space-x-3">
+            <Icon icon="mdi:star" className="w-5 h-5 text-slate-400" />
+            <div>
+              <p className="text-sm font-medium text-slate-700">Testimonials</p>
+              <p className="text-slate-600">
+                {user.testimonials.length} testimonial(s)
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   </ModalWrapper>
 );
 
-const EditUserModal = ({ user, onClose, onSave, token }) => {
+const EditUserModal = ({ user, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     full_name: user?.full_name || "",
     email: user?.email || "",
-    role: user?.role || "user",
-    is_blocked: user?.is_blocked || false,
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -222,24 +277,14 @@ const EditUserModal = ({ user, onClose, onSave, token }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+
     try {
-      const response = await fetch("http://localhost:8000/users/update", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ ...formData, user_id: user.id }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to update user");
-      }
+      putData("/admins/update-user/" + user.id, formData, true);
       toast.success("User updated successfully");
       onSave();
       onClose();
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error?.response?.data?.detail);
     } finally {
       setIsLoading(false);
     }
@@ -284,44 +329,7 @@ const EditUserModal = ({ user, onClose, onSave, token }) => {
             required
             disabled={isLoading}
           />
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-700">
-              Role
-            </label>
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleInputChange}
-              className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500"
-              disabled={isLoading}
-            >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-          <div className="flex items-center space-x-3 bg-slate-50 p-3 rounded-lg">
-            <input
-              type="checkbox"
-              name="is_blocked"
-              id="is_blocked"
-              checked={formData.is_blocked}
-              onChange={handleInputChange}
-              className="h-5 w-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
-              disabled={isLoading}
-            />
-            <label htmlFor="is_blocked" className="font-medium text-slate-700">
-              Block this user
-            </label>
-          </div>
-          <div className="flex space-x-3 pt-4 border-t border-slate-200">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-4 rounded-xl transition-colors"
-              disabled={isLoading}
-            >
-              Cancel
-            </button>
+          <div className="flex items-center space-x-3">
             <button
               type="submit"
               className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold py-3 px-4 rounded-xl disabled:opacity-70 flex items-center justify-center space-x-2"
@@ -344,10 +352,8 @@ const EditUserModal = ({ user, onClose, onSave, token }) => {
 };
 
 // --- Change Password Modal Component ---
-// (This one is simplified as it's a very direct action, but follows the same structural principles)
-const ChangePasswordModal = ({ user, onClose, token }) => {
+const ChangePasswordModal = ({ user, onClose }) => {
   const [formData, setFormData] = useState({
-    old_password: "",
     new_password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -360,21 +366,11 @@ const ChangePasswordModal = ({ user, onClose, token }) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetch(
-        "http://localhost:8000/users/update/password",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ ...formData, user_id: user.id }),
-        }
-      );
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to update password");
-      }
+      const { new_password } = formData;
+      const dataToSend = {
+        password: new_password,
+      };
+      putData("/admins/update-user-password/" + user.id, dataToSend, true);
       toast.success("Password updated successfully");
       onClose();
     } catch (error) {
@@ -398,18 +394,6 @@ const ChangePasswordModal = ({ user, onClose, token }) => {
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <Input
-            icon="mdi:lock"
-            name="old_password"
-            type="password"
-            placeholder="Current Password"
-            value={formData.old_password}
-            onChange={handleInputChange}
-            color="purple"
-            className="w-full"
-            required
-            disabled={isLoading}
-          />
           <Input
             icon="mdi:lock-outline"
             name="new_password"
@@ -466,26 +450,90 @@ const TestimonialsModal = ({ user, onClose, token }) => {
             { headers: { Authorization: `Bearer ${token}` } }
           );
           if (!res.ok) throw new Error("Failed to fetch testimonials");
-          setTestimonials(await res.json());
+          const data = await res.json();
+          setTestimonials(data);
         } catch (error) {
           toast.error(error.message);
+          // Also try to use the testimonials from user object if API fails
+          if (user.testimonials && Array.isArray(user.testimonials)) {
+            setTestimonials(user.testimonials);
+          }
         } finally {
           setIsLoading(false);
         }
       })();
     }
-  }, [user?.id, token]);
+  }, [user?.id, token, user?.testimonial]);
 
   const handleTestimonialAction = async (testimonialId, action) => {
-    // ... same logic as before, no design change needed here
+    try {
+      let endpoint = "";
+      let method = "PUT";
+
+      if (action === "accept") {
+        endpoint = `http://localhost:8000/admins/accept-testimonial/${testimonialId}`;
+      } else if (action === "reject") {
+        endpoint = `http://localhost:8000/admins/reject-testimonial/${testimonialId}`;
+      } else if (action === "delete") {
+        const result = await Swal.fire({
+          title: "Are you sure?",
+          text: "This testimonial will be permanently deleted!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Yes, delete it!",
+        });
+        if (!result.isConfirmed) return;
+
+        endpoint = `http://localhost:8000/admins/delete-testimonial/${testimonialId}`;
+        method = "DELETE";
+      }
+
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `Failed to ${action} testimonial`);
+      }
+
+      toast.success(`Testimonial ${action}ed successfully`);
+
+      // Refresh testimonials
+      const res = await fetch(
+        `http://localhost:8000/admins/get-user-testminals/${user.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setTestimonials(data);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   return (
     <ModalWrapper visible={!!user} onClose={onClose}>
       <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full animate-in fade-in-0 zoom-in-95">
         <div className="relative bg-gradient-to-r from-teal-500 to-cyan-600 text-white p-6">
-          <h2 className="text-2xl font-bold">User Testimonials</h2>
-          <p className="text-teal-100 mt-1">Feedback from {user.full_name}</p>
+          <div className="flex items-center space-x-4">
+            <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+              <Icon icon="mdi:star-outline" className="w-8 h-8" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold">User Testimonials</h2>
+              <p className="text-teal-100 mt-1">
+                Feedback from {user.full_name}
+              </p>
+            </div>
+          </div>
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl"
@@ -497,76 +545,105 @@ const TestimonialsModal = ({ user, onClose, token }) => {
           {isLoading ? (
             <LoadingSpinner />
           ) : testimonials.length === 0 ? (
-            <p className="text-slate-500 text-center py-12">
-              No testimonials found for this user.
-            </p>
+            <div className="text-center py-12">
+              <div className="w-20 h-20 mx-auto mb-4 bg-teal-100 rounded-full flex items-center justify-center">
+                <Icon
+                  icon="mdi:star-outline"
+                  className="w-10 h-10 text-teal-500"
+                />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                No Testimonials Found
+              </h3>
+              <p className="text-slate-500">
+                This user hasn't submitted any testimonials yet.
+              </p>
+            </div>
           ) : (
             <div className="space-y-4">
-              {testimonials.map((t) => (
+              {testimonials.map((testimonial) => (
                 <div
-                  key={t.id}
-                  className="border rounded-xl p-4 bg-slate-50 hover:bg-slate-100 transition-colors"
+                  key={testimonial.id}
+                  className="border rounded-xl p-6 bg-slate-50 hover:bg-slate-100 transition-colors"
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1 pr-4">
-                      <div className="flex items-center mb-2">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Icon
-                            key={i}
-                            icon="mdi:star"
-                            className={
-                              i < t.rating
-                                ? "text-yellow-400"
-                                : "text-slate-300"
-                            }
-                          />
-                        ))}
+                      <div className="flex items-center mb-3">
+                        <div className="flex items-center">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Icon
+                              key={i}
+                              icon={
+                                i < testimonial.rating
+                                  ? "mdi:star"
+                                  : "mdi:star-outline"
+                              }
+                              className={`w-5 h-5 ${
+                                i < testimonial.rating
+                                  ? "text-yellow-400"
+                                  : "text-slate-300"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="ml-2 text-sm font-medium text-slate-600">
+                          {testimonial.rating}/5
+                        </span>
                       </div>
-                      <p className="text-sm text-slate-700">{t.description}</p>
+                      <p className="text-slate-700 mb-3 leading-relaxed">
+                        {testimonial.description || testimonial.content}
+                      </p>
+                      <div className="text-xs text-slate-500">
+                        Submitted on {formatDate(testimonial.created_at)}
+                      </div>
                     </div>
-                    <div className="flex flex-col items-end space-y-2">
+                    <div className="flex flex-col items-end space-y-3">
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          t.status === "approved"
+                          testimonial.is_accepted === true
                             ? "bg-green-100 text-green-700"
-                            : t.status === "rejected"
+                            : testimonial.is_rejected === true
                             ? "bg-red-100 text-red-700"
                             : "bg-yellow-100 text-yellow-700"
                         }`}
                       >
-                        {t.status || "pending"}
+                        {testimonial.is_rejected
+                          ? "Rejected"
+                          : testimonial.is_accepted
+                          ? "Approved"
+                          : "Pending"}
                       </span>
                       <div className="flex space-x-1">
-                        {t.status !== "approved" && (
+                        {testimonial.is_accepted !== true && (
                           <button
                             onClick={() =>
-                              handleTestimonialAction(t.id, "accept")
+                              handleTestimonialAction(testimonial.id, "accept")
                             }
-                            className="p-2 text-slate-500 hover:bg-green-100 hover:text-green-600 rounded-full"
+                            className="p-2 text-slate-500 hover:bg-green-100 hover:text-green-600 rounded-full transition-colors"
                             title="Accept"
                           >
-                            <Icon icon="mdi:check" width={18} />
+                            <Icon icon="mdi:check" className="w-4 h-4" />
                           </button>
                         )}
-                        {t.status !== "rejected" && (
+                        {testimonial.is_rejected !== true && (
                           <button
                             onClick={() =>
-                              handleTestimonialAction(t.id, "reject")
+                              handleTestimonialAction(testimonial.id, "reject")
                             }
-                            className="p-2 text-slate-500 hover:bg-red-100 hover:text-red-600 rounded-full"
+                            className="p-2 text-slate-500 hover:bg-red-100 hover:text-red-600 rounded-full transition-colors"
                             title="Reject"
                           >
-                            <Icon icon="mdi:close" width={18} />
+                            <Icon icon="mdi:close" className="w-4 h-4" />
                           </button>
                         )}
                         <button
-                          onClick={() => {
-                            /* Swal logic */
-                          }}
-                          className="p-2 text-slate-500 hover:bg-red-100 hover:text-red-700 rounded-full"
+                          onClick={() =>
+                            handleTestimonialAction(testimonial.id, "delete")
+                          }
+                          className="p-2 text-slate-500 hover:bg-red-100 hover:text-red-700 rounded-full transition-colors"
                           title="Delete"
                         >
-                          <Icon icon="mdi:delete" width={18} />
+                          <Icon icon="mdi:delete" className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
@@ -581,9 +658,6 @@ const TestimonialsModal = ({ user, onClose, token }) => {
   );
 };
 
-//=================================================================
-//  USER API SERVICE
-//=================================================================
 const UserService = {
   async getAllUsers(token, params) {
     const query = new URLSearchParams(params).toString();
@@ -646,17 +720,45 @@ export default function UserManagementPage() {
   const [editingUser, setEditingUser] = useState(null);
   const [changingPasswordUser, setChangingPasswordUser] = useState(null);
   const [viewingTestimonials, setViewingTestimonials] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [searchName, setSearchName] = useState("");
-  // Other modals can be added here if needed (e.g., editingUser)
-  const [totalUsers, setTotalUsers] = useState(0);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    page_size: 20,
+    total: 0,
+    total_pages: 0,
+    has_next: false,
+    has_previous: false,
+  });
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
   const { token, userType } = useAuthStore();
   const router = useRouter();
+
+  const getPageNumbers = () => {
+    const totalPages = pagination.total_pages;
+    const currentPage = pagination.page;
+    const maxVisibleButtons = 5;
+
+    if (totalPages <= maxVisibleButtons) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
+
+    if (endPage - startPage + 1 < maxVisibleButtons) {
+      startPage = Math.max(1, endPage - maxVisibleButtons + 1);
+    }
+
+    const pages = [];
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
+
+  const pageNumbers = getPageNumbers();
 
   useEffect(() => {
     if (token && userType !== "admin") {
@@ -665,39 +767,54 @@ export default function UserManagementPage() {
     }
   }, [token, userType, router]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (page = 1) => {
     if (!token) return;
     setIsLoading(true);
     try {
       const params = {
-        page_size: 10, // Fetch all for client-side filtering/sorting
-        page: 1,
+        page: page,
+        page_size: pagination.page_size,
       };
       if (searchTerm) params.name = searchTerm;
 
       const data = await UserService.getAllUsers(token, params);
 
-      // =========================================================
-      //  FIXED LOGIC HERE
-      // =========================================================
-
-      // Check if the response is an object with a 'users' array,
-      // OR if the response is the array itself.
-      const userList = Array.isArray(data.users)
-        ? data.users
-        : Array.isArray(data)
-        ? data
-        : [];
-
-      // Get the total count from the object if it exists, otherwise use the array's length.
-      const total = data.total ?? userList.length;
-
-      setUsers(userList);
-      setTotalUsers(total);
+      // Handle both paginated response and direct array response
+      if (data.users && Array.isArray(data.users)) {
+        // New paginated response format
+        setUsers(data.users);
+        setPagination({
+          page: data.page || page,
+          page_size: data.page_size || pagination.page_size,
+          total: data.total || data.users.length,
+          total_pages:
+            data.total_pages ||
+            Math.ceil(
+              (data.total || data.users.length) /
+                (data.page_size || pagination.page_size)
+            ),
+          has_next: data.has_next || false,
+          has_previous: data.has_previous || false,
+        });
+      } else if (Array.isArray(data)) {
+        // Legacy direct array response
+        setUsers(data);
+        setPagination((prev) => ({
+          ...prev,
+          page: page,
+          total: data.length,
+          total_pages: 1,
+          has_next: false,
+          has_previous: false,
+        }));
+      } else {
+        setUsers([]);
+        setPagination((prev) => ({ ...prev, total: 0, total_pages: 0 }));
+      }
     } catch (error) {
       toast.error(error.message);
       setUsers([]);
-      setTotalUsers(0);
+      setPagination((prev) => ({ ...prev, total: 0, total_pages: 0 }));
     } finally {
       setIsLoading(false);
     }
@@ -705,7 +822,7 @@ export default function UserManagementPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchUsers();
+      fetchUsers(1); // Reset to first page when searching
     }, 300); // Debounce search
     return () => clearTimeout(timer);
   }, [searchTerm, token]);
@@ -714,12 +831,13 @@ export default function UserManagementPage() {
     try {
       if (action === "toggleBlock") {
         const user = users.find((u) => u.id === userId);
-        await UserService.toggleUserBlock(token, userId);
-        toast.success(`User has been blocked successfully.`);
-      } else if (action === "toggleUnblock") {
-        const user = users.find((u) => u.id === userId);
-        await UserService.toggleUserUnblock(token, userId);
-        toast.success(`User has been unblocked successfully.`);
+        if (user.is_blocked) {
+          await UserService.toggleUserUnblock(token, userId);
+          toast.success("User has been unblocked successfully.");
+        } else {
+          await UserService.toggleUserBlock(token, userId);
+          toast.success("User has been blocked successfully.");
+        }
       } else if (action === "delete") {
         const result = await Swal.fire({
           title: "Are you sure?",
@@ -737,7 +855,7 @@ export default function UserManagementPage() {
           return;
         }
       }
-      fetchUsers();
+      fetchUsers(pagination.page);
     } catch (error) {
       toast.error(error.message || `Failed to ${action} user.`);
     }
@@ -748,20 +866,22 @@ export default function UserManagementPage() {
       const matchesRole = roleFilter === "all" || user.role === roleFilter;
       const matchesStatus =
         statusFilter === "all" ||
-        (statusFilter === "active" && !user.is_blocked) ||
-        (statusFilter === "blocked" && user.is_blocked);
+        (statusFilter === "active" && user.is_active && !user.is_blocked) ||
+        (statusFilter === "blocked" && user.is_blocked) ||
+        (statusFilter === "inactive" && !user.is_active);
       return matchesRole && matchesStatus;
     });
   }, [users, roleFilter, statusFilter]);
 
   const stats = useMemo(() => {
-    const total = totalUsers;
-    const active = users.filter((u) => !u.is_blocked).length;
+    const total = pagination.total;
+    const active = users.filter((u) => u.is_active && !u.is_blocked).length;
     const blocked = users.filter((u) => u.is_blocked).length;
+    const inactive = users.filter((u) => !u.is_active).length;
     const admins = users.filter((u) => u.role === "admin").length;
-    const standardUsers = total - admins;
-    return { total, active, blocked, admins, standardUsers };
-  }, [users, totalUsers]);
+    const standardUsers = users.filter((u) => u.role === "user").length;
+    return { total, active, blocked, inactive, admins, standardUsers };
+  }, [users, pagination.total]);
 
   const columns = useMemo(
     () => [
@@ -798,10 +918,22 @@ export default function UserManagementPage() {
         ),
       },
       {
-        accessorKey: "is_blocked",
+        accessorKey: "status",
         header: "Status",
         cell: ({ row }) => (
-          <UserStatusBadge isBlocked={row.original.is_blocked} />
+          <UserStatusBadge
+            isActive={row.original.is_active}
+            isBlocked={row.original.is_blocked}
+          />
+        ),
+      },
+      {
+        accessorKey: "last_login",
+        header: "Last Login",
+        cell: ({ row }) => (
+          <div className="text-sm text-slate-600">
+            {formatLastLogin(row.original.last_login)}
+          </div>
         ),
       },
       {
@@ -825,10 +957,37 @@ export default function UserManagementPage() {
             >
               <Icon icon="mdi:eye-outline" width={18} />
             </button>
+
+            {/* Show testimonials button if user has testimonials */}
+            {row.original.testimonials &&
+              row.original.testimonials.length > 0 && (
+                <button
+                  onClick={() => setViewingTestimonials(row.original)}
+                  className="p-2 text-slate-500 rounded-full transition-all duration-200 hover:bg-yellow-100 hover:text-yellow-600"
+                  title="View Testimonials"
+                >
+                  <Icon icon="mdi:star-outline" width={18} />
+                </button>
+              )}
+
             <button
-              onClick={() =>
-                handleUserAction(row.original.id, row.original.is_blocked)
-              }
+              onClick={() => setEditingUser(row.original)}
+              className="p-2 text-slate-500 rounded-full transition-all duration-200 hover:bg-orange-100 hover:text-orange-600"
+              title="Edit User"
+            >
+              <Icon icon="mdi:pencil-outline" width={18} />
+            </button>
+
+            <button
+              onClick={() => setChangingPasswordUser(row.original)}
+              className="p-2 text-slate-500 rounded-full transition-all duration-200 hover:bg-purple-100 hover:text-purple-600"
+              title="Change Password"
+            >
+              <Icon icon="mdi:lock-outline" width={18} />
+            </button>
+
+            <button
+              onClick={() => handleUserAction(row.original.id, "toggleBlock")}
               className={`p-2 text-slate-500 rounded-full transition-all duration-200 ${
                 row.original.is_blocked
                   ? "hover:bg-green-100 hover:text-green-600"
@@ -845,6 +1004,7 @@ export default function UserManagementPage() {
                 width={18}
               />
             </button>
+
             <button
               onClick={() => handleUserAction(row.original.id, "delete")}
               className="p-2 text-slate-500 rounded-full transition-all duration-200 hover:bg-red-100 hover:text-red-600"
@@ -868,6 +1028,12 @@ export default function UserManagementPage() {
     getSortedRowModel: getSortedRowModel(),
   });
 
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.total_pages) {
+      fetchUsers(newPage);
+    }
+  };
+
   return (
     <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen">
       <div className="container mx-auto p-4 sm:p-6 lg:p-8">
@@ -890,7 +1056,7 @@ export default function UserManagementPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           {[
             {
               title: "Total Users",
@@ -910,6 +1076,18 @@ export default function UserManagementPage() {
               icon: "mdi:account-cancel",
               color: "red",
             },
+            {
+              title: "Inactive Users",
+              value: stats.inactive,
+              icon: "mdi:account-outline",
+              color: "gray",
+            },
+            {
+              title: "Administrators",
+              value: stats.admins,
+              icon: "mdi:shield-account",
+              color: "purple",
+            },
           ].map((stat, index) => (
             <div
               key={index}
@@ -927,7 +1105,7 @@ export default function UserManagementPage() {
                 <div className={`p-3 rounded-xl bg-${stat.color}-50`}>
                   <Icon
                     icon={stat.icon}
-                    className={`w-6 h-6 text-${stat.color}-700`}
+                    className={`w-6 h-6 text-${stat.color}-600`}
                   />
                 </div>
               </div>
@@ -965,6 +1143,7 @@ export default function UserManagementPage() {
                     <option value="all">All</option>
                     <option value="active">Active</option>
                     <option value="blocked">Blocked</option>
+                    <option value="inactive">Inactive</option>
                   </select>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -1079,19 +1258,79 @@ export default function UserManagementPage() {
             )}
           </div>
 
-          {/* Table Footer */}
-          {!isLoading && filteredUsers.length > 0 && (
-            <div className="p-4 border-t border-slate-200 bg-gradient-to-r from-slate-50 to-cyan-50">
-              <div className="flex items-center justify-between text-sm text-slate-600">
-                <div className="flex items-center space-x-2">
-                  <Icon icon="mdi:information" className="w-4 h-4" />
-                  <span>
-                    Showing {filteredUsers.length} of {totalUsers} users
-                  </span>
+          {/* Pagination */}
+          {!isLoading &&
+            filteredUsers.length > 0 &&
+            pagination.total_pages > 1 && (
+              <div className="p-4 border-t border-slate-200 bg-gradient-to-r from-slate-50 to-cyan-50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2 text-sm text-slate-600">
+                    <Icon icon="mdi:information" className="w-4 h-4" />
+                    <span>
+                      Showing {(pagination.page - 1) * pagination.page_size + 1}{" "}
+                      to{" "}
+                      {Math.min(
+                        pagination.page * pagination.page_size,
+                        pagination.total
+                      )}{" "}
+                      of {pagination.total} users
+                    </span>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handlePageChange(pagination.page - 1)}
+                      disabled={!pagination.has_previous}
+                      className="px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                    >
+                      <Icon icon="mdi:chevron-left" className="w-4 h-4" />
+                      <span>Previous</span>
+                    </button>
+
+                    <div className="flex items-center space-x-1">
+                      {pageNumbers.map((pageNum) => (
+                        <button
+                          key={pageNum} // This will now be unique and correct (e.g., 1, 2, 3, 4, 5)
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`px-3 py-2 text-sm rounded-lg ${
+                            pageNum === pagination.page
+                              ? "bg-cyan-500 text-white"
+                              : "bg-white border border-slate-300 hover:bg-slate-50"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={() => handlePageChange(pagination.page + 1)}
+                      disabled={!pagination.has_next}
+                      className="px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                    >
+                      <span>Next</span>
+                      <Icon icon="mdi:chevron-right" className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+
+          {/* Table Footer */}
+          {!isLoading &&
+            filteredUsers.length > 0 &&
+            pagination.total_pages <= 1 && (
+              <div className="p-4 border-t border-slate-200 bg-gradient-to-r from-slate-50 to-cyan-50">
+                <div className="flex items-center justify-between text-sm text-slate-600">
+                  <div className="flex items-center space-x-2">
+                    <Icon icon="mdi:information" className="w-4 h-4" />
+                    <span>
+                      Showing {filteredUsers.length} of {pagination.total} users
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
         </div>
 
         {/* Analytics & Export Panel */}
@@ -1153,12 +1392,19 @@ export default function UserManagementPage() {
                         (u) =>
                           `"${u.id}","${u.full_name}","${u.email}","${
                             u.role
-                          }","${u.is_blocked ? "Blocked" : "Active"}","${
+                          }","${
+                            u.is_blocked
+                              ? "Blocked"
+                              : u.is_active
+                              ? "Active"
+                              : "Inactive"
+                          }","${formatLastLogin(u.last_login)}","${formatDate(
                             u.created_at
-                          }"`
+                          )}"`
                       )
                       .join("\n");
-                    const header = "ID,Name,Email,Role,Status,Joined At\n";
+                    const header =
+                      "ID,Name,Email,Role,Status,Last Login,Joined At\n";
                     const blob = new Blob([header + csvContent], {
                       type: "text/csv",
                     });
@@ -1190,7 +1436,7 @@ export default function UserManagementPage() {
         <EditUserModal
           user={editingUser}
           onClose={() => setEditingUser(null)}
-          onSave={() => fetchUsers(currentPage)}
+          onSave={() => fetchUsers(pagination.page)}
           token={token}
         />
       )}
@@ -1208,7 +1454,6 @@ export default function UserManagementPage() {
           token={token}
         />
       )}
-      {/* Other modals would be rendered here */}
     </div>
   );
 }

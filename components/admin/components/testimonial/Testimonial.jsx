@@ -533,10 +533,15 @@ export default function TestimonialManagementPage() {
 
       const matchesStatus =
         statusFilter === "all" ||
-        (statusFilter === "pending" && testimonial.is_accepted === false) ||
-        (statusFilter === "approved" && testimonial.is_accepted === true) ||
-        (statusFilter === "rejected" && testimonial.is_rejected === true);
-
+        (statusFilter === "pending" &&
+          testimonial.is_accepted === false &&
+          !testimonial.is_rejected) ||
+        (statusFilter === "approved" &&
+          testimonial.is_accepted === true &&
+          !testimonial.is_rejected) ||
+        (statusFilter === "rejected" &&
+          testimonial.is_rejected === true &&
+          testimonials.is_accepted == false);
       const matchesRating =
         ratingFilter === "all" ||
         Math.floor(testimonial.rating || 0) === parseInt(ratingFilter);
