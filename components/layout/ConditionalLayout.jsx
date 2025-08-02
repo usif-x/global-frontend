@@ -9,9 +9,10 @@ const ConditionalLayout = ({ children }) => {
   // المسارات التي لا تحتوي على Navbar و Footer
   const isAdminRoute = pathname?.startsWith("/admin");
   const isAuthRoute = ["/login", "/register"].includes(pathname || "");
+  const EnrollCourse = /^\/courses\/\d+\/enroll$/.test(pathname || "");
 
   // صفحات بدون تخطيط كامل
-  if (isAdminRoute || isAuthRoute) {
+  if (isAdminRoute || isAuthRoute || EnrollCourse) {
     return <>{children}</>;
   }
 

@@ -20,13 +20,18 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
     name: "",
     description: "",
     price: "",
-    course_level: "Beginner", // Renamed from 'level'
-    course_duration: "", // Renamed from 'duration', now expects an integer
+    course_level: "Beginner",
+    course_duration: "",
+    course_type: "Basic",
+    has_certificate: false,
+    certificate_type: "Standard",
+    has_online_content: false,
     images: [],
-    is_image_list: false, // New field
+    is_image_list: false,
+    contents: [],
   });
 
-  // Populate form if editing, mapping new field names
+  // Populate form if editing
   useEffect(() => {
     if (course) {
       setFormData({
@@ -35,8 +40,13 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
         price: course.price?.toString() || "",
         course_level: course.course_level || "Beginner",
         course_duration: course.course_duration?.toString() || "",
+        course_type: course.course_type || "Basic",
+        has_certificate: course.has_certificate || false,
+        certificate_type: course.certificate_type || "Standard",
+        has_online_content: course.has_online_content || false,
         images: course.images || [],
         is_image_list: course.is_image_list || false,
+        contents: course.contents || [],
       });
     }
   }, [course]);
@@ -62,13 +72,48 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
       images: prev.images.map((img, i) => (i === index ? value : img)),
     }));
   };
+
   const addImage = () =>
     setFormData((prev) => ({ ...prev, images: [...prev.images, ""] }));
+
   const removeImage = (index) =>
     setFormData((prev) => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index),
     }));
+
+  // Content management functions
+  const handleContentChange = (index, field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      contents: prev.contents.map((content, i) =>
+        i === index ? { ...content, [field]: value } : content
+      ),
+    }));
+  };
+
+  const addContent = () => {
+    setFormData((prev) => ({
+      ...prev,
+      contents: [
+        ...prev.contents,
+        {
+          title: "",
+          description: "",
+          content_type: "video",
+          content_url: "",
+          order: prev.contents.length,
+        },
+      ],
+    }));
+  };
+
+  const removeContent = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      contents: prev.contents.filter((_, i) => i !== index),
+    }));
+  };
 
   // Updated validation logic
   const validateForm = () => {
@@ -82,6 +127,14 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
       newErrors.course_duration = "Duration in days is required";
     if (!formData.course_level)
       newErrors.course_level = "Please select a difficulty level";
+    if (!formData.course_type)
+      newErrors.course_type = "Please select a course type";
+
+    // Validate content if has_online_content is true
+    if (formData.has_online_content && formData.contents.length === 0) {
+      newErrors.contents = "Please add at least one content item";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -101,9 +154,17 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
         price: parseInt(formData.price, 10),
         course_level: formData.course_level,
         course_duration: parseInt(formData.course_duration, 10),
+        course_type: formData.course_type,
+        has_certificate: formData.has_certificate,
+        certificate_type: formData.certificate_type,
+        has_online_content: formData.has_online_content,
         images: formData.images.filter((img) => img && img.trim()),
         is_image_list: formData.is_image_list,
+        contents: formData.has_online_content
+          ? formData.contents.filter((content) => content.title.trim())
+          : [],
       };
+
       let result;
       if (course) {
         result = await CourseService.update(course.id, submitData);
@@ -124,16 +185,37 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
     }
   };
 
-  // Simplified to two steps
+  // Updated to three steps
   const steps = [
     { id: 1, name: "Core Info", icon: "mdi:information-variant-circle" },
-    { id: 2, name: "Media & Display", icon: "mdi:image-multiple" },
+    { id: 2, name: "Content & Features", icon: "mdi:book-open-page-variant" },
+    { id: 3, name: "Media & Display", icon: "mdi:image-multiple" },
   ];
 
   const levelOptions = [
     { value: "Beginner", label: "Beginner" },
     { value: "Intermediate", label: "Intermediate" },
     { value: "Advanced", label: "Advanced" },
+  ];
+
+  const typeOptions = [
+    { value: "Basic", label: "Basic Course" },
+    { value: "Premium", label: "Premium Course" },
+    { value: "Specialty", label: "Specialty Course" },
+  ];
+
+  const certificateOptions = [
+    { value: "Standard", label: "Standard Certificate" },
+    { value: "Premium", label: "Premium Certificate" },
+    { value: "Digital", label: "Digital Certificate" },
+  ];
+
+  const contentTypeOptions = [
+    { value: "video", label: "Video" },
+    { value: "pdf", label: "PDF Document" },
+    { value: "quiz", label: "Quiz" },
+    { value: "text", label: "Text Content" },
+    { value: "audio", label: "Audio" },
   ];
 
   return (
@@ -170,9 +252,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
         </div>
         <div className="relative mt-8">
           <div className="absolute left-0 top-1/2 w-full h-0.5 bg-white/20"></div>
-          <div className="relative flex justify-around">
-            {" "}
-            {/* Use justify-around for 2 items */}
+          <div className="relative flex justify-between px-4">
             {steps.map((step) => (
               <div
                 key={step.id}
@@ -203,7 +283,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
 
       {/* Form Content */}
       <div className="p-8">
-        {/* Step 1: Core Info & Logistics */}
+        {/* Step 1: Core Info */}
         <div className={`space-y-6 ${currentStep === 1 ? "block" : "hidden"}`}>
           <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border border-blue-100">
             <h3 className="text-lg font-semibold text-slate-800 mb-6">
@@ -244,6 +324,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
               </div>
             </div>
           </div>
+
           <div className="bg-gradient-to-br from-green-50 to-cyan-50 rounded-2xl p-6 border border-green-100">
             <h3 className="text-lg font-semibold text-slate-800 mb-6">
               Pricing & Logistics
@@ -263,7 +344,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
                 required
                 disabled={isLoading}
               />
-              {/* Updated name and value for Select */}
+
               <Select
                 icon="mdi:school"
                 name="course_level"
@@ -277,7 +358,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
                 error={errors.course_level}
                 disabled={isLoading}
               />
-              {/* Updated name, type, and placeholder for Input */}
+
               <Input
                 dir="ltr"
                 icon="mdi:clock-outline"
@@ -292,11 +373,278 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
                 disabled={isLoading}
               />
             </div>
+
+            <div className="mt-6">
+              <Select
+                icon="mdi:tag"
+                name="course_type"
+                dir="ltr"
+                options={typeOptions}
+                placeholder="Select Course Type"
+                value={typeOptions.find(
+                  (opt) => opt.value === formData.course_type
+                )}
+                onChange={(opt) => handleSelectChange("course_type", opt)}
+                error={errors.course_type}
+                disabled={isLoading}
+              />
+            </div>
           </div>
+
           <div className="flex justify-end pt-6 border-t border-slate-200">
             <button
               type="button"
               onClick={() => setCurrentStep(2)}
+              className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+              disabled={isLoading}
+            >
+              <span>Continue to Content</span>
+              <Icon icon="mdi:arrow-right" className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Step 2: Content & Features */}
+        <div className={`space-y-6 ${currentStep === 2 ? "block" : "hidden"}`}>
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
+            <h3 className="text-lg font-semibold text-slate-800 mb-6">
+              Certificate Options
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between bg-white rounded-xl p-4 border border-purple-200">
+                <label className="flex items-center space-x-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="has_certificate"
+                    checked={formData.has_certificate}
+                    onChange={handleInputChange}
+                    className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
+                    disabled={isLoading}
+                  />
+                  <div>
+                    <span className="text-sm font-medium text-slate-700">
+                      Offer Certificate
+                    </span>
+                    <p className="text-xs text-slate-500">
+                      Provide a completion certificate for this course
+                    </p>
+                  </div>
+                </label>
+                <Icon
+                  icon="mdi:certificate"
+                  className="w-6 h-6 text-purple-500"
+                />
+              </div>
+
+              {formData.has_certificate && (
+                <Select
+                  icon="mdi:medal"
+                  name="certificate_type"
+                  dir="ltr"
+                  options={certificateOptions}
+                  placeholder="Select Certificate Type"
+                  value={certificateOptions.find(
+                    (opt) => opt.value === formData.certificate_type
+                  )}
+                  onChange={(opt) =>
+                    handleSelectChange("certificate_type", opt)
+                  }
+                  disabled={isLoading}
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-100">
+            <h3 className="text-lg font-semibold text-slate-800 mb-6">
+              Online Content
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between bg-white rounded-xl p-4 border border-indigo-200">
+                <label className="flex items-center space-x-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="has_online_content"
+                    checked={formData.has_online_content}
+                    onChange={handleInputChange}
+                    className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+                    disabled={isLoading}
+                  />
+                  <div>
+                    <span className="text-sm font-medium text-slate-700">
+                      Include Online Content
+                    </span>
+                    <p className="text-xs text-slate-500">
+                      Add digital materials like videos, PDFs, and quizzes
+                    </p>
+                  </div>
+                </label>
+                <Icon
+                  icon="mdi:cloud-download"
+                  className="w-6 h-6 text-indigo-500"
+                />
+              </div>
+
+              {formData.has_online_content && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-sm font-medium text-slate-700">
+                      Course Content
+                    </label>
+                    <button
+                      type="button"
+                      onClick={addContent}
+                      className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+                      disabled={isLoading}
+                    >
+                      <Icon icon="mdi:plus-circle" className="w-4 h-4" />
+                      <span>Add Content</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {formData.contents.map((content, index) => (
+                      <div
+                        key={index}
+                        className="group bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-all duration-200"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <h4 className="text-sm font-medium text-slate-700">
+                            Content Item {index + 1}
+                          </h4>
+                          <button
+                            type="button"
+                            onClick={() => removeContent(index)}
+                            className="opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-all duration-200"
+                            disabled={isLoading}
+                          >
+                            <Icon icon="mdi:delete" className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <div className="space-y-3">
+                          <Input
+                            dir="ltr"
+                            icon="mdi:format-title"
+                            name={`content_title_${index}`}
+                            type="text"
+                            placeholder="Content Title"
+                            value={content.title}
+                            onChange={(e) =>
+                              handleContentChange(
+                                index,
+                                "title",
+                                e.target.value
+                              )
+                            }
+                            color="indigo"
+                            required
+                            disabled={isLoading}
+                          />
+
+                          <textarea
+                            name={`content_description_${index}`}
+                            value={content.description}
+                            onChange={(e) =>
+                              handleContentChange(
+                                index,
+                                "description",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Content description (optional)"
+                            rows={2}
+                            className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none transition-all duration-200"
+                            disabled={isLoading}
+                          />
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <Select
+                              icon="mdi:format-list-bulleted-type"
+                              name={`content_type_${index}`}
+                              dir="ltr"
+                              options={contentTypeOptions}
+                              placeholder="Content Type"
+                              value={contentTypeOptions.find(
+                                (opt) => opt.value === content.content_type
+                              )}
+                              onChange={(opt) =>
+                                handleContentChange(
+                                  index,
+                                  "content_type",
+                                  opt ? opt.value : ""
+                                )
+                              }
+                              disabled={isLoading}
+                            />
+
+                            <Input
+                              dir="ltr"
+                              icon="mdi:link"
+                              name={`content_url_${index}`}
+                              type="url"
+                              placeholder="Content URL"
+                              value={content.content_url}
+                              onChange={(e) =>
+                                handleContentChange(
+                                  index,
+                                  "content_url",
+                                  e.target.value
+                                )
+                              }
+                              color="indigo"
+                              disabled={isLoading}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {formData.contents.length === 0 && (
+                      <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center">
+                        <Icon
+                          icon="mdi:book-open-page-variant"
+                          className="w-12 h-12 text-slate-400 mx-auto mb-4"
+                        />
+                        <h4 className="text-lg font-medium text-slate-600 mb-2">
+                          No content items yet
+                        </h4>
+                        <button
+                          type="button"
+                          onClick={addContent}
+                          className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                          disabled={isLoading}
+                        >
+                          Add First Content Item
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {errors.contents && (
+                    <p className="text-sm text-red-600 flex items-center">
+                      <Icon icon="mdi:alert-circle" className="w-4 h-4 mr-1" />
+                      {errors.contents}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-6 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={() => setCurrentStep(1)}
+              className="flex items-center space-x-2 text-slate-600 hover:text-slate-800 font-medium transition-colors duration-200"
+              disabled={isLoading}
+            >
+              <Icon icon="mdi:arrow-left" className="w-5 h-5" />
+              <span>Back</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCurrentStep(3)}
               className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
               disabled={isLoading}
             >
@@ -306,13 +654,13 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
           </div>
         </div>
 
-        {/* Step 2: Media & Display */}
-        <div className={`space-y-6 ${currentStep === 2 ? "block" : "hidden"}`}>
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
+        {/* Step 3: Media & Display */}
+        <div className={`space-y-6 ${currentStep === 3 ? "block" : "hidden"}`}>
+          <div className="bg-gradient-to-br from-orange-50 to-pink-50 rounded-2xl p-6 border border-orange-100">
             <h3 className="text-lg font-semibold text-slate-800 mb-6">
               Media & Display Options
             </h3>
-            <div className="bg-white rounded-xl p-4 border border-purple-200 mb-6">
+            <div className="bg-white rounded-xl p-4 border border-orange-200 mb-6">
               <div className="flex items-center justify-between">
                 <label className="flex items-center space-x-3 cursor-pointer">
                   <input
@@ -320,7 +668,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
                     name="is_image_list"
                     checked={formData.is_image_list}
                     onChange={handleInputChange}
-                    className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
+                    className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
                     disabled={isLoading}
                   />
                   <div>
@@ -338,7 +686,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
                       ? "mdi:view-list"
                       : "mdi:view-gallery"
                   }
-                  className="w-6 h-6 text-purple-500"
+                  className="w-6 h-6 text-orange-500"
                 />
               </div>
             </div>
@@ -349,7 +697,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
               <button
                 type="button"
                 onClick={addImage}
-                className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+                className="bg-gradient-to-r from-orange-500 to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
                 disabled={isLoading}
               >
                 <Icon icon="mdi:plus-circle" className="w-4 h-4" />
@@ -391,7 +739,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
                       placeholder="Paste image URL here..."
                       value={image}
                       onChange={(e) => handleImageChange(index, e.target.value)}
-                      color="purple"
+                      color="orange"
                       className="w-full"
                       disabled={isLoading}
                     />
@@ -421,7 +769,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
                   <button
                     type="button"
                     onClick={addImage}
-                    className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                    className="bg-gradient-to-r from-orange-500 to-pink-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
                     disabled={isLoading}
                   >
                     Add First Image
@@ -430,10 +778,11 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
               )}
             </div>
           </div>
+
           <div className="flex items-center justify-between pt-6 border-t border-slate-200">
             <button
               type="button"
-              onClick={() => setCurrentStep(1)}
+              onClick={() => setCurrentStep(2)}
               className="flex items-center space-x-2 text-slate-600 hover:text-slate-800 font-medium transition-colors duration-200"
               disabled={isLoading}
             >

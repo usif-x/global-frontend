@@ -1,5 +1,5 @@
 "use client";
-import CourseService from "@/services/courseService"; // Make sure this path is correct
+import CourseService from "@/services/courseService";
 import { Icon } from "@iconify/react";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -193,6 +193,13 @@ const CourseCard = ({ course, onEdit, onDelete }) => {
     Advanced: "bg-red-100 text-red-700",
   };
 
+  // Course type badge colors
+  const typeColor = {
+    Basic: "bg-blue-100 text-blue-700",
+    Premium: "bg-purple-100 text-purple-700",
+    Specialty: "bg-indigo-100 text-indigo-700",
+  };
+
   return (
     <div className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-slate-200/60 overflow-hidden transition-all duration-300 hover:scale-[1.02]">
       {/* Image Header */}
@@ -210,6 +217,20 @@ const CourseCard = ({ course, onEdit, onDelete }) => {
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+
+        {/* Course Type Badge */}
+        {course.course_type && (
+          <div className="absolute top-4 left-4">
+            <div
+              className={`px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm ${
+                typeColor[course.course_type] || "bg-slate-100 text-slate-700"
+              } bg-opacity-90`}
+            >
+              {course.course_type}
+            </div>
+          </div>
+        )}
+
         {/* Action Buttons */}
         <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <button
@@ -227,6 +248,7 @@ const CourseCard = ({ course, onEdit, onDelete }) => {
             <Icon icon="mdi:delete" className="w-4 h-4" />
           </button>
         </div>
+
         {/* Title Overlay */}
         <div className="absolute bottom-4 left-4 right-4">
           <h3 className="text-xl font-bold text-white mb-1 line-clamp-1">
@@ -244,7 +266,6 @@ const CourseCard = ({ course, onEdit, onDelete }) => {
           <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-3">
             <p className="text-2xl font-bold text-cyan-600">${course.price}</p>
           </div>
-          {/* Use course_level from schema */}
           {course.course_level && (
             <div
               className={`px-3 py-1.5 rounded-full text-sm font-medium capitalize ${
@@ -256,8 +277,8 @@ const CourseCard = ({ course, onEdit, onDelete }) => {
           )}
         </div>
 
+        {/* Course Features */}
         <div className="flex flex-wrap gap-3 mb-4">
-          {/* Use course_duration from schema */}
           {course.course_duration && (
             <div className="flex items-center space-x-2 bg-slate-100 rounded-lg px-3 py-2 text-sm">
               <Icon
@@ -269,6 +290,24 @@ const CourseCard = ({ course, onEdit, onDelete }) => {
               </span>
             </div>
           )}
+
+          {course.has_certificate && (
+            <div className="flex items-center space-x-2 bg-green-100 rounded-lg px-3 py-2 text-sm">
+              <Icon icon="mdi:certificate" className="w-4 h-4 text-green-600" />
+              <span className="text-green-700">Certificate</span>
+            </div>
+          )}
+
+          {course.has_online_content && (
+            <div className="flex items-center space-x-2 bg-purple-100 rounded-lg px-3 py-2 text-sm">
+              <Icon
+                icon="mdi:cloud-download"
+                className="w-4 h-4 text-purple-600"
+              />
+              <span className="text-purple-700">Online Content</span>
+            </div>
+          )}
+
           {hasImages && (
             <div className="flex items-center space-x-2 bg-slate-100 rounded-lg px-3 py-2 text-sm">
               <Icon
@@ -282,13 +321,14 @@ const CourseCard = ({ course, onEdit, onDelete }) => {
           )}
         </div>
 
-        {/* The expandable section is only useful if there are multiple images */}
-        {hasImages && course.images.length > 1 && (
+        {/* Expandable Details Button */}
+        {((hasImages && course.images.length > 1) ||
+          (course.has_online_content && course.contents?.length > 0)) && (
           <button
             onClick={() => setShowDetails(!showDetails)}
             className="w-full flex items-center justify-center space-x-2 text-cyan-600 hover:text-cyan-700 bg-cyan-50 hover:bg-cyan-100 rounded-xl py-3 px-4 transition-all duration-200 font-medium"
           >
-            <span>{showDetails ? "Hide Gallery" : "View Gallery"}</span>
+            <span>{showDetails ? "Hide Details" : "View Details"}</span>
             <Icon
               icon={showDetails ? "mdi:chevron-up" : "mdi:chevron-down"}
               className="w-5 h-5 transition-transform duration-200"
@@ -296,33 +336,90 @@ const CourseCard = ({ course, onEdit, onDelete }) => {
           </button>
         )}
 
-        {/* Expanded details now only show the gallery, as 'modules' is removed */}
-        {showDetails && hasImages && course.images.length > 1 && (
+        {/* Expanded Details */}
+        {showDetails && (
           <div className="mt-4 space-y-4 animate-in slide-in-from-top-4 duration-300">
-            <div className="bg-purple-50 rounded-xl p-4">
-              <h4 className="text-sm font-semibold text-purple-800 mb-3 flex items-center">
-                <Icon icon="mdi:image-multiple" className="w-5 h-5 mr-2" />
-                Gallery
-              </h4>
-              <div className="grid grid-cols-3 gap-3">
-                {course.images.slice(1).map((image, index) => (
-                  <div
-                    key={index}
-                    className="group relative aspect-square rounded-lg overflow-hidden"
-                  >
-                    <img
-                      src={image}
-                      alt={`${course.name} ${index + 2}`}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-                  </div>
-                ))}
+            {/* Certificate Details */}
+            {course.has_certificate && course.certificate_type && (
+              <div className="bg-green-50 rounded-xl p-4">
+                <h4 className="text-sm font-semibold text-green-800 mb-2 flex items-center">
+                  <Icon icon="mdi:certificate" className="w-5 h-5 mr-2" />
+                  Certificate Information
+                </h4>
+                <p className="text-sm text-green-700">
+                  Type: {course.certificate_type}
+                </p>
               </div>
-            </div>
+            )}
+
+            {/* Online Content */}
+            {course.has_online_content && course.contents?.length > 0 && (
+              <div className="bg-purple-50 rounded-xl p-4">
+                <h4 className="text-sm font-semibold text-purple-800 mb-3 flex items-center">
+                  <Icon
+                    icon="mdi:book-open-page-variant"
+                    className="w-5 h-5 mr-2"
+                  />
+                  Course Content ({course.contents.length} items)
+                </h4>
+                <div className="space-y-2">
+                  {course.contents.slice(0, 3).map((content, index) => (
+                    <div
+                      key={content.id || index}
+                      className="flex items-center space-x-3 text-sm"
+                    >
+                      <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                      <div className="flex-1">
+                        <p className="font-medium text-purple-800">
+                          {content.title}
+                        </p>
+                        {content.description && (
+                          <p className="text-purple-600 text-xs truncate">
+                            {content.description}
+                          </p>
+                        )}
+                      </div>
+                      <div className="px-2 py-1 bg-purple-200/60 rounded text-xs text-purple-700 capitalize">
+                        {content.content_type}
+                      </div>
+                    </div>
+                  ))}
+                  {course.contents.length > 3 && (
+                    <div className="text-xs text-purple-600 text-center py-1">
+                      +{course.contents.length - 3} more items
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Image Gallery */}
+            {hasImages && course.images.length > 1 && (
+              <div className="bg-orange-50 rounded-xl p-4">
+                <h4 className="text-sm font-semibold text-orange-800 mb-3 flex items-center">
+                  <Icon icon="mdi:image-multiple" className="w-5 h-5 mr-2" />
+                  Gallery
+                </h4>
+                <div className="grid grid-cols-3 gap-3">
+                  {course.images.slice(1).map((image, index) => (
+                    <div
+                      key={index}
+                      className="group relative aspect-square rounded-lg overflow-hidden"
+                    >
+                      <img
+                        src={image}
+                        alt={`${course.name} ${index + 2}`}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -355,6 +452,14 @@ const DeleteModal = ({ course, onConfirm, onCancel, isLoading }) => {
                   You're about to permanently delete:
                 </p>
                 <p className="font-semibold text-slate-800">"{course?.name}"</p>
+                <div className="mt-2 text-xs text-slate-500">
+                  <p>Type: {course?.course_type || "N/A"}</p>
+                  <p>Level: {course?.course_level || "N/A"}</p>
+                  {course?.has_online_content &&
+                    course?.contents?.length > 0 && (
+                      <p>Content items: {course.contents.length}</p>
+                    )}
+                </div>
               </div>
               <p className="text-sm text-red-600 font-medium">
                 ⚠️ This action cannot be undone
