@@ -95,10 +95,10 @@ class CourseService {
    * @param {number|string} courseId The ID of the course to enroll in.
    * Corresponds to: POST /courses/{course_id}/enroll
    */
-  static async enrollInCourse(courseId) {
+  static async enrollInCourse(data) {
     // The second argument `null` is for the request body, which we don't need here.
     // The third argument `true` indicates that this is an authenticated request.
-    return await postData(`/courses/${courseId}/enroll`, null, true);
+    return await postData(`/courses/enroll`, data, true);
   }
 }
 

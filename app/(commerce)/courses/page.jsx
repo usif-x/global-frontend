@@ -6,6 +6,34 @@ import Link from "next/link";
 // ✅ Use the server-safe axios helper for server-side fetching
 import { getData } from "@/lib/server-axios";
 
+export const metadata = {
+  title: "Diving Courses",
+  description: "Diving Courses",
+  keywords: ["diving", "courses", "certifications"],
+  robots: "index, follow",
+  authors: [{ name: "Yousseif Muhammad" }],
+  openGraph: {
+    title: "Global Divers Hurghada - Diving Courses",
+    description: "Global Divers Hurghada - Diving Courses",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Global Divers Hurghada - Diving Courses",
+    description: "Global Divers Hurghada - Diving Courses",
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
+  alternates: {
+    canonical: "https://www.globaldivershurghada.com/courses",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+  },
+  category: "education",
+};
+
 // --- Helper Functions (Updated for Course Data) ---
 
 // ✅ IMPROVED: Handles a price of 0 gracefully.

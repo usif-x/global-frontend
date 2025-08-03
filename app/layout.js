@@ -1,7 +1,7 @@
-import { IBM_Plex_Sans_Arabic} from "next/font/google";
+import ConditionalLayout from "@/components/layout/ConditionalLayout.jsx";
+import { IBM_Plex_Sans_Arabic } from "next/font/google";
+import { ToastContainer } from "react-toastify";
 import "./globals.css";
-import { ToastContainer } from 'react-toastify';
-import ConditionalLayout from '@/components/layout/ConditionalLayout.jsx';
 
 const IBM = IBM_Plex_Sans_Arabic({
   subsets: ["latin", "arabic"],
@@ -9,10 +9,23 @@ const IBM = IBM_Plex_Sans_Arabic({
 });
 export const metadata = {
   title: {
-    template: 'Global Divers - %s',
-    default: 'Global Divers Hurghada',
+    template: "Global Divers - %s",
+    default: "Global Divers Hurghada",
   },
   description: "Experience the Red Sea's Beauty",
+  keywords:
+    "diving, trips, packages, courses, destinations, safari, egypt, red sea, diving trips, diving packages, diving courses, diving destinations, diving safari, diving egypt, diving red sea",
+  creator: "Global Divers Hurghada",
+  publisher: "Global Divers Hurghada",
+  language: "en-US",
+  robots: "index, follow",
+  alternates: {
+    canonical: "https://www.globaldivershurghada.com",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+  },
 };
 
 export default function RootLayout({ children }) {
@@ -20,20 +33,18 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${IBM.className}`}>
         <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick={true}
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light"
-          />
-        <ConditionalLayout>
-          {children}
-        </ConditionalLayout>
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick={true}
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
+        <ConditionalLayout>{children}</ConditionalLayout>
       </body>
     </html>
   );

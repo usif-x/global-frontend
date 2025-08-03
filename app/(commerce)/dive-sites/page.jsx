@@ -3,6 +3,29 @@ import { Icon } from "@iconify/react";
 
 export const metadata = {
   title: "Dive Site Directory",
+  description: "A comprehensive list of our curated diving locations",
+  keywords: "diving, sites, destinations",
+  robots: "index, follow",
+  authors: [{ name: "Yousseif Muhammad" }],
+  openGraph: {
+    title: "Dive Site Directory ",
+    description: "A comprehensive list of our curated diving locations",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Dive Site Directory ",
+    description: "A comprehensive list of our curated diving locations",
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
+  alternates: {
+    canonical: "https://www.globaldivershurghada.com/dive-sites",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+  },
 };
 
 // --- Data Fetching Function ---

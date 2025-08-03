@@ -658,6 +658,135 @@ const TestimonialsModal = ({ user, onClose, token }) => {
   );
 };
 
+import CourseService from "@/services/courseService";
+
+// --- Enroll User in Course Modal ---
+const EnrollCourseModal = ({ user, onClose, onEnrolled, token }) => {
+  const [courses, setCourses] = useState([]);
+  const [selectedCourseId, setSelectedCourseId] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingCourses, setIsFetchingCourses] = useState(true);
+
+  useEffect(() => {
+    // Fetch the list of all available courses when the modal opens
+    const fetchCourses = async () => {
+      try {
+        setIsFetchingCourses(true);
+        const courseData = await CourseService.getAll(); // Using your existing service
+        setCourses(courseData || []);
+      } catch (error) {
+        toast.error("Failed to fetch course list.");
+        console.error("Course fetch error:", error);
+      } finally {
+        setIsFetchingCourses(false);
+      }
+    };
+
+    if (user) {
+      fetchCourses();
+    }
+  }, [user]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedCourseId) {
+      toast.warn("Please select a course to enroll the user in.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Use the new Admin-specific enrollment function
+      await UserService.enrollUserToCourse(token, {
+        userId: user.id,
+        courseId: parseInt(selectedCourseId),
+      });
+
+      toast.success(`${user.full_name} has been enrolled successfully!`);
+      onEnrolled(); // This will trigger a refresh on the main page
+      onClose();
+    } catch (error) {
+      // The backend service already handles "already enrolled" errors.
+      toast.error(error.response?.data?.detail || "Enrollment failed.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <ModalWrapper visible={!!user} onClose={onClose}>
+      <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full animate-in fade-in-0 zoom-in-95">
+        <div className="relative bg-gradient-to-r from-green-500 to-teal-600 text-white p-6">
+          <h2 className="text-2xl font-bold">Enroll User in Course</h2>
+          <p className="text-green-100 mt-1">For user: {user?.full_name}</p>
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl"
+          >
+            <Icon icon="mdi:close" className="w-6 h-6" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {isFetchingCourses ? (
+            <div className="text-center p-4">
+              <Icon
+                icon="mdi:loading"
+                className="animate-spin w-8 h-8 mx-auto text-teal-500"
+              />
+              <p className="mt-2 text-slate-500">Loading courses...</p>
+            </div>
+          ) : (
+            <div>
+              <label
+                htmlFor="course-select"
+                className="block text-sm font-medium text-slate-700 mb-2"
+              >
+                Select a Course
+              </label>
+              <select
+                id="course-select"
+                value={selectedCourseId}
+                onChange={(e) => setSelectedCourseId(e.target.value)}
+                className="block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md"
+                required
+                disabled={isLoading}
+              >
+                <option value="" disabled>
+                  -- Please choose a course --
+                </option>
+                {courses.map((course) => (
+                  <option key={course.id} value={course.id}>
+                    {course.name} (${course.price})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          <div className="pt-4 border-t border-slate-200">
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-green-500 to-teal-600 text-white font-bold py-3 px-4 rounded-xl disabled:opacity-70 flex items-center justify-center space-x-2"
+              disabled={isLoading || isFetchingCourses || courses.length === 0}
+            >
+              {isLoading ? (
+                <>
+                  <Icon icon="mdi:loading" className="animate-spin w-5 h-5" />
+                  <span>Enrolling...</span>
+                </>
+              ) : (
+                <>
+                  <Icon icon="mdi:school" className="w-5 h-5" />
+                  <span>Enroll User</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </ModalWrapper>
+  );
+};
+
 const UserService = {
   async getAllUsers(token, params) {
     const query = new URLSearchParams(params).toString();
@@ -707,6 +836,22 @@ const UserService = {
     );
     if (!response.ok) throw new Error("Failed to delete user.");
   },
+
+  async enrollUserToCourse(token, { userId, courseId }) {
+    const response = await fetch(`http://localhost:8000/admins/enroll-user`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ user_id: userId, course_id: courseId }),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Failed to enroll user.");
+    }
+    return response.json();
+  },
 };
 
 //=================================================================
@@ -720,6 +865,7 @@ export default function UserManagementPage() {
   const [editingUser, setEditingUser] = useState(null);
   const [changingPasswordUser, setChangingPasswordUser] = useState(null);
   const [viewingTestimonials, setViewingTestimonials] = useState(null);
+  const [enrollingUser, setEnrollingUser] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     page_size: 20,
@@ -1003,6 +1149,13 @@ export default function UserManagementPage() {
                 }
                 width={18}
               />
+            </button>
+            <button
+              onClick={() => setEnrollingUser(row.original)}
+              className="p-2 text-slate-500 rounded-full transition-all duration-200 hover:bg-green-100 hover:text-green-600"
+              title="Enroll in Course"
+            >
+              <Icon icon="mdi:school-outline" width={18} />
             </button>
 
             <button
@@ -1451,6 +1604,15 @@ export default function UserManagementPage() {
         <TestimonialsModal
           user={viewingTestimonials}
           onClose={() => setViewingTestimonials(null)}
+          token={token}
+        />
+      )}
+
+      {enrollingUser && (
+        <EnrollCourseModal
+          user={enrollingUser}
+          onClose={() => setEnrollingUser(null)}
+          onEnrolled={() => fetchUsers(pagination.page)}
           token={token}
         />
       )}

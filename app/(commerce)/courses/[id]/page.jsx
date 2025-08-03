@@ -7,8 +7,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-// --- Helper Functions (Adapted for Course Data) ---
-
 const formatPrice = (price) => {
   if (price === 0) return "Inquire for Price";
   if (price == null) return "N/A";

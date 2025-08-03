@@ -450,7 +450,9 @@ export default function TestimonialManagementPage() {
                 ? "approved"
                 : testimonial.is_accepted === false
                 ? "pending"
-                : "rejected",
+                : testimonial.is_rejected === true
+                ? "rejected"
+                : "unknown",
           };
         })
       );
@@ -629,7 +631,10 @@ export default function TestimonialManagementPage() {
         accessorKey: "is_accepted",
         header: "Status",
         cell: ({ row }) => (
-          <StatusBadge isAccepted={row.original.is_accepted} />
+          <StatusBadge
+            isAccepted={row.original.is_accepted}
+            isRejected={row.original.is_rejected}
+          />
         ),
       },
       {

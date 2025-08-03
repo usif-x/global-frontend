@@ -9,7 +9,7 @@ const CourseCard = ({ course }) => (
   <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col md:flex-row transition-transform duration-300 hover:scale-[1.02] hover:shadow-xl">
     <div className="md:w-1/3 flex-shrink-0">
       <Image
-        src={course.thumbnail_url || "/image/course-placeholder.png"}
+        src={course.image || "/image/course-placeholder.png"}
         alt={course.title}
         width={400}
         height={225}
@@ -24,17 +24,14 @@ const CourseCard = ({ course }) => (
         </p>
       </div>
       <div className="mt-4">
-        <div className="flex justify-between items-center mb-2 text-sm text-gray-500">
-          <span>Progress</span>
-          <span>{course.progress}%</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2.5">
-          <div
-            className="bg-cyan-500 h-2.5 rounded-full"
-            style={{ width: `${course.progress}%` }}
-          ></div>
-        </div>
-        <Link href={`/courses/${course.slug}`} passHref>
+        <p className="text-sm text-gray-600">
+          <span className="font-semibold">Level:</span> {course.course_level}
+        </p>
+        <p className="text-sm text-gray-600">
+          <span className="font-semibold">Duration:</span>{" "}
+          {course.course_duration}
+        </p>
+        <Link href={`/courses/${course.id}/enroll`} passHref>
           <span className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 text-white font-semibold rounded-lg hover:bg-cyan-700 transition-colors">
             <Icon icon="mdi:arrow-right-circle" className="h-5 w-5" />
             Continue Course

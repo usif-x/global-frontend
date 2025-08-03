@@ -5,6 +5,29 @@ import Script from "next/script";
 
 export const metadata = {
   title: "Site Destinations | Your Dive Company",
+  description: "Explore our complete, curated list of premier dive sites",
+  keywords: "diving, sites, destinations",
+  robots: "index, follow",
+  authors: [{ name: "Yousseif Muhammad" }],
+  openGraph: {
+    title: "Site Destinations ",
+    description: "Explore our complete, curated list of premier dive sites",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Site Destinations | Your Dive Company",
+    description: "Explore our complete, curated list of premier dive sites",
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
+  alternates: {
+    canonical: "https://www.globaldivershurghada.com/destinations",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+  },
 };
 
 // ✅ Server Component

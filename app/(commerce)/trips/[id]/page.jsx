@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 
 // Enhanced helper functions
+
 const formatPrice = (price, hasDiscount, discountPercentage) => {
   if (!price) return { original: "0", discounted: null, discount: null };
 

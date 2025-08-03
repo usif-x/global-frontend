@@ -6,6 +6,33 @@ import Link from "next/link";
 // ✅ Correct Import: Use the server-safe axios helper for server components
 import { getData } from "@/lib/server-axios";
 
+export const metadata = {
+  title: "Packages ",
+  description: "Explore our complete, curated list of premier dive packages",
+  keywords: "diving, packages, tours",
+  robots: "index, follow",
+  authors: [{ name: "Yousseif Muhammad" }],
+  openGraph: {
+    title: "Packages ",
+    description: "Explore our complete, curated list of premier dive packages",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Packages ",
+    description: "Explore our complete, curated list of premier dive packages",
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
+  alternates: {
+    canonical: "https://www.globaldivershurghada.com/packages",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+  },
+};
+
 const PackagesPage = async () => {
   let packages = []; // Default to an empty array
 

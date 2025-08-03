@@ -238,7 +238,7 @@ const Navbar = () => {
                           className="rounded-full"
                         />
                         <div className="text-white">
-                          <p>{user?.full_name}</p>
+                          <p>{user?.full_name || user?.name}</p>
                           <p className="text-sm opacity-75">{user?.email}</p>
                         </div>
                       </div>
@@ -415,7 +415,7 @@ const Navbar = () => {
                     priority
                   />
                   <div className="text-white">
-                    <p>{user?.full_name}</p>
+                    <p>{user?.full_name || user?.name}</p>
                     <p className="text-sm opacity-75">{user?.email}</p>
                   </div>
                 </div>

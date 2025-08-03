@@ -4,6 +4,33 @@ import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
 
+export const metadata = {
+  title: "Trips ",
+  description: "Explore our complete, curated list of premier dive trips",
+  keywords: "diving, trips, destinations",
+  robots: "index, follow",
+  authors: [{ name: "Yousseif Muhammad" }],
+  openGraph: {
+    title: "Trips ",
+    description: "Explore our complete, curated list of premier dive trips",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Trips ",
+    description: "Explore our complete, curated list of premier dive trips",
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
+  alternates: {
+    canonical: "https://www.globaldivershurghada.com/trips",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+  },
+};
+
 // Helper functions can be defined at the top level as they are pure.
 const formatPrice = (price, hasDiscount, discountPercentage) => {
   if (hasDiscount && discountPercentage) {
