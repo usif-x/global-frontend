@@ -410,71 +410,87 @@ const TripPage = ({ params, searchParams }) => {
   // Handle form submission (show payment modal)
   const handleFormSubmit = (e) => {
     e.preventDefault();
+    setError(null);
 
+    // 1. Check if user is logged in
+    if (!isAuthenticated) {
+      toast.warn("Please log in to book your trip.");
+      router.push(`/login?redirect=/trips/${id}`);
+      return;
+    }
+
+    // 2. Validate the form
     if (validateForm()) {
       setShowPaymentModal(true);
+    } else {
+      toast.error("Please correct the errors in the form.");
     }
   };
 
-  // Handle payment method selection and booking submission
+  // Handle payment method selection and INVOICE submission
   const handlePaymentMethodSelect = async (paymentMethod) => {
     if (isSubmitting) return;
 
     try {
       setIsSubmitting(true);
-
       const totalPrice = calculateTotalPrice();
 
-      // Prepare booking payload
-      const bookingPayload = {
-        trip_id: parseInt(id),
-        trip_name: tripData.name,
-        total_price: totalPrice,
-        booking_date: new Date().toISOString(),
-        status: "pending",
-        payment_method: paymentMethod,
-        ...formData,
-        fullName: formData.fullName.trim(),
-        email: formData.email.trim().toLowerCase(),
-        phone: formData.phone.trim(),
-        hotelName: formData.hotelName.trim(),
-        roomNumber: formData.roomNumber.trim(),
-        specialRequests: formData.specialRequests.trim() || "",
+      // Map frontend payment method to backend-expected value
+      const apiPaymentMethod =
+        paymentMethod === "online" ? "credit_card" : "cash";
+
+      // Construct the items for the invoice
+      const items = [];
+      const bookingDetails = `on ${formData.preferredDate} for guest at ${formData.hotelName} (Room #${formData.roomNumber})`;
+
+      if (formData.adults > 0) {
+        items.push({
+          name: `${tripData.name} (Adults)`,
+          description: `Trip booking for adults. ${bookingDetails}`,
+          quantity: formData.adults,
+          price: (tripData.adult_price || 0) * formData.adults,
+        });
+      }
+      if (formData.children > 0) {
+        items.push({
+          name: `${tripData.name} (Children)`,
+          description: `Trip booking for children. ${bookingDetails}`,
+          quantity: formData.children,
+          price: (tripData.child_price || 0) * formData.children,
+        });
+      }
+
+      // Prepare INVOICE payload
+      const invoicePayload = {
+        user_id: user.id,
+        amount: totalPrice,
+        currency: formData.currency,
+        invoice_for: "trip",
+        pay_method: apiPaymentMethod,
+        items: items,
       };
 
-      // Submit booking
-      const bookingResponse = await postData("/bookings", bookingPayload, true);
+      // Submit INVOICE creation request
+      const invoiceResponse = await postData("/invoices", invoicePayload, true);
 
-      console.log("Booking submitted successfully:", bookingResponse);
+      toast.success(`Invoice #${invoiceResponse.id} created successfully!`);
 
-      // Redirect based on payment method
-      if (paymentMethod === "online") {
-        // Redirect to payment gateway
-        router.push(
-          `/payment?booking=${bookingResponse.id}&amount=${totalPrice}`
-        );
+      // Redirect based on payment method and backend response
+      if (apiPaymentMethod === "credit_card" && invoiceResponse.pay_url) {
+        // For online payments, redirect to the URL provided by the backend
+        window.location.href = invoiceResponse.pay_url;
       } else {
-        // Redirect to success page for cash payment
+        // For cash payments, redirect to a success page
         router.push(
-          `/booking/success?booking=${
-            bookingResponse.id || "confirmed"
-          }&payment=cash`
+          `/booking/success?invoice_id=${invoiceResponse.id}&payment=cash`
         );
       }
     } catch (error) {
-      console.error("Booking submission failed:", error);
-
-      let errorMessage = "Booking submission failed. Please try again later.";
-
-      if (error.response?.status === 400) {
-        errorMessage = error.response.data?.message || "Invalid booking data";
-      } else if (error.response?.status === 401) {
-        errorMessage = "Authentication required. Please log in.";
-      } else if (error.response?.status === 409) {
-        errorMessage = "This time slot is no longer available";
-      }
-
+      console.error("Invoice creation failed:", error);
+      const errorMessage =
+        error.response?.data?.detail || "Booking failed. Please try again.";
       setError(errorMessage);
+      toast.error(errorMessage);
       setShowPaymentModal(false);
     } finally {
       setIsSubmitting(false);

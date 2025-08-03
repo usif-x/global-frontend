@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import Alert from "../ui/Alert";
 import CourseManagement from "./components/course/Course";
+import InvoiceManagementPage from "./components/invoices/Invoices";
 const AdminDashboard = () => {
   const { admin, logout, isAdmin } = useAuthStore();
   const router = useRouter();
@@ -82,8 +83,8 @@ const AdminDashboard = () => {
     ...(admin?.admin_level === 2
       ? [
           {
-            id: "bookings",
-            label: "Bookings",
+            id: "invoices",
+            label: "Invoices",
             icon: "mdi:calendar-check",
             color: "text-indigo-500",
           },
@@ -133,8 +134,8 @@ const AdminDashboard = () => {
         return <AdminManagementPage />;
       case "testimonials":
         return <TestimonialManagementPage />;
-      case "bookings":
-        return <BookingsContent />;
+      case "invoices":
+        return <InvoiceManagementPage />;
       case "payments":
         return <PaymentsContent />;
       case "analytics":
@@ -357,18 +358,18 @@ const DashboardContent = () => (
   </div>
 );
 
-const BookingsContent = () => (
+const InvoicesContent = () => (
   <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
     <div className="flex items-center justify-between mb-6">
       <h2 className="text-xl font-semibold text-gray-900">
-        Bookings Management
+        Invoices Management
       </h2>
       <button className="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 transition-colors">
         <Icon icon="mdi:calendar-plus" className="w-4 h-4 mr-2 inline" />
         New Booking
       </button>
     </div>
-    <p className="text-gray-600">Track and manage all customer bookings.</p>
+    <p className="text-gray-600">Track and manage all customer invoices.</p>
   </div>
 );
 
