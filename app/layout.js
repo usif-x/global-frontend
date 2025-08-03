@@ -12,6 +12,9 @@ export const metadata = {
     template: "Global Divers - %s",
     default: "Global Divers Hurghada",
   },
+  icons: {
+    icon: "/favicon.ico",
+  },
   description: "Experience the Red Sea's Beauty",
   keywords:
     "diving, trips, packages, courses, destinations, safari, egypt, red sea, diving trips, diving packages, diving courses, diving destinations, diving safari, diving egypt, diving red sea",
@@ -26,6 +29,23 @@ export const metadata = {
     width: "device-width",
     initialScale: 1,
   },
+  openGraph: {
+    title: "Global Divers Hurghada",
+    description: "Experience the Red Sea's Beauty",
+    url: "https://www.globaldivershurghada.com",
+    siteName: "Global Divers Hurghada",
+    images: [
+      {
+        url: "https://www.globaldivershurghada.com/hero-bg.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Scuba diving in the Red Sea",
+      },
+    ],
+    type: "website",
+    locale: "en_US",
+  },
+  themeColor: "#004b63",
 };
 
 export default function RootLayout({ children }) {
