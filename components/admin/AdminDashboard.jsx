@@ -62,42 +62,59 @@ const AdminDashboard = () => {
       icon: "mdi:account-group",
       color: "text-cyan-500",
     },
-    {
-      id: "admins",
-      label: "Admins",
-      icon: "mdi:shield-account",
-      color: "text-red-500",
-    },
+
+    ...(admin?.admin_level === 2
+      ? [
+          {
+            id: "admins",
+            label: "Admins",
+            icon: "mdi:shield-account",
+            color: "text-red-500",
+          },
+        ]
+      : []),
     {
       id: "testimonials",
       label: "Testimonials",
       icon: "mdi:comment-quote",
       color: "text-yellow-500",
     },
-    {
-      id: "bookings",
-      label: "Bookings",
-      icon: "mdi:calendar-check",
-      color: "text-indigo-500",
-    },
-    {
-      id: "payments",
-      label: "Payments",
-      icon: "mdi:credit-card",
-      color: "text-emerald-500",
-    },
+    ...(admin?.admin_level === 2
+      ? [
+          {
+            id: "bookings",
+            label: "Bookings",
+            icon: "mdi:calendar-check",
+            color: "text-indigo-500",
+          },
+        ]
+      : []),
+    ...(admin?.admin_level === 2
+      ? [
+          {
+            id: "payments",
+            label: "Payments",
+            icon: "mdi:credit-card",
+            color: "text-emerald-500",
+          },
+        ]
+      : []),
     {
       id: "analytics",
       label: "Analytics",
       icon: "mdi:chart-line",
       color: "text-pink-500",
     },
-    {
-      id: "settings",
-      label: "Settings",
-      icon: "mdi:cog",
-      color: "text-gray-500",
-    },
+    ...(admin?.admin_level === 2
+      ? [
+          {
+            id: "settings",
+            label: "Settings",
+            icon: "mdi:cog",
+            color: "text-gray-500",
+          },
+        ]
+      : []),
   ];
 
   const renderContent = () => {

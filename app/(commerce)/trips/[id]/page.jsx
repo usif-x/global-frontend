@@ -219,6 +219,22 @@ const PaymentModal = ({
               </div>
             </div>
           </div>
+          {/* cancelation Cotice */}
+          <div className="mt-6 p-4 bg-red-50 rounded-xl border border-red-200">
+            <div className="flex items-start">
+              <Icon
+                icon="lucide:shield-minus"
+                className="w-5 h-5 text-red-600 mr-2 mt-0.5 flex-shrink-0"
+              />
+              <div className="text-sm text-red-800">
+                <p className="font-semibold mb-1">Cancellation Policy</p>
+                <p>
+                  If you cancel your activity or trip, 50% of the amount you
+                  paid will be deducted. The remaining 50% will be refunded.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -824,7 +840,9 @@ const TripPage = ({ params, searchParams }) => {
                   <div className="space-y-4">
                     <Input
                       name="fullName"
-                      value={isAuthenticated ? user?.name : formData.fullName}
+                      value={
+                        isAuthenticated ? user?.full_name : formData.fullName
+                      }
                       onChange={(e) =>
                         handleInputChange("fullName", e.target.value)
                       }

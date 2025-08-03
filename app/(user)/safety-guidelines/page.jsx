@@ -335,7 +335,7 @@ const SafetyGuidelines = () => {
                 </div>
                 <div className="text-center">
                   <Icon
-                    icon="material-symbols:oxygen-saturation"
+                    icon="healthicons:oxygen-tank-24px"
                     className="w-6 h-6 mx-auto text-orange-500 mb-1"
                   />
                   <p className="font-medium text-gray-900">Air</p>
@@ -1033,7 +1033,7 @@ const SafetyGuidelines = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <Icon
-                    icon="solar:lifebuoy-bold"
+                    icon="cil:child"
                     className="w-4 h-4 text-blue-500 mt-0.5"
                   />
                   <span>Children must be supervised by adults</span>
@@ -1131,14 +1131,14 @@ const SafetyGuidelines = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <Icon
-                    icon="solar:hand-bold"
+                    icon="streamline-plump:no-touch-sign-solid"
                     className="w-4 h-4 text-green-500 mt-0.5"
                   />
                   <span>Keep hands close to your body</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Icon
-                    icon="solar:fish-bold"
+                    icon="ion:fish"
                     className="w-4 h-4 text-green-500 mt-0.5"
                   />
                   <span>Maintain safe distance from all animals</span>
@@ -1395,7 +1395,7 @@ const SafetyGuidelines = () => {
             </div>
             <div className="bg-white p-4 rounded-lg border border-gray-200 text-center">
               <Icon
-                icon="healthicons:oxygen-tank-24px"
+                icon="mdi:oxygen-tank"
                 className="w-8 h-8 text-red-500 mx-auto mb-2"
               />
               <h4 className="font-semibold text-gray-900 text-sm">
