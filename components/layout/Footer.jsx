@@ -2,6 +2,7 @@
 
 import WavesArea from "@/components/ui/Wave";
 import { Icon } from "@iconify/react";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -16,7 +17,7 @@ export default function Home() {
         <div style={{ textAlign: "center", padding: "2rem" }}>
           <h2
             style={{ fontSize: "2rem", marginBottom: "1rem" }}
-            className="font-aquaphonic"
+            className="font-summer-splash text-center"
           >
             READY TO DIVE ?
           </h2>
@@ -153,15 +154,24 @@ export default function Home() {
               </p>
               <div className="flex flex-col md:flex-row md:items-center md:space-x-6 text-sm text-white/60">
                 <div className="flex space-x-6 mb-2 md:mb-0">
-                  <a href="#" className="hover:text-white transition-colors">
+                  <Link
+                    href="/privacy-policy"
+                    className="hover:text-white transition-colors"
+                  >
                     Privacy Policy
-                  </a>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Terms of Service
-                  </a>
-                  <a href="#" className="hover:text-white transition-colors">
+                  </Link>
+                  <Link
+                    href="/terms-and-conditions"
+                    className="hover:text-white transition-colors"
+                  >
+                    Terms and Conditions
+                  </Link>
+                  <Link
+                    href="/safety-guidelines"
+                    className="hover:text-white transition-colors"
+                  >
                     Safety Guidelines
-                  </a>
+                  </Link>
                 </div>
                 <span className="text-white/40">|</span>
                 <a

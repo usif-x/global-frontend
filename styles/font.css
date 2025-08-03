@@ -1,11 +1,21 @@
 @font-face {
-  font-family: 'Aquaphonic';
-  src: url('../public/font/aquaphonic/Aquaphonic-Damp.otf') format('truetype');
+  font-family: "Aquaphonic";
+  src: url("../public/font/aquaphonic/Aquaphonic-Damp.otf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "SummerSplash";
+  src: url("../public/font/summer-splash/SummerSplashDisplay/OpenType-PS/Summer\ Splash\ Display.otf")
+    format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
-
 .font-aquaphonic {
-  font-family: 'Aquaphonic', sans-serif;
+  font-family: "Aquaphonic", sans-serif;
+}
+
+.font-summer-splash {
+  font-family: "SummerSplash", sans-serif;
 }

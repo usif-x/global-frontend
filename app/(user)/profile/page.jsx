@@ -1,5 +1,6 @@
 "use client";
 
+import Alert from "@/components/ui/Alert";
 import CoursesTab from "@/components/user/profile/Courses";
 import InvoicesTab from "@/components/user/profile/Invoices";
 import NotificationsTab from "@/components/user/profile/Notifications";
@@ -100,6 +101,18 @@ const UserProfileSidebar = ({ user, activeTab, onTabChange }) => {
         </div>
         <div className="text-xs text-gray-400 border-t border-gray-200 pt-3 mt-2 w-full">
           Member since: {formatDate(user?.created_at)}
+        </div>
+        <div className="text-xs text-gray-400 border-t border-gray-200 pt-3 mt-2 w-full">
+          Updated at: {formatDate(user?.updated_at)}
+        </div>
+        <div className="text-xs text-gray-400 border-t border-gray-200 pt-3 mt-2 w-full">
+          Last login: {formatDate(user?.last_login)}
+        </div>
+        <div className="mt-2">
+          <Alert
+            children="If you want to delete your account, please contact us from chatbot."
+            type="danger"
+          />
         </div>
       </div>
       <nav className="mt-6 space-y-1">
