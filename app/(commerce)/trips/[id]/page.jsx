@@ -11,6 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 // Enhanced helper functions
 
@@ -255,8 +256,8 @@ const TripPage = ({ params, searchParams }) => {
   const [error, setError] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
+    fullName: user?.full_name || "",
+    email: user?.email || "",
     phone: "",
     nationality: "",
     hotelName: "",
@@ -478,12 +479,10 @@ const TripPage = ({ params, searchParams }) => {
       // Redirect based on payment method and backend response
       if (apiPaymentMethod === "credit_card" && invoiceResponse.pay_url) {
         // For online payments, redirect to the URL provided by the backend
-        window.location.href = invoiceResponse.pay_url;
+        router.push("/invoices");
       } else {
         // For cash payments, redirect to a success page
-        router.push(
-          `/booking/success?invoice_id=${invoiceResponse.id}&payment=cash`
-        );
+        router.push(`/invoices`);
       }
     } catch (error) {
       console.error("Invoice creation failed:", error);
@@ -856,9 +855,7 @@ const TripPage = ({ params, searchParams }) => {
                   <div className="space-y-4">
                     <Input
                       name="fullName"
-                      value={
-                        isAuthenticated ? user?.full_name : formData.fullName
-                      }
+                      value={formData.fullName}
                       onChange={(e) =>
                         handleInputChange("fullName", e.target.value)
                       }
@@ -872,7 +869,7 @@ const TripPage = ({ params, searchParams }) => {
                     <Input
                       name="email"
                       type="email"
-                      value={isAuthenticated ? user?.email : formData.email}
+                      value={formData.email}
                       onChange={(e) =>
                         handleInputChange("email", e.target.value)
                       }

@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 import Alert from "../ui/Alert";
 import CourseManagement from "./components/course/Course";
 import InvoiceManagementPage from "./components/invoices/Invoices";
+import AdminSettingsPage from "./components/setting/Setting";
 const AdminDashboard = () => {
   const { admin, logout, isAdmin } = useAuthStore();
   const router = useRouter();
@@ -141,7 +142,7 @@ const AdminDashboard = () => {
       case "analytics":
         return <AnalyticsContent />;
       case "settings":
-        return <SettingsContent />;
+        return <AdminSettingsPage />;
       default:
         return <DashboardContent />;
     }

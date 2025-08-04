@@ -257,17 +257,30 @@ const Navbar = () => {
                           Admin Dashboard
                         </Link>
                       ) : userType === "user" ? (
-                        <Link
-                          href="/profile"
-                          className="flex items-center gap-3 px-4 py-3 text-white hover:bg-gradient-to-r hover:from-cyan-500/20 hover:to-blue-500/20 transition-all duration-200 hover:text-cyan-300"
-                          onClick={handleProfileDropdownClose}
-                        >
-                          <Icon
-                            icon="lucide:user"
-                            className="w-[18px] h-[18px] opacity-70"
-                          />
-                          My Account
-                        </Link>
+                        <>
+                          <Link
+                            href="/profile"
+                            className="flex items-center gap-3 px-4 py-3 text-white hover:bg-gradient-to-r hover:from-cyan-500/20 hover:to-blue-500/20 transition-all duration-200 hover:text-cyan-300"
+                            onClick={handleProfileDropdownClose}
+                          >
+                            <Icon
+                              icon="lucide:user"
+                              className="w-[18px] h-[18px] opacity-70"
+                            />
+                            My Account
+                          </Link>
+                          <Link
+                            href={"/invoices"}
+                            className="flex items-center gap-3 px-4 py-3 text-white hover:bg-gradient-to-r hover:from-cyan-500/20 hover:to-blue-500/20 transition-all duration-200 hover:text-cyan-300"
+                            onClick={handleProfileDropdownClose}
+                          >
+                            <Icon
+                              icon="lucide:file-text"
+                              className="w-[18px] h-[18px] opacity-70"
+                            />
+                            My Invoices
+                          </Link>
+                        </>
                       ) : null}
                     </div>
 
