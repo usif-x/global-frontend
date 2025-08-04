@@ -3,6 +3,7 @@
 "use client";
 
 import Input from "@/components/ui/Input";
+import MarkdownRenderer from "@/components/ui/MarkdownRender";
 import Select from "@/components/ui/Select";
 import { getData, postData } from "@/lib/axios";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -667,7 +668,7 @@ const TripPage = ({ params, searchParams }) => {
                 About This Trip
               </h2>
               <div className="prose prose-lg text-gray-600 max-w-none">
-                <p className="leading-relaxed">{tripData.description}</p>
+                <MarkdownRenderer content={tripData.description} />
               </div>
             </div>
 

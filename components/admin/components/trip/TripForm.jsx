@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import MarkdownEditor from "@/components/ui/MarkdownEditor";
 import Select from "@/components/ui/Select";
 import tripService from "@/services/tripService";
 import { Icon } from "@iconify/react";
@@ -166,6 +167,13 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
       [name]: type === "checkbox" ? checked : value,
     }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+  const handleDescriptionChange = (newValue) => {
+    setFormData((prev) => ({ ...prev, description: newValue || "" }));
+    // Clear error on change
+    if (errors.description) {
+      setErrors((prev) => ({ ...prev, description: "" }));
+    }
   };
 
   const handleSelectChange = (name, selectedOption) => {
@@ -356,23 +364,16 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
                 disabled={isLoading}
               />
               <div>
-                <textarea
-                  name="description"
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Trip Description (Supports Markdown)
+                </label>
+                <MarkdownEditor
                   value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Describe this amazing trip..."
-                  rows={4}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 resize-none transition-all duration-200 ${
-                    errors.description ? "border-red-500" : "border-slate-300"
-                  }`}
+                  onChange={handleDescriptionChange}
+                  placeholder="Describe this amazing trip using Markdown for lists, bold text, etc."
+                  error={errors.description}
                   disabled={isLoading}
                 />
-                {errors.description && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center">
-                    <Icon icon="mdi:alert-circle" className="w-4 h-4 mr-1" />
-                    {errors.description}
-                  </p>
-                )}
               </div>
               <Select
                 icon="mdi:package-variant"

@@ -1,6 +1,7 @@
 "use client";
 import AdminManagementPage from "@/components/admin/components/admin/ModernAdmin";
 import AnalyticsContent from "@/components/admin/components/analytic/AnalyticsContent";
+import GalleryManagementPage from "@/components/admin/components/gallery/Gallery";
 import PackageManagement from "@/components/admin/components/package/Package";
 import TestimonialManagementPage from "@/components/admin/components/testimonial/Testimonial";
 import TripManagement from "@/components/admin/components/trip/Trip";
@@ -63,6 +64,12 @@ const AdminDashboard = () => {
       label: "Users",
       icon: "mdi:account-group",
       color: "text-cyan-500",
+    },
+    {
+      id: "gallery",
+      label: "Gallery",
+      icon: "mdi:image-multiple",
+      color: "text-pink-500",
     },
 
     ...(admin?.admin_level === 2
@@ -131,6 +138,8 @@ const AdminDashboard = () => {
         return <CourseManagement />;
       case "users":
         return <UserManagementPage />;
+      case "gallery":
+        return <GalleryManagementPage />;
       case "admins":
         return <AdminManagementPage />;
       case "testimonials":
@@ -358,22 +367,6 @@ const DashboardContent = () => (
     </div>
   </div>
 );
-
-const InvoicesContent = () => (
-  <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-    <div className="flex items-center justify-between mb-6">
-      <h2 className="text-xl font-semibold text-gray-900">
-        Invoices Management
-      </h2>
-      <button className="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 transition-colors">
-        <Icon icon="mdi:calendar-plus" className="w-4 h-4 mr-2 inline" />
-        New Booking
-      </button>
-    </div>
-    <p className="text-gray-600">Track and manage all customer invoices.</p>
-  </div>
-);
-
 const PaymentsContent = () => (
   <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
     <div className="flex items-center justify-between mb-6">
@@ -388,19 +381,6 @@ const PaymentsContent = () => (
     <p className="text-gray-600">
       Monitor payments, refunds, and financial transactions.
     </p>
-  </div>
-);
-
-const SettingsContent = () => (
-  <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-    <div className="flex items-center justify-between mb-6">
-      <h2 className="text-xl font-semibold text-gray-900">System Settings</h2>
-      <button className="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 transition-colors">
-        <Icon icon="mdi:content-save" className="w-4 h-4 mr-2 inline" />
-        Save Changes
-      </button>
-    </div>
-    <p className="text-gray-600">Configure system settings and preferences.</p>
   </div>
 );
 
