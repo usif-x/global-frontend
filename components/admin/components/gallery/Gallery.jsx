@@ -481,6 +481,39 @@ export default function GalleryManagementPage() {
     fetchImages(pagination.page, pagination.per_page, searchTerm);
   };
 
+  const handleEditImageName = async (imageId, currentName) => {
+    const { value: newName } = await Swal.fire({
+      title: "Edit Image Name",
+      input: "text",
+      inputValue: currentName,
+      showCancelButton: true,
+      confirmButtonText: "Save Changes",
+      confirmButtonColor: "#3b82f6", // blue-500
+      cancelButtonColor: "#6b7280", // slate-500
+      inputValidator: (value) => {
+        if (!value || value.trim() === "") {
+          return "Name cannot be empty!";
+        }
+        if (value.trim() === currentName) {
+          return "Please enter a new name.";
+        }
+      },
+    });
+
+    if (newName && newName.trim() !== "" && newName.trim() !== currentName) {
+      try {
+        await GalleryService.updateImage(imageId, { name: newName.trim() });
+        toast.success(`Image name updated to "${newName.trim()}".`);
+        fetchImages(pagination.page, pagination.per_page, searchTerm);
+      } catch (error) {
+        toast.error(
+          "Failed to update image name. " +
+            (error.response?.data?.detail || error.message)
+        );
+      }
+    }
+  };
+
   const handleDeleteImage = async (imageId, imageName) => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -621,6 +654,15 @@ export default function GalleryManagementPage() {
               title="View Details"
             >
               <Icon icon="mdi:eye-outline" width={18} />
+            </button>
+            <button
+              onClick={() =>
+                handleEditImageName(row.original.id, row.original.name)
+              }
+              className="p-2 text-slate-500 rounded-full hover:bg-yellow-100 hover:text-yellow-600 transition-colors"
+              title="Edit Name"
+            >
+              <Icon icon="mdi:pencil-outline" width={18} />
             </button>
             <a
               href={`${
