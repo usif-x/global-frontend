@@ -1,7 +1,7 @@
 import { getData } from "@/lib/server-axios";
 
 export async function generateMetadata({ params }) {
-  const { id } = params;
+  const { id } = await params;
 
   // Fetch course data
   let courseData;

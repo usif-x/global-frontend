@@ -11,6 +11,10 @@ class AdminService {
     return await getData("/admins/get-all-users", true);
   }
 
+  static async getRecentUsers() {
+    return await getData("/admins/get-recent-users", true);
+  }
+
   // Get all admins
   static async getAdmins() {
     return await getData("/admins/get-all-admins", true);

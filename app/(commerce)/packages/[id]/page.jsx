@@ -39,7 +39,7 @@ const formatDuration = (duration) => {
 
 // --- Main Server Component ---
 const PackagePage = async ({ params }) => {
-  const { id } = params;
+  const { id } = await params;
 
   // STEP 1: Fetch all necessary data on the server in parallel
   let packageData, trips;

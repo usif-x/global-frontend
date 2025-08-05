@@ -25,10 +25,6 @@ export const metadata = {
   alternates: {
     canonical: "https://www.globaldivershurghada.com",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-  },
   openGraph: {
     title: "Global Divers Hurghada",
     description: "Experience the Red Sea's Beauty",
@@ -45,7 +41,11 @@ export const metadata = {
     type: "website",
     locale: "en_US",
   },
-  themeColor: "#004b63",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }) {

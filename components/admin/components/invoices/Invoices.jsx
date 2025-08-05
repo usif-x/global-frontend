@@ -1,7 +1,7 @@
 "use client";
 
 import Input from "@/components/ui/Input";
-import InvoiceService from "@/services/invoiceServices";
+import InvoiceService from "@/services/invoiceService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Icon } from "@iconify/react";
 import {

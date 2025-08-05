@@ -1,5 +1,4 @@
 import { Icon } from "@iconify/react";
-import Head from "next/head";
 import Link from "next/link";
 import Script from "next/script";
 
@@ -24,24 +23,17 @@ export const metadata = {
   alternates: {
     canonical: "https://www.globaldivershurghada.com/destinations",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 // ✅ Server Component
 export default async function DestinationsPage() {
   return (
     <>
-      <Head>
-        <title>Site Directory</title>
-        <meta
-          name="description"
-          content="Explore our complete, curated list of premier dive sites"
-        />
-      </Head>
-
       <section className="bg-white py-24 text-center border-b border-sky-200">
         <div className="max-w-4xl mx-auto px-6">
           <div className="flex justify-center mb-6">

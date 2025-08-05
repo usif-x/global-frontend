@@ -19,10 +19,11 @@ export const metadata = {
   alternates: {
     canonical: "https://www.globaldivershurghada.com/safety-guidelines",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function SafetyGuidelinesLayout({ children }) {

@@ -27,10 +27,11 @@ export const metadata = {
   alternates: {
     canonical: "https://www.globaldivershurghada.com/packages",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 const PackagesPage = async () => {
@@ -84,7 +85,7 @@ const PackagesPage = async () => {
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-sky-600 to-cyan-600 text-white">
         <div className="absolute inset-0 bg-black/20" />
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/30 to-cyan-600/30" />
+        <div className="absolute inset-0 bg-[url('/image/hero-pattern.png')] opacity-10"></div>
         <div className="absolute inset-0 opacity-10">
           <Icon
             icon="mdi:waves"
@@ -101,7 +102,7 @@ const PackagesPage = async () => {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <div className="bg-white/20 px-4 py-2 rounded-full text-sm font-bold inline-block mb-6">
+          <div className="bg-white/20 px-4 py-2 rounded-full text-sm font-bold inline-block mb-6 mt-6">
             <Icon icon="mdi:package-variant" className="w-4 h-4 inline mr-2" />
             Travel Packages
           </div>

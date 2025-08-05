@@ -1,6 +1,7 @@
 // app/courses/[id]/page.js
 
 import Input from "@/components/ui/Input"; // Assuming your components are here
+import MarkdownRenderer from "@/components/ui/MarkdownRender";
 import { getData, postData } from "@/lib/server-axios";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
@@ -21,10 +22,12 @@ const formatDuration = (duration) => {
 // --- Main Server Component ---
 
 const CourseDetailPage = async ({ params, searchParams }) => {
-  const { id } = params;
+  const { id } = await params;
 
   // STEP 1: FETCH DATA ON THE SERVER
   let courseData;
+
+  const resolvedSearchParams = await searchParams;
 
   try {
     courseData = await getData(`/courses/${id}`);
@@ -156,10 +159,7 @@ const CourseDetailPage = async ({ params, searchParams }) => {
                 />
                 About This Course
               </h2>
-              <div className="prose prose-lg text-gray-600 max-w-none">
-                <p>{courseData.description}</p>
-                {/* You can add more detailed descriptions here if your API provides them */}
-              </div>
+              <MarkdownRenderer content={courseData.description} />
             </div>
 
             {/* Example of a "What You'll Learn" section. Add this data to your API if desired. */}
@@ -200,13 +200,13 @@ const CourseDetailPage = async ({ params, searchParams }) => {
                   Request Information
                 </h3>
 
-                {searchParams.error && (
+                {resolvedSearchParams.error && (
                   <div
                     className="bg-red-50 border-l-4 border-red-400 text-red-700 p-4 rounded-lg mb-6"
                     role="alert"
                   >
                     <p className="font-bold">Error</p>
-                    <p>{decodeURIComponent(searchParams.error)}</p>
+                    <p>{decodeURIComponent(resolvedSearchParams.error)}</p>
                   </div>
                 )}
 

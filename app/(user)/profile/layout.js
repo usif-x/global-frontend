@@ -19,10 +19,11 @@ export const metadata = {
   alternates: {
     canonical: "https://www.globaldivershurghada.com/profile",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function ProfileLayout({ children }) {

@@ -1,7 +1,7 @@
 import { getData } from "@/lib/axios";
 
 export async function generateMetadata({ params }) {
-  const { id } = params;
+  const { id } = await params;
 
   // Fetch package data
   let packageData;

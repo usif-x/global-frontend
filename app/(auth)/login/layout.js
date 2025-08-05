@@ -19,10 +19,11 @@ export const metadata = {
   alternates: {
     canonical: "https://www.globaldivershurghada.com/login",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function LoginLayout({ children }) {

@@ -22,10 +22,11 @@ export const metadata = {
   alternates: {
     canonical: "https://www.globaldivershurghada.com/dive-sites",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 // --- Data Fetching Function ---

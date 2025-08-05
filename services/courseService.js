@@ -38,6 +38,10 @@ class CourseService {
     return await getData(`/courses/${id}/content`, true);
   }
 
+  static async getByIdWithContentForUser(id) {
+    return await getData(`/users/me/courses/${id}/content`, true);
+  }
+
   /**
    * Creates a new course.
    * Requires admin authentication.

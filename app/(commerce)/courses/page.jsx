@@ -27,13 +27,13 @@ export const metadata = {
   alternates: {
     canonical: "https://www.globaldivershurghada.com/courses",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-  },
   category: "education",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 // --- Helper Functions (Updated for Course Data) ---
 
 // ✅ IMPROVED: Handles a price of 0 gracefully.
@@ -97,6 +97,7 @@ const CoursesPage = async () => {
       {/* --- Hero Section --- */}
       <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-teal-600 text-white">
         <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-[url('/image/hero-pattern.png')] opacity-10"></div>
         <div className="absolute inset-0 opacity-10">
           <Icon
             icon="lucide:book-open-check"
@@ -108,7 +109,7 @@ const CoursesPage = async () => {
           />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <div className="bg-white/20 px-4 py-2 rounded-full text-sm font-bold inline-block mb-6">
+          <div className="bg-white/20 px-4 py-2 rounded-full text-sm font-bold inline-block mb-6 mt-6">
             <Icon
               icon="lucide:graduation-cap"
               className="w-4 h-4 inline mr-2"

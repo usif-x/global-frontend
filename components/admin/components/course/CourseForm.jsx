@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import MarkdownEditor from "@/components/ui/MarkdownEditor";
 import Select from "@/components/ui/Select";
 import CourseService from "@/services/courseService";
 import { Icon } from "@iconify/react";
@@ -185,6 +186,14 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
     }
   };
 
+  const handleDescriptionChange = (newValue) => {
+    setFormData((prev) => ({ ...prev, description: newValue || "" }));
+    // Clear error on change
+    if (errors.description) {
+      setErrors((prev) => ({ ...prev, description: "" }));
+    }
+  };
+
   // Updated to three steps
   const steps = [
     { id: 1, name: "Core Info", icon: "mdi:information-variant-circle" },
@@ -304,15 +313,11 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
                 disabled={isLoading}
               />
               <div>
-                <textarea
-                  name="description"
+                <MarkdownEditor
                   value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="A brief, engaging description of the course..."
-                  rows={4}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 resize-none transition-all duration-200 ${
-                    errors.description ? "border-red-500" : "border-slate-300"
-                  }`}
+                  onChange={handleDescriptionChange}
+                  placeholder="Describe this amazing course using Markdown for lists, bold text, etc."
+                  error={errors.description}
                   disabled={isLoading}
                 />
                 {errors.description && (

@@ -1,7 +1,9 @@
 "use client";
+import MarkdownRenderer from "@/components/ui/MarkdownRender";
 import CourseService from "@/services/courseService";
 import { Icon } from "@iconify/react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import "plyr-react/plyr.css";
 import { useEffect, useRef, useState } from "react";
@@ -43,7 +45,8 @@ const CourseContentPage = () => {
 
         // Try to fetch with content (for enrolled users)
         try {
-          const courseWithContent = await CourseService.getByIdWithContent(id);
+          const courseWithContent =
+            await CourseService.getByIdWithContentForUser(id);
           setCourse(courseWithContent);
           // Sort contents by order
           const sortedContents = (courseWithContent.contents || []).sort(
@@ -591,7 +594,7 @@ const CourseContentPage = () => {
   // If not enrolled, show enrollment page
   if (!isEnrolled) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 mt-20">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
             {/* Course Header */}
@@ -600,9 +603,7 @@ const CourseContentPage = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h1 className="text-3xl font-bold mb-2">{course.name}</h1>
-                    <p className="text-blue-100 text-lg">
-                      {course.description}
-                    </p>
+                    <MarkdownRenderer content={course.description} />
                     <div className="flex items-center space-x-6 mt-4">
                       <div className="flex items-center space-x-2">
                         <Icon icon="mdi:clock-outline" className="w-5 h-5" />
@@ -682,13 +683,13 @@ const CourseContentPage = () => {
                     </div>
                   </div>
 
-                  <button
-                    onClick={handleEnrollment}
+                  <Link
+                    href={`/courses/${course.id}`}
                     className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 inline-flex items-center space-x-3"
                   >
                     <Icon icon="mdi:school" className="w-6 h-6" />
                     <span>Enroll Now - ${course.price}</span>
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>

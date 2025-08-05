@@ -25,10 +25,11 @@ export const metadata = {
   alternates: {
     canonical: "https://www.globaldivershurghada.com/trips",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 // Helper functions can be defined at the top level as they are pure.
@@ -56,11 +57,13 @@ const formatDuration = (duration) => {
 
 // ✅ This is an async Server Component that accepts searchParams
 const TripsPage = async ({ searchParams }) => {
+  const resolvedSearchParams = await searchParams;
+
   // 1. Get filter state from URL query parameters, with defaults
-  const searchTerm = searchParams.search || "";
-  const selectedPackage = searchParams.package || "all";
-  const priceRange = searchParams.price || "all";
-  const sortBy = searchParams.sort || "name";
+  const searchTerm = resolvedSearchParams.search || "";
+  const selectedPackage = resolvedSearchParams.package || "all";
+  const priceRange = resolvedSearchParams.price || "all";
+  const sortBy = resolvedSearchParams.sort || "name";
 
   // 2. Fetch all necessary data on the server
   let trips = [];
@@ -181,10 +184,12 @@ const TripsPage = async ({ searchParams }) => {
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-sky-600 to-cyan-600 text-white">
         <div className="absolute inset-0 bg-black/20"></div>
-        <div className="absolute inset-0 bg-[url('/images/hero-pattern.svg')] opacity-10"></div>
+        <div className="absolute inset-0 bg-[url('/image/hero-pattern.png')] opacity-10"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">All Trips</h1>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 mt-6">
+              All Trips
+            </h1>
             <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
               Your next adventure starts here — browse trips for beginners and
               thrill-seekers alike.
