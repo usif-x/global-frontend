@@ -186,6 +186,18 @@ const Navbar = () => {
               </Link>
             </li>
 
+            <li>
+              <Link
+                href="/center-location"
+                className="relative group py-2 px-1"
+              >
+                <span className="relative z-10 transition-colors duration-300 group-hover:text-cyan-300">
+                  Diving Centers Locations
+                </span>
+                <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300 group-hover:w-full"></div>
+              </Link>
+            </li>
+
             {/* Dive Sites Link */}
           </ul>
 
@@ -413,6 +425,18 @@ const Navbar = () => {
                   onClick={handleMobileMenuLinkClick}
                 >
                   <span className="relative z-10">Best Sellers</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg scale-0 group-hover:scale-100 transition-transform duration-300"></div>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/center-location"
+                  className="block text-2xl md:text-3xl text-white hover:text-cyan-300 transition-all duration-300 py-2 relative group"
+                  onClick={handleMobileMenuLinkClick}
+                >
+                  <span className="relative z-10">
+                    Diving Centers Locations
+                  </span>
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg scale-0 group-hover:scale-100 transition-transform duration-300"></div>
                 </Link>
               </li>

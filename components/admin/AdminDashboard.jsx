@@ -2,6 +2,7 @@
 import AdminManagementPage from "@/components/admin/components/admin/ModernAdmin";
 import AnalyticsContent from "@/components/admin/components/analytic/AnalyticsContent";
 import BestSellingMain from "@/components/admin/components/bestselling/BestSelling";
+import DiveCenterManagementPage from "@/components/admin/components/divecenter/DiveCenter";
 import GalleryManagementPage from "@/components/admin/components/gallery/Gallery";
 import PackageManagement from "@/components/admin/components/package/Package";
 import PaymentsContent from "@/components/admin/components/payment/Payment";
@@ -344,6 +345,12 @@ const AdminDashboard = () => {
       icon: "mdi:image-multiple",
       color: "text-pink-500",
     },
+    {
+      id: "divecenters",
+      label: "Dive Centers",
+      icon: "mdi:diving",
+      color: "text-teal-500",
+    },
 
     ...(admin?.admin_level === 2
       ? [
@@ -423,6 +430,8 @@ const AdminDashboard = () => {
         return <UserManagementPage />;
       case "gallery":
         return <GalleryManagementPage />;
+      case "divecenters":
+        return <DiveCenterManagementPage />;
       case "admins":
         return <AdminManagementPage />;
       case "testimonials":
