@@ -612,13 +612,6 @@ const TripPage = ({ params, searchParams }) => {
               <Icon icon="lucide:users" className="w-5 h-5 mr-2" />
               <span>Up to {maxPersons} people</span>
             </div>
-            <div className="flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
-              <Icon
-                icon="lucide:star"
-                className="w-5 h-5 mr-2 fill-current text-yellow-400"
-              />
-              <span>4.8 (126 reviews)</span>
-            </div>
             {tripData.difficulty && (
               <div className="flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
                 <Icon icon="lucide:trending-up" className="w-5 h-5 mr-2" />

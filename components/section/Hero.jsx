@@ -10,7 +10,7 @@ const Hero = ({
       subtitle: "Experience the Red Sea's Beauty",
       description:
         "Book your dive today and get ready for an unforgettable adventure!",
-      buttonText: "Book A Dive",
+      buttonText: "Book A Trip",
       buttonLink: "/trips",
     },
     {

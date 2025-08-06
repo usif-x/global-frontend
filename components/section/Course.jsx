@@ -1,6 +1,7 @@
 import { getData } from "@/lib/server-axios";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
+import MarkdownRenderer from "../ui/MarkdownRender";
 
 // --- Reusable UI Components ---
 const ErrorMessage = ({ error }) => (
@@ -145,9 +146,9 @@ const CourseCard = ({ course }) => {
             <span className="font-medium">Equipment</span>
           </div>
         </div>
-        <p className="text-gray-500 text-sm leading-relaxed flex-grow">
-          {course.description}
-        </p>
+        <div className="line-clamp-2">
+          <MarkdownRenderer content={course.description} />
+        </div>
         <div className="mt-auto pt-4">
           <button
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl 

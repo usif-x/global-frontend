@@ -1,4 +1,5 @@
 import Input from "@/components/ui/Input";
+import MarkdownRenderer from "@/components/ui/MarkdownRender";
 import { getData } from "@/lib/server-axios";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
@@ -381,13 +382,6 @@ const TripsPage = async ({ searchParams }) => {
                           <Icon icon="lucide:clock" className="w-4 h-4 mr-1" />
                           {formatDuration(trip.duration)}
                         </div>
-                        <div className="flex items-center text-yellow-500">
-                          <Icon
-                            icon="lucide:star"
-                            className="w-4 h-4 fill-current"
-                          />
-                          <span className="ml-1 text-gray-600">4.8</span>
-                        </div>
                       </div>
                       <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-sky-600 transition-colors duration-200">
                         {trip.name}
@@ -401,9 +395,9 @@ const TripsPage = async ({ searchParams }) => {
                           {packageInfo.name}
                         </div>
                       )}
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">
-                        {trip.description}
-                      </p>
+                      <div className="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">
+                        <MarkdownRenderer content={trip.description} />
+                      </div>
                       <div className="flex items-center text-gray-600 text-sm mb-4">
                         <Icon icon="lucide:users" className="w-4 h-4 mr-2" />
                         Max {trip.maxim_person} people

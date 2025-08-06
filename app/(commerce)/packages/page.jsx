@@ -4,6 +4,7 @@ import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
 // ✅ Correct Import: Use the server-safe axios helper for server components
+import MarkdownRenderer from "@/components/ui/MarkdownRender";
 import { getData } from "@/lib/server-axios";
 
 export const metadata = {
@@ -184,20 +185,13 @@ const PackagesPage = async () => {
                       <span className="bg-sky-100 text-sky-600 px-3 py-1 rounded-full text-sm font-semibold">
                         Package
                       </span>
-                      <span className="flex items-center text-yellow-500">
-                        <Icon
-                          icon="mdi:star"
-                          className="w-4 h-4 fill-current"
-                        />
-                        <span className="ml-1 text-gray-600 text-sm">4.9</span>
-                      </span>
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 flex-grow">
                       {pkg.name}
                     </h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                      {pkg.description}
-                    </p>
+                    <div className="text-gray-600 text-sm mb-4 line-clamp-3">
+                      <MarkdownRenderer content={pkg.description} />
+                    </div>
                     <div className="mt-auto text-sky-600 group-hover:text-sky-700 font-semibold text-sm flex items-center gap-1 transition-colors">
                       View Details{" "}
                       <Icon

@@ -31,3 +31,26 @@ html {
     @apply duration-150;
   }
 }
+
+/* app/globals.css */
+
+.hero-bestseller-slider .swiper-pagination-custom .swiper-pagination-bullet {
+  background-color: #d1d5db; /* gray-300 */
+  opacity: 1;
+  width: 8px;
+  height: 8px;
+  transition: background-color 0.3s ease, width 0.3s ease;
+}
+
+.hero-bestseller-slider .swiper-pagination-custom .swiper-pagination-bullet-active {
+  background-color: #f97316; /* orange-500 */
+  width: 24px;
+  border-radius: 9999px;
+}
+
+/* Hide default swiper nav on small screens if our custom one is outside */
+@media (max-width: 640px) {
+  .swiper-button-prev-custom, .swiper-button-next-custom {
+    display: none;
+  }
+}

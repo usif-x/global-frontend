@@ -4,6 +4,7 @@ import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
 // ✅ Use the server-safe axios helper for server-side fetching
+import MarkdownRenderer from "@/components/ui/MarkdownRender";
 import { getData } from "@/lib/server-axios";
 
 export const metadata = {
@@ -95,7 +96,7 @@ const CoursesPage = async () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* --- Hero Section --- */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-teal-600 text-white">
+      <div className="relative overflow-hidden bg-gradient-to-br from-sky-600 to-cyan-600 text-white">
         <div className="absolute inset-0 bg-black/20" />
         <div className="absolute inset-0 bg-[url('/image/hero-pattern.png')] opacity-10"></div>
         <div className="absolute inset-0 opacity-10">
@@ -205,9 +206,9 @@ const CoursesPage = async () => {
                     <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
                       {course.name}
                     </h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">
-                      {course.description}
-                    </p>
+                    <div className="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">
+                      <MarkdownRenderer content={course.description} />
+                    </div>
                     <div className="flex items-center justify-between text-sm text-gray-500 border-t pt-4 mt-auto">
                       <div className="flex items-center gap-2">
                         <Icon

@@ -1,0 +1,261 @@
+"use client";
+
+import BestSellingService from "@/services/bestsellingService";
+import { Icon } from "@iconify/react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
+
+// --- Reusable Normalization Function ---
+const normalizeApiItem = (apiItem) => {
+  const isCourse = apiItem.item_type === "course";
+  const itemData = isCourse ? apiItem.course : apiItem.trip;
+  if (!itemData) return null;
+
+  return {
+    id: itemData.id,
+    type: apiItem.item_type,
+    name: itemData.name,
+    description: itemData.description,
+    image: itemData.images?.[0],
+    price: isCourse ? itemData.price : itemData.adult_price,
+    childPrice: !isCourse ? itemData.child_price : null,
+    href: isCourse ? `/courses/${itemData.id}` : `/trips/${itemData.id}`,
+    rank: apiItem.ranking_position,
+    included: itemData.included || [],
+    duration: itemData.duration || (isCourse ? itemData.course_duration : null),
+    hasDiscount: !isCourse ? itemData.has_discount : false,
+    discountPercentage: !isCourse ? itemData.discount_percentage : null,
+  };
+};
+
+// --- Hero Card Component ---
+const BestSellerHeroCard = ({ item, isActive }) => {
+  const isCourse = item.type === "course";
+  const badge = {
+    color: isCourse ? "bg-blue-100 text-blue-800" : "bg-sky-100 text-sky-800",
+    label: isCourse ? "Course" : "Trip",
+  };
+
+  return (
+    <div
+      className={`relative rounded-2xl overflow-hidden shadow-xl transition-all duration-500 ${
+        isActive ? "scale-100 opacity-100" : "scale-95 opacity-80"
+      } bg-white`}
+    >
+      {/* Image */}
+      <div className="relative h-64 sm:h-80">
+        <Image
+          src={item.image || "/placeholder.jpg"}
+          alt={item.name}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 50vw"
+          priority
+        />
+        {/* Rank and Type Badges */}
+        <div className="absolute top-4 left-4 flex gap-2">
+          <span className="bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded-full">
+            Top #{item.rank}
+          </span>
+          <span
+            className={`${badge.color} text-xs font-semibold px-2 py-1 rounded-full`}
+          >
+            {badge.label}
+          </span>
+        </div>
+        {/* Discount Badge */}
+        {item.hasDiscount && (
+          <span className="absolute top-4 right-4 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+            {item.discountPercentage}% OFF
+          </span>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="p-6">
+        <h3 className="text-xl font-bold text-gray-800 line-clamp-2">
+          {item.name}
+        </h3>
+        <p className="text-gray-600 text-sm mt-2 line-clamp-3">
+          {item.description.replace(/#|\n/g, " ")}
+        </p>
+
+        {/* Price and Duration */}
+        <div className="mt-4 flex items-center justify-between">
+          <div>
+            <p className="text-lg font-semibold text-gray-900">
+              ${parseFloat(item.price).toFixed(2)}
+              {item.childPrice && (
+                <span className="text-sm text-gray-500">
+                  {" "}
+                  / ${item.childPrice} (child)
+                </span>
+              )}
+            </p>
+            {item.duration && (
+              <p className="text-sm text-gray-500">
+                Duration: {item.duration} {item.duration > 1 ? "days" : "day"}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Included Items */}
+        {item.included.length > 0 && (
+          <div className="mt-4">
+            <p className="text-sm font-medium text-gray-700">
+              What’s Included:
+            </p>
+            <ul className="mt-2 space-y-1 text-sm text-gray-600">
+              {item.included.slice(0, 3).map((inc, index) => (
+                <li key={index} className="flex items-center gap-2">
+                  <Icon icon="mdi:check-circle" className="text-sky-500" />
+                  {inc}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* CTA */}
+        <Link
+          href={item.href}
+          className="mt-6 inline-block w-full text-center bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors"
+        >
+          View Details
+        </Link>
+      </div>
+    </div>
+  );
+};
+
+// --- Main Hero Section Component ---
+const BestSellersHero = () => {
+  const [items, setItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTopItems = async () => {
+      try {
+        const response = await BestSellingService.getAll({
+          per_page: 6,
+          sort_by: "ranking_position",
+          sort_order: "asc",
+        });
+        const normalized = response.items.map(normalizeApiItem).filter(Boolean);
+        setItems(normalized);
+      } catch (error) {
+        console.error("Failed to load hero items:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTopItems();
+  }, []);
+
+  return (
+    <section className="py-12 bg-sky-50">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+          {/* Left Side: Text Content */}
+          <div className="space-y-6">
+            <h2 className="text-4xl font-bold text-gray-800">
+              Discover Our Best Sellers
+            </h2>
+            <p className="text-lg text-gray-600">
+              Hand-picked by our community, these are the most popular courses
+              and trips to help you excel and explore.
+            </p>
+            <ul className="space-y-4">
+              {[
+                {
+                  icon: "mdi:star-check-outline",
+                  text: "Top-rated and expert-recommended",
+                },
+                {
+                  icon: "mdi:clock-fast",
+                  text: "Save time with proven choices",
+                },
+                {
+                  icon: "mdi:rocket-launch-outline",
+                  text: "Fast-track your skills and adventures",
+                },
+              ].map((feature, index) => (
+                <li key={index} className="flex items-center gap-3">
+                  <Icon
+                    icon={feature.icon}
+                    className="text-blue-500 text-2xl"
+                  />
+                  <span className="text-gray-700">{feature.text}</span>
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/bestsellers"
+              className="inline-block bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              View All Best Sellers
+            </Link>
+          </div>
+
+          {/* Right Side: Swiper Slider */}
+          <div className="relative">
+            {isLoading ? (
+              <div className="flex justify-center items-center h-96">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+              </div>
+            ) : (
+              <Swiper
+                modules={[Autoplay, Navigation, Pagination]}
+                spaceBetween={20}
+                slidesPerView={1}
+                breakpoints={{
+                  640: { slidesPerView: 1, spaceBetween: 20 },
+                  768: { slidesPerView: 2, spaceBetween: 30 },
+                }}
+                autoplay={{ delay: 5000, disableOnInteraction: false }}
+                navigation={{
+                  nextEl: ".swiper-button-next",
+                  prevEl: ".swiper-button-prev",
+                }}
+                pagination={{ clickable: true, el: ".swiper-pagination" }}
+                className="pb-12"
+              >
+                {items.map((item) => (
+                  <SwiperSlide key={item.id}>
+                    {({ isActive }) => (
+                      <BestSellerHeroCard item={item} isActive={isActive} />
+                    )}
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            )}
+            {/* Custom Navigation */}
+            <div className="swiper-button-prev absolute top-1/2 -left-12 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md cursor-pointer z-10">
+              <Icon
+                icon="mdi:chevron-left"
+                className="text-2xl text-blue-500"
+              />
+            </div>
+            <div className="swiper-button-next absolute top-1/2 -right-12 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md cursor-pointer z-10">
+              <Icon
+                icon="mdi:chevron-right"
+                className="text-2xl text-blue-500"
+              />
+            </div>
+            {/* Custom Pagination */}
+            <div className="swiper-pagination absolute bottom-0 text-center"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default BestSellersHero;

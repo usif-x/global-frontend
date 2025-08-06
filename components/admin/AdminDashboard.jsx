@@ -1,6 +1,7 @@
 "use client";
 import AdminManagementPage from "@/components/admin/components/admin/ModernAdmin";
 import AnalyticsContent from "@/components/admin/components/analytic/AnalyticsContent";
+import BestSellingMain from "@/components/admin/components/bestselling/BestSelling";
 import GalleryManagementPage from "@/components/admin/components/gallery/Gallery";
 import PackageManagement from "@/components/admin/components/package/Package";
 import PaymentsContent from "@/components/admin/components/payment/Payment";
@@ -326,6 +327,12 @@ const AdminDashboard = () => {
       color: "text-orange-500",
     },
     {
+      id: "best_selling",
+      label: "Best Selling",
+      icon: "mdi:fire",
+      color: "text-rose-500",
+    },
+    {
       id: "users",
       label: "Users",
       icon: "mdi:account-group",
@@ -410,6 +417,8 @@ const AdminDashboard = () => {
         return <PackageManagement />;
       case "courses":
         return <CourseManagement />;
+      case "best_selling":
+        return <BestSellingMain />;
       case "users":
         return <UserManagementPage />;
       case "gallery":

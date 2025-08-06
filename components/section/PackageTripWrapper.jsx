@@ -2,6 +2,7 @@
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
+import MarkdownRenderer from "../ui/MarkdownRender";
 
 // ... formatPrice and formatDuration helpers remain unchanged
 
@@ -70,10 +71,6 @@ const TripCard = ({ trip, packages }) => {
             <Icon icon="mdi:clock-outline" className="w-4 h-4 mr-1" />
             {formatDuration(trip.duration)}
           </div>
-          <div className="flex items-center text-yellow-500">
-            <Icon icon="mdi:star" className="w-4 h-4" />
-            <span className="ml-1 text-gray-600">4.8</span>
-          </div>
         </div>
         <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-sky-600 transition-colors duration-200">
           {trip.name}
@@ -84,9 +81,9 @@ const TripCard = ({ trip, packages }) => {
             {packageInfo.name}
           </div>
         )}
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-          {trip.description}
-        </p>
+        <div className="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">
+          <MarkdownRenderer content={trip.description} />
+        </div>
         <div className="flex items-center text-gray-600 text-sm mb-4">
           <Icon icon="mdi:account-group-outline" className="w-4 h-4 mr-2" />
           Max {trip.maxim_person} people
@@ -232,7 +229,7 @@ const PackageTripClientWrapper = ({ initialPackages, initialTrips }) => {
           </div>
           <div className="text-center mt-16">
             <Link
-              href={"/paackages"}
+              href={"/packages"}
               className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-4 px-12 rounded-full text-lg transition-all duration-300 shadow-md hover:shadow-lg border border-gray-200 hover:-translate-y-1"
             >
               View All Packages

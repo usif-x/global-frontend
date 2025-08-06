@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import MarkdownEditor from "@/components/ui/MarkdownEditor";
 import PackageService from "@/services/packageService";
 import { Icon } from "@iconify/react";
 import { useEffect, useState } from "react";
@@ -45,6 +46,13 @@ const PackageForm = ({ package: packageData = null, onSuccess, onCancel }) => {
     }
   };
 
+  const handleDescriptionChange = (newValue) => {
+    setFormData((prev) => ({ ...prev, description: newValue || "" }));
+    // Clear error on change
+    if (errors.description) {
+      setErrors((prev) => ({ ...prev, description: "" }));
+    }
+  };
   const handleImageChange = (index, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -269,29 +277,17 @@ const PackageForm = ({ package: packageData = null, onSuccess, onCancel }) => {
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Description *
                 </label>
-                <div className="relative">
-                  <textarea
-                    name="description"
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Package Description (Supports Markdown)
+                  </label>
+                  <MarkdownEditor
                     value={formData.description}
-                    onChange={handleInputChange}
-                    placeholder="Describe what makes this package special..."
-                    rows={4}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 resize-none transition-all duration-200 ${
-                      errors.description ? "border-red-500" : "border-slate-300"
-                    }`}
+                    onChange={handleDescriptionChange}
+                    placeholder="Describe this amazing trip using Markdown for lists, bold text, etc."
+                    error={errors.description}
                     disabled={isLoading}
                   />
-                  <div className="absolute bottom-3 right-3">
-                    <span
-                      className={`text-xs ${
-                        formData.description.length >= 10
-                          ? "text-green-500"
-                          : "text-slate-400"
-                      }`}
-                    >
-                      {formData.description.length}/500
-                    </span>
-                  </div>
                 </div>
                 {errors.description && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">

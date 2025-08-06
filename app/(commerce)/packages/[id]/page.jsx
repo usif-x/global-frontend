@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 // ✅ Use the server-safe axios helper
+import MarkdownRenderer from "@/components/ui/MarkdownRender";
 import { getData } from "@/lib/server-axios";
 
 // --- Helper Functions ---
@@ -89,7 +90,7 @@ const PackagePage = async ({ params }) => {
           </div>
         )}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="flex items-center mb-6">
+          <div className="flex items-center mb-6 mt-6">
             <Link
               href="/packages"
               className="flex items-center text-white/80 hover:text-white transition-colors duration-200 mr-4"
@@ -107,9 +108,9 @@ const PackagePage = async ({ params }) => {
           >
             {packageData.name}
           </h1>
-          <p className="text-xl md:text-2xl text-blue-100 max-w-3xl leading-relaxed">
-            {packageData.description}
-          </p>
+          <div className="text-xl md:text-2xl text-blue-100 max-w-3xl leading-relaxed">
+            <MarkdownRenderer content={packageData.description} />
+          </div>
           <div className="flex items-center mt-8 text-white/90">
             <Icon icon="lucide:calendar-check" className="w-5 h-5 mr-2" />
             <span className="text-lg">
@@ -204,20 +205,13 @@ const PackagePage = async ({ params }) => {
                           <Icon icon="lucide:clock" className="w-4 h-4 mr-1" />
                           {formatDuration(trip.duration)}
                         </div>
-                        <div className="flex items-center text-yellow-500">
-                          <Icon
-                            icon="lucide:star"
-                            className="w-4 h-4 fill-current"
-                          />
-                          <span className="ml-1 text-gray-600">4.8</span>
-                        </div>
                       </div>
                       <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-sky-600 transition-colors duration-200">
                         {trip.name}
                       </h3>
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">
-                        {trip.description}
-                      </p>
+                      <div className="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">
+                        <MarkdownRenderer content={trip.description} />
+                      </div>
                       <div className="flex items-center text-gray-600 text-sm mb-4">
                         <Icon icon="lucide:users" className="w-4 h-4 mr-2" />
                         Max {trip.maxim_person} people

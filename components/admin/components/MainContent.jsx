@@ -178,9 +178,9 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
         stats.unaccepted_testimonials_count > 0 ? "warning" : "positive",
       tab: "testimonials",
       tooltip: "Trips/Testimonials - Click to manage",
-      subText: `${stats.packages_count || 0} packages, ${
-        stats.courses_count || 0
-      } courses`,
+      subText: `${stats.trips_count} trips, ${
+        stats.packages_count || 0
+      } packages, ${stats.courses_count || 0} courses`,
     },
   ];
 
