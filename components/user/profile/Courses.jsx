@@ -1,4 +1,3 @@
-// Can be in a separate file like components/user/profile/CoursesTab.jsx
 import { getData } from "@/lib/axios";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
