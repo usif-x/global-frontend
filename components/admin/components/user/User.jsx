@@ -212,14 +212,17 @@ const EditUserModal = ({ user, onClose, onSave, token }) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetch("http://91.108.102.230:8000/users/update", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ ...formData, user_id: user.id }),
-      });
+      const response = await fetch(
+        "https://globaldivers.duckdns.org//users/update",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ ...formData, user_id: user.id }),
+        }
+      );
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Failed to update user");
@@ -350,7 +353,7 @@ const ChangePasswordModal = ({ user, onClose, token }) => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        "http://91.108.102.230:8000/users/update/password",
+        "https://globaldivers.duckdns.org//users/update/password",
         {
           method: "PUT",
           headers: {
@@ -451,7 +454,7 @@ const TestimonialsModal = ({ user, onClose, token }) => {
       (async () => {
         try {
           const res = await fetch(
-            `http://91.108.102.230:8000/admins/get-user-testminals/${user.id}`,
+            `https://globaldivers.duckdns.org//admins/get-user-testminals/${user.id}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           if (!res.ok) throw new Error("Failed to fetch testimonials");
@@ -610,7 +613,7 @@ export default function UserManagementPage() {
         ...(name && { name }),
       });
       const response = await fetch(
-        `http://91.108.102.230:8000/admins/get-all-users?${params}`,
+        `https://globaldivers.duckdns.org//admins/get-all-users?${params}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!response.ok) throw new Error("Failed to fetch users.");
