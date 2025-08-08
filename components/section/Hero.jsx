@@ -8,8 +8,7 @@ const Hero = ({
       backgroundImageUrl: "/image/hero-bg2.jpg",
       title: "Global Divers",
       subtitle: "Experience the Red Sea's Beauty",
-      description:
-        "Book your dive today and get ready for an unforgettable adventure!",
+      description: "Book your dive today and get ready for an unforgettable adventure!",
       buttonText: "Book A Trip",
       buttonLink: "/trips",
     },
@@ -17,8 +16,7 @@ const Hero = ({
       backgroundImageUrl: "/image/hero-bg.jpg",
       title: "Discover Underwater",
       subtitle: "Explore Marine Life",
-      description:
-        "Dive into crystal clear waters and discover the vibrant marine ecosystem of the Red Sea.",
+      description: "Dive into crystal clear waters and discover the vibrant marine ecosystem of the Red Sea.",
       buttonText: "View Courses",
       buttonLink: "/courses",
     },
@@ -26,8 +24,7 @@ const Hero = ({
       backgroundImageUrl: "/image/hero-bg3.jpg",
       title: "Adventure Awaits",
       subtitle: "Professional Diving",
-      description:
-        "Join our certified instructors for safe and exciting diving experiences in Hurghada.",
+      description: "Join our certified instructors for safe and exciting diving experiences in Hurghada.",
       buttonText: "Learn More",
       buttonLink: "/packages",
     },
@@ -85,7 +82,7 @@ const Hero = ({
         }, 400);
       }
     },
-    [currentSlide, isTransitioning]
+    [currentSlide, isTransitioning],
   );
 
   // Auto-play functionality with progress
@@ -113,49 +110,49 @@ const Hero = ({
 
   const styles = `
     @keyframes slideInFromBottom {
-      from { 
+      from {
         opacity: 0;
         transform: translate3d(0, 60px, 0);
       }
-      to { 
+      to {
         opacity: 1;
         transform: translate3d(0, 0, 0);
       }
     }
-    
+
     @keyframes slideInFromLeft {
-      from { 
+      from {
         opacity: 0;
         transform: translate3d(-80px, 0, 0);
       }
-      to { 
+      to {
         opacity: 1;
         transform: translate3d(0, 0, 0);
       }
     }
-    
+
     @keyframes slideInFromRight {
-      from { 
+      from {
         opacity: 0;
         transform: translate3d(80px, 0, 0);
       }
-      to { 
+      to {
         opacity: 1;
         transform: translate3d(0, 0, 0);
       }
     }
-    
+
     @keyframes scaleInLine {
-      from { 
+      from {
         opacity: 0;
         transform: scaleX(0) translateZ(0);
       }
-      to { 
+      to {
         opacity: 1;
         transform: scaleX(1) translateZ(0);
       }
     }
-    
+
     @keyframes float {
       0%, 100% { transform: translate3d(0, 0, 0); }
       50% { transform: translate3d(0, -10px, 0); }
@@ -172,42 +169,42 @@ const Hero = ({
     }
 
     @keyframes slideUp {
-      from { 
+      from {
         opacity: 0;
         transform: translate3d(0, 30px, 0);
       }
-      to { 
+      to {
         opacity: 1;
         transform: translate3d(0, 0, 0);
       }
     }
 
     @keyframes zoomIn {
-      from { 
+      from {
         opacity: 0;
         transform: scale(0.9) translateZ(0);
       }
-      to { 
+      to {
         opacity: 1;
         transform: scale(1) translateZ(0);
       }
     }
 
     @keyframes fadeInScale {
-      from { 
+      from {
         opacity: 0;
         transform: scale(0.8) translateZ(0);
       }
-      to { 
+      to {
         opacity: 1;
         transform: scale(1) translateZ(0);
       }
     }
-    
+
     .animate-slideInFromBottom {
       animation: slideInFromBottom 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
-    
+
     .animate-slideInFromLeft {
       animation: slideInFromLeft 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
@@ -215,12 +212,12 @@ const Hero = ({
     .animate-slideInFromRight {
       animation: slideInFromRight 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
-    
+
     .animate-scaleInLine {
       animation: scaleInLine 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       transform-origin: left center;
     }
-    
+
     .animate-float {
       animation: float 4s ease-in-out infinite;
     }
@@ -244,7 +241,7 @@ const Hero = ({
     .animate-fadeInScale {
       animation: fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
-    
+
     .animate-delay-100 { animation-delay: 0.1s; }
     .animate-delay-200 { animation-delay: 0.2s; }
     .animate-delay-300 { animation-delay: 0.3s; }
@@ -253,20 +250,20 @@ const Hero = ({
     .animate-delay-600 { animation-delay: 0.6s; }
     .animate-delay-700 { animation-delay: 0.7s; }
     .animate-delay-800 { animation-delay: 0.8s; }
-    
+
     .text-shadow-sharp {
-      text-shadow: 
-        0 2px 4px rgba(0, 0, 0, 0.9), 
+      text-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.9),
         0 4px 8px rgba(0, 0, 0, 0.7),
         0 8px 16px rgba(0, 0, 0, 0.3);
     }
-    
+
     .text-shadow-soft {
-      text-shadow: 
-        0 2px 8px rgba(0, 0, 0, 0.8), 
+      text-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.8),
         0 4px 16px rgba(0, 0, 0, 0.4);
     }
-    
+
     .glass-morphism {
       backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -315,22 +312,22 @@ const Hero = ({
     }
 
     .button-glow {
-      box-shadow: 
+      box-shadow:
         0 0 20px rgba(255, 255, 255, 0.1),
         0 0 40px rgba(255, 255, 255, 0.05),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
 
     .button-glow:hover {
-      box-shadow: 
+      box-shadow:
         0 0 30px rgba(255, 255, 255, 0.2),
         0 0 60px rgba(255, 255, 255, 0.1),
         inset 0 1px 0 rgba(255, 255, 255, 0.3);
     }
 
     .progress-bar {
-      background: linear-gradient(90deg, 
-        rgba(255, 255, 255, 0.8) 0%, 
+      background: linear-gradient(90deg,
+        rgba(255, 255, 255, 0.8) 0%,
         rgba(255, 255, 255, 0.4) 100%);
     }
 
@@ -345,7 +342,7 @@ const Hero = ({
       .animate-slideInFromLeft, .animate-slideInFromBottom {
         animation-duration: 0.6s;
       }
-      
+
       .text-shadow-sharp {
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95), 0 1px 2px rgba(0, 0, 0, 0.8);
       }
@@ -403,11 +400,7 @@ const Hero = ({
         {/* Main Content */}
         <div className="relative z-10 h-full flex items-center">
           <div className="container mx-auto px-4 sm:px-6 md:px-12">
-            <div
-              className={`max-w-5xl content-transition ${
-                isContentVisible ? "content-visible" : "content-hidden"
-              }`}
-            >
+            <div className={`max-w-5xl content-transition ${isContentVisible ? "content-visible" : "content-hidden"}`}>
               {/* Main Title */}
               <div className="mb-6 overflow-hidden">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-black tracking-tight text-shadow-sharp leading-none">
@@ -466,11 +459,7 @@ const Hero = ({
                       viewBox="0 0 24 24"
                       strokeWidth={2.5}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
                   </div>
                 </Link>
@@ -492,11 +481,7 @@ const Hero = ({
             viewBox="0 0 24 24"
             strokeWidth={2}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 19l-7-7 7-7"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
 
@@ -512,28 +497,17 @@ const Hero = ({
             viewBox="0 0 24 24"
             strokeWidth={2}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 5l7 7-7 7"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </button>
 
         {/* Enhanced Slide Indicators with Progress */}
         <div className="absolute bottom-20 sm:bottom-24 left-1/2 transform -translate-x-1/2 z-20 flex items-center space-x-3">
           {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className="relative group"
-              disabled={isTransitioning}
-            >
+            <button key={index} onClick={() => goToSlide(index)} className="relative group" disabled={isTransitioning}>
               <div
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index === currentSlide
-                    ? "bg-white scale-125"
-                    : "bg-white/50 hover:bg-white/70 hover:scale-110"
+                  index === currentSlide ? "bg-white scale-125" : "bg-white/50 hover:bg-white/70 hover:scale-110"
                 }`}
               />
               {index === currentSlide && (
@@ -548,19 +522,6 @@ const Hero = ({
               )}
             </button>
           ))}
-        </div>
-
-        {/* Enhanced Scroll Indicator */}
-        <div className="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-slideUp animate-delay-800 opacity-0 z-20">
-          <div className="flex flex-col items-center gap-2 group cursor-pointer">
-            <span className="text-white/70 text-xs sm:text-sm font-light tracking-widest uppercase transition-colors duration-300 group-hover:text-white">
-              Scroll
-            </span>
-            <div className="w-6 h-10 glass-morphism rounded-full flex justify-center relative overflow-hidden transition-all duration-300 group-hover:scale-110">
-              <div className="w-1 h-3 bg-white/80 rounded-full mt-2 animate-pulse-slow"></div>
-              <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-t from-white/10 to-transparent"></div>
-            </div>
-          </div>
         </div>
       </section>
     </>

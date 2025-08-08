@@ -60,14 +60,8 @@ const BestSellerHeroCard = ({ item, isActive }) => {
         />
         {/* Rank and Type Badges */}
         <div className="absolute top-4 left-4 flex gap-2">
-          <span className="bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded-full">
-            Top #{item.rank}
-          </span>
-          <span
-            className={`${badge.color} text-xs font-semibold px-2 py-1 rounded-full`}
-          >
-            {badge.label}
-          </span>
+          <span className="bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded-full">Top #{item.rank}</span>
+          <span className={`${badge.color} text-xs font-semibold px-2 py-1 rounded-full`}>{badge.label}</span>
         </div>
         {/* Discount Badge */}
         {item.hasDiscount && (
@@ -79,24 +73,15 @@ const BestSellerHeroCard = ({ item, isActive }) => {
 
       {/* Content */}
       <div className="p-6">
-        <h3 className="text-xl font-bold text-gray-800 line-clamp-2">
-          {item.name}
-        </h3>
-        <p className="text-gray-600 text-sm mt-2 line-clamp-3">
-          {item.description.replace(/#|\n/g, " ")}
-        </p>
+        <h3 className="text-xl font-bold text-gray-800 line-clamp-2">{item.name}</h3>
+        <p className="text-gray-600 text-sm mt-2 line-clamp-3">{item.description.replace(/#|\n/g, " ")}</p>
 
         {/* Price and Duration */}
         <div className="mt-4 flex items-center justify-between">
           <div>
             <p className="text-lg font-semibold text-gray-900">
               ${parseFloat(item.price).toFixed(2)}
-              {item.childPrice && (
-                <span className="text-sm text-gray-500">
-                  {" "}
-                  / ${item.childPrice} (child)
-                </span>
-              )}
+              {item.childPrice && <span className="text-sm text-gray-500"> / ${item.childPrice} (child)</span>}
             </p>
             {item.duration && (
               <p className="text-sm text-gray-500">
@@ -109,9 +94,7 @@ const BestSellerHeroCard = ({ item, isActive }) => {
         {/* Included Items */}
         {item.included.length > 0 && (
           <div className="mt-4">
-            <p className="text-sm font-medium text-gray-700">
-              What’s Included:
-            </p>
+            <p className="text-sm font-medium text-gray-700">What’s Included:</p>
             <ul className="mt-2 space-y-1 text-sm text-gray-600">
               {item.included.slice(0, 3).map((inc, index) => (
                 <li key={index} className="flex items-center gap-2">
@@ -165,12 +148,9 @@ const BestSellersHero = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           {/* Left Side: Text Content */}
           <div className="space-y-6">
-            <h2 className="text-4xl font-bold text-gray-800">
-              Discover Our Best Sellers
-            </h2>
+            <h2 className="text-4xl font-bold text-gray-800">Discover Our Best Sellers</h2>
             <p className="text-lg text-gray-600">
-              Hand-picked by our community, these are the most popular courses
-              and trips to help you excel and explore.
+              Hand-picked by our community, these are the most popular courses and trips to help you excel and explore.
             </p>
             <ul className="space-y-4">
               {[
@@ -188,10 +168,7 @@ const BestSellersHero = () => {
                 },
               ].map((feature, index) => (
                 <li key={index} className="flex items-center gap-3">
-                  <Icon
-                    icon={feature.icon}
-                    className="text-blue-500 text-2xl"
-                  />
+                  <Icon icon={feature.icon} className="text-blue-500 text-2xl" />
                   <span className="text-gray-700">{feature.text}</span>
                 </li>
               ))}
@@ -229,25 +206,17 @@ const BestSellersHero = () => {
               >
                 {items.map((item) => (
                   <SwiperSlide key={item.id}>
-                    {({ isActive }) => (
-                      <BestSellerHeroCard item={item} isActive={isActive} />
-                    )}
+                    {({ isActive }) => <BestSellerHeroCard item={item} isActive={isActive} />}
                   </SwiperSlide>
                 ))}
               </Swiper>
             )}
             {/* Custom Navigation */}
-            <div className="swiper-button-prev absolute top-1/2 -left-12 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md cursor-pointer z-10">
-              <Icon
-                icon="mdi:chevron-left"
-                className="text-2xl text-blue-500"
-              />
+            <div className="swiper-button-prev absolute top-1/2 -left-12 transform -translate-y-1/2 bg-white rounded-full p-5 shadow-md cursor-pointer z-10">
+              <Icon icon="mdi:chevron-left" height={5} width={5} className=" text-blue-500" />
             </div>
-            <div className="swiper-button-next absolute top-1/2 -right-12 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md cursor-pointer z-10">
-              <Icon
-                icon="mdi:chevron-right"
-                className="text-2xl text-blue-500"
-              />
+            <div className="swiper-button-next absolute top-1/2 -right-12 transform -translate-y-1/2 bg-white p-5 rounded-full shadow-md cursor-pointer z-10">
+              <Icon icon="mdi:chevron-right" height={5} width={5} className=" text-blue-500" />
             </div>
             {/* Custom Pagination */}
             <div className="swiper-pagination absolute bottom-0 text-center"></div>
