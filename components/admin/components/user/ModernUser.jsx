@@ -446,7 +446,7 @@ const TestimonialsModal = ({ user, onClose, token }) => {
       (async () => {
         try {
           const res = await fetch(
-            `http://localhost:8000/admins/get-user-testminals/${user.id}`,
+            `http://91.108.102.230:8000/admins/get-user-testminals/${user.id}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           if (!res.ok) throw new Error("Failed to fetch testimonials");
@@ -471,9 +471,9 @@ const TestimonialsModal = ({ user, onClose, token }) => {
       let method = "PUT";
 
       if (action === "accept") {
-        endpoint = `http://localhost:8000/admins/accept-testimonial/${testimonialId}`;
+        endpoint = `http://91.108.102.230:8000/admins/accept-testimonial/${testimonialId}`;
       } else if (action === "reject") {
-        endpoint = `http://localhost:8000/admins/reject-testimonial/${testimonialId}`;
+        endpoint = `http://91.108.102.230:8000/admins/reject-testimonial/${testimonialId}`;
       } else if (action === "delete") {
         const result = await Swal.fire({
           title: "Are you sure?",
@@ -486,7 +486,7 @@ const TestimonialsModal = ({ user, onClose, token }) => {
         });
         if (!result.isConfirmed) return;
 
-        endpoint = `http://localhost:8000/admins/delete-testimonial/${testimonialId}`;
+        endpoint = `http://91.108.102.230:8000/admins/delete-testimonial/${testimonialId}`;
         method = "DELETE";
       }
 
@@ -507,7 +507,7 @@ const TestimonialsModal = ({ user, onClose, token }) => {
 
       // Refresh testimonials
       const res = await fetch(
-        `http://localhost:8000/admins/get-user-testminals/${user.id}`,
+        `http://91.108.102.230:8000/admins/get-user-testminals/${user.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (res.ok) {
@@ -791,7 +791,7 @@ const UserService = {
   async getAllUsers(token, params) {
     const query = new URLSearchParams(params).toString();
     const response = await fetch(
-      `http://localhost:8000/admins/get-all-users?${query}`,
+      `http://91.108.102.230:8000/admins/get-all-users?${query}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     if (!response.ok) throw new Error("Failed to fetch users.");
@@ -799,7 +799,7 @@ const UserService = {
   },
   async toggleUserBlock(token, userId) {
     const response = await fetch(
-      `http://localhost:8000/admins/block-user/${userId}`,
+      `http://91.108.102.230:8000/admins/block-user/${userId}`,
       {
         method: "GET",
         headers: {
@@ -812,7 +812,7 @@ const UserService = {
   },
   async toggleUserUnblock(token, userId) {
     const response = await fetch(
-      `http://localhost:8000/admins/unblock-user/${userId}`,
+      `http://91.108.102.230:8000/admins/unblock-user/${userId}`,
       {
         method: "GET",
         headers: {
@@ -825,7 +825,7 @@ const UserService = {
   },
   async deleteUser(token, userId) {
     const response = await fetch(
-      `http://localhost:8000/admins/delete-user/${userId}`,
+      `http://91.108.102.230:8000/admins/delete-user/${userId}`,
       {
         method: "DELETE",
         headers: {
@@ -838,14 +838,17 @@ const UserService = {
   },
 
   async enrollUserToCourse(token, { userId, courseId }) {
-    const response = await fetch(`http://localhost:8000/admins/enroll-user`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ user_id: userId, course_id: courseId }),
-    });
+    const response = await fetch(
+      `http://91.108.102.230:8000/admins/enroll-user`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ user_id: userId, course_id: courseId }),
+      }
+    );
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.detail || "Failed to enroll user.");
