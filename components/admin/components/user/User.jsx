@@ -213,7 +213,7 @@ const EditUserModal = ({ user, onClose, onSave, token }) => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        "https://globaldivers.duckdns.org//users/update",
+        "https://globaldivers.duckdns.org/users/update",
         {
           method: "PUT",
           headers: {
@@ -353,7 +353,7 @@ const ChangePasswordModal = ({ user, onClose, token }) => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        "https://globaldivers.duckdns.org//users/update/password",
+        "https://globaldivers.duckdns.org/users/update/password",
         {
           method: "PUT",
           headers: {
@@ -454,7 +454,7 @@ const TestimonialsModal = ({ user, onClose, token }) => {
       (async () => {
         try {
           const res = await fetch(
-            `https://globaldivers.duckdns.org//admins/get-user-testminals/${user.id}`,
+            `https://globaldivers.duckdns.org/admins/get-user-testminals/${user.id}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           if (!res.ok) throw new Error("Failed to fetch testimonials");
@@ -613,7 +613,7 @@ export default function UserManagementPage() {
         ...(name && { name }),
       });
       const response = await fetch(
-        `https://globaldivers.duckdns.org//admins/get-all-users?${params}`,
+        `https://globaldivers.duckdns.org/admins/get-all-users?${params}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!response.ok) throw new Error("Failed to fetch users.");
