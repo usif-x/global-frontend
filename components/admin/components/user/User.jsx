@@ -213,7 +213,7 @@ const EditUserModal = ({ user, onClose, onSave, token }) => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}users/update",
+        "${process.env.NEXT_PUBLIC_API_URL}/users/update",
         {
           method: "PUT",
           headers: {
@@ -353,7 +353,7 @@ const ChangePasswordModal = ({ user, onClose, token }) => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}users/update/password",
+        "${process.env.NEXT_PUBLIC_API_URL}/users/update/password",
         {
           method: "PUT",
           headers: {
@@ -454,7 +454,7 @@ const TestimonialsModal = ({ user, onClose, token }) => {
       (async () => {
         try {
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}admins/get-user-testminals/${user.id}`,
+            `${process.env.NEXT_PUBLIC_API_URL}/admins/get-user-testminals/${user.id}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           if (!res.ok) throw new Error("Failed to fetch testimonials");
@@ -613,7 +613,7 @@ export default function UserManagementPage() {
         ...(name && { name }),
       });
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}admins/get-all-users?${params}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admins/get-all-users?${params}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!response.ok) throw new Error("Failed to fetch users.");
