@@ -23,12 +23,12 @@ export const metadata = {
   language: "en-US",
   robots: "index, follow",
   alternates: {
-    canonical: "https://global-frontend-lac.vercel.app",
+    canonical: "https://topdivers.online",
   },
   openGraph: {
     title: "Top Divers Hurghada",
     description: "Experience the Red Sea's Beauty",
-    url: "https://global-frontend-lac.vercel.app",
+    url: "https://topdivers.online",
     siteName: "Top Divers Hurghada",
     images: [
       {
