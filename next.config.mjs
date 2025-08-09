@@ -9,6 +9,11 @@ const nextConfig = {
         port: "8000",
         pathname: "/storage/**",
       },
+      {
+        protocol: "https",
+        hostname: "globaldivers.duckdns.org",
+        pathname: "/storage/**",
+      },
     ],
   },
   trailingSlash: true,
