@@ -99,6 +99,7 @@ export default async function LocationsPage() {
   try {
     // Fetch data from the service on the server
     diveCenters = await DiveCenterService.getAll();
+    console.log(diveCenters);
   } catch (error) {
     console.error("Failed to fetch dive centers:", error);
     // You can render an error message component here if you wish
