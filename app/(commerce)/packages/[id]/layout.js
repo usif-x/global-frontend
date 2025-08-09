@@ -35,7 +35,7 @@ export async function generateMetadata({ params }) {
       icon: "/favicon.ico",
     },
     alternates: {
-      canonical: `https://www.globaldivershurghada.com/packages/${id}`,
+      canonical: `https://https://global-frontend-lac.vercel.app/packages/${id}`,
     },
   };
 }

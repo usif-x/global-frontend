@@ -17,7 +17,8 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://www.globaldivershurghada.com/terms-and-conditions",
+    canonical:
+      "https://https://global-frontend-lac.vercel.app/terms-and-conditions",
   },
 };
 

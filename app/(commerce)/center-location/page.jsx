@@ -7,7 +7,8 @@ export const metadata = {
   title: "Our Dive Center Locations | Global Divers Hurghada",
   description:
     "Explore our premier dive centers in Hurghada. Your gateways to unforgettable Red Sea diving adventures with state-of-the-art facilities.",
-  keywords: "diving, Hurghada, dive centers, Red Sea, scuba diving, dive locations",
+  keywords:
+    "diving, Hurghada, dive centers, Red Sea, scuba diving, dive locations",
   robots: "index, follow",
   authors: [{ name: "Yousseif Muhammad" }],
   openGraph: {
@@ -26,7 +27,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://www.globaldivershurghada.com/locations",
+    canonical: "https://https://global-frontend-lac.vercel.app/locations",
   },
 };
 
@@ -38,7 +39,9 @@ export const viewport = {
 // Helper component to display working hours elegantly
 const WorkingHoursDisplay = ({ hours }) => {
   const days = Object.keys(hours);
-  const today = new Date().toLocaleString("en-US", { weekday: "long" }).toLowerCase();
+  const today = new Date()
+    .toLocaleString("en-US", { weekday: "long" })
+    .toLowerCase();
   const todaysHours = hours[today];
 
   const isOpenNow = () => {
@@ -75,8 +78,14 @@ const WorkingHoursDisplay = ({ hours }) => {
         {days.map((day) => (
           <li key={day} className="flex justify-between capitalize">
             <span>{day}</span>
-            <span className={`font-medium ${hours[day].is_open ? "text-gray-800" : "text-gray-400"}`}>
-              {hours[day].is_open ? `${hours[day].start} - ${hours[day].end}` : "Closed"}
+            <span
+              className={`font-medium ${
+                hours[day].is_open ? "text-gray-800" : "text-gray-400"
+              }`}
+            >
+              {hours[day].is_open
+                ? `${hours[day].start} - ${hours[day].end}`
+                : "Closed"}
             </span>
           </li>
         ))}
@@ -105,15 +114,18 @@ export default async function LocationsPage() {
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-center mb-10">
             <div className="bg-white/20 p-6 rounded-2xl shadow-xl backdrop-blur-lg">
-              <Icon icon="mdi:diving-scuba-flag" className="h-16 w-16 text-white" />
+              <Icon
+                icon="mdi:diving-scuba-flag"
+                className="h-16 w-16 text-white"
+              />
             </div>
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight drop-shadow-lg">
             Our Dive Centers
           </h1>
           <p className="mt-6 max-w-3xl mx-auto text-lg sm:text-xl opacity-90">
-            Discover our world-class dive centers in Hurghada, offering unparalleled access to the Red Sea’s vibrant
-            marine life.
+            Discover our world-class dive centers in Hurghada, offering
+            unparalleled access to the Red Sea’s vibrant marine life.
           </p>
         </div>
       </section>
@@ -137,39 +149,66 @@ export default async function LocationsPage() {
                     />
                   </div>
                   <div className="p-8 flex-grow flex flex-col">
-                    <h2 className="text-3xl font-bold text-blue-900">{center.name}</h2>
-                    <p className="mt-3 text-gray-600 flex-grow">{center.description}</p>
+                    <h2 className="text-3xl font-bold text-blue-900">
+                      {center.name}
+                    </h2>
+                    <p className="mt-3 text-gray-600 flex-grow">
+                      {center.description}
+                    </p>
 
                     <div className="mt-6 space-y-4">
                       <div className="flex items-start">
-                        <Icon icon="mdi:map-marker" className="h-6 w-6 text-cyan-600 mr-3 flex-shrink-0 mt-1" />
+                        <Icon
+                          icon="mdi:map-marker"
+                          className="h-6 w-6 text-cyan-600 mr-3 flex-shrink-0 mt-1"
+                        />
                         <span className="text-gray-700">{center.location}</span>
                       </div>
                       <div className="flex items-center">
-                        <Icon icon="mdi:phone" className="h-6 w-6 text-cyan-600 mr-3" />
-                        <a href={`tel:${center.phone}`} className="text-gray-700 hover:text-cyan-700">
+                        <Icon
+                          icon="mdi:phone"
+                          className="h-6 w-6 text-cyan-600 mr-3"
+                        />
+                        <a
+                          href={`tel:${center.phone}`}
+                          className="text-gray-700 hover:text-cyan-700"
+                        >
                           {center.phone}
                         </a>
                       </div>
                       <div className="flex items-center">
-                        <Icon icon="mdi:email" className="h-6 w-6 text-cyan-600 mr-3" />
-                        <a href={`mailto:${center.email}`} className="text-gray-700 hover:text-cyan-700">
+                        <Icon
+                          icon="mdi:email"
+                          className="h-6 w-6 text-cyan-600 mr-3"
+                        />
+                        <a
+                          href={`mailto:${center.email}`}
+                          className="text-gray-700 hover:text-cyan-700"
+                        >
                           {center.email}
                         </a>
                       </div>
                     </div>
 
-                    {center.working_hours && <WorkingHoursDisplay hours={center.working_hours} />}
+                    {center.working_hours && (
+                      <WorkingHoursDisplay hours={center.working_hours} />
+                    )}
                   </div>
                 </div>
               ))}
             </div>
           ) : (
             <div className="text-center py-16">
-              <Icon icon="mdi:compass-off-outline" className="h-16 w-16 mx-auto text-gray-400" />
-              <h3 className="mt-4 text-2xl font-semibold text-gray-800">No Dive Centers Found</h3>
+              <Icon
+                icon="mdi:compass-off-outline"
+                className="h-16 w-16 mx-auto text-gray-400"
+              />
+              <h3 className="mt-4 text-2xl font-semibold text-gray-800">
+                No Dive Centers Found
+              </h3>
               <p className="mt-2 text-gray-500">
-                We couldn't find any locations at the moment. Please check back later!
+                We couldn't find any locations at the moment. Please check back
+                later!
               </p>
             </div>
           )}

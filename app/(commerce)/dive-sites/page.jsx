@@ -20,7 +20,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://www.globaldivershurghada.com/dive-sites",
+    canonical: "https://https://global-frontend-lac.vercel.app/dive-sites",
   },
 };
 

@@ -16,7 +16,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://www.globaldivershurghada.com/admin/login",
+    canonical: "https://https://global-frontend-lac.vercel.app/admin/login",
   },
 };
 export const viewport = {
