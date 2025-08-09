@@ -9,8 +9,8 @@ const IBM = IBM_Plex_Sans_Arabic({
 });
 export const metadata = {
   title: {
-    template: "Global Divers - %s",
-    default: "Global Divers Hurghada",
+    template: "Top Divers - %s",
+    default: "Top Divers Hurghada",
   },
   icons: {
     icon: "/favicon.ico",
@@ -18,18 +18,18 @@ export const metadata = {
   description: "Experience the Red Sea's Beauty",
   keywords:
     "diving, trips, packages, courses, destinations, safari, egypt, red sea, diving trips, diving packages, diving courses, diving destinations, diving safari, diving egypt, diving red sea",
-  creator: "Global Divers Hurghada",
-  publisher: "Global Divers Hurghada",
+  creator: "Top Divers Hurghada",
+  publisher: "Top Divers Hurghada",
   language: "en-US",
   robots: "index, follow",
   alternates: {
     canonical: "https://global-frontend-lac.vercel.app",
   },
   openGraph: {
-    title: "Global Divers Hurghada",
+    title: "Top Divers Hurghada",
     description: "Experience the Red Sea's Beauty",
     url: "https://global-frontend-lac.vercel.app",
-    siteName: "Global Divers Hurghada",
+    siteName: "Top Divers Hurghada",
     images: [
       {
         url: "https://global-frontend-lac.vercel.app/hero-bg.jpg",

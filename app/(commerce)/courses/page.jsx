@@ -14,13 +14,13 @@ export const metadata = {
   robots: "index, follow",
   authors: [{ name: "Yousseif Muhammad" }],
   openGraph: {
-    title: "Global Divers Hurghada - Diving Courses",
-    description: "Global Divers Hurghada - Diving Courses",
+    title: "Top Divers Hurghada - Diving Courses",
+    description: "Top Divers Hurghada - Diving Courses",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Global Divers Hurghada - Diving Courses",
-    description: "Global Divers Hurghada - Diving Courses",
+    title: "Top Divers Hurghada - Diving Courses",
+    description: "Top Divers Hurghada - Diving Courses",
   },
   icons: {
     icon: "/favicon.ico",

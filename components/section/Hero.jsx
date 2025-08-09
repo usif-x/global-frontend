@@ -6,9 +6,10 @@ const Hero = ({
   slides = [
     {
       backgroundImageUrl: "/image/hero-bg2.jpg",
-      title: "Global Divers",
+      title: "Top Divers",
       subtitle: "Experience the Red Sea's Beauty",
-      description: "Book your dive today and get ready for an unforgettable adventure!",
+      description:
+        "Book your dive today and get ready for an unforgettable adventure!",
       buttonText: "Book A Trip",
       buttonLink: "/trips",
     },
@@ -16,7 +17,8 @@ const Hero = ({
       backgroundImageUrl: "/image/hero-bg.jpg",
       title: "Discover Underwater",
       subtitle: "Explore Marine Life",
-      description: "Dive into crystal clear waters and discover the vibrant marine ecosystem of the Red Sea.",
+      description:
+        "Dive into crystal clear waters and discover the vibrant marine ecosystem of the Red Sea.",
       buttonText: "View Courses",
       buttonLink: "/courses",
     },
@@ -24,7 +26,8 @@ const Hero = ({
       backgroundImageUrl: "/image/hero-bg3.jpg",
       title: "Adventure Awaits",
       subtitle: "Professional Diving",
-      description: "Join our certified instructors for safe and exciting diving experiences in Hurghada.",
+      description:
+        "Join our certified instructors for safe and exciting diving experiences in Hurghada.",
       buttonText: "Learn More",
       buttonLink: "/packages",
     },
@@ -82,7 +85,7 @@ const Hero = ({
         }, 400);
       }
     },
-    [currentSlide, isTransitioning],
+    [currentSlide, isTransitioning]
   );
 
   // Auto-play functionality with progress
@@ -400,7 +403,11 @@ const Hero = ({
         {/* Main Content */}
         <div className="relative z-10 h-full flex items-center">
           <div className="container mx-auto px-4 sm:px-6 md:px-12">
-            <div className={`max-w-5xl content-transition ${isContentVisible ? "content-visible" : "content-hidden"}`}>
+            <div
+              className={`max-w-5xl content-transition ${
+                isContentVisible ? "content-visible" : "content-hidden"
+              }`}
+            >
               {/* Main Title */}
               <div className="mb-6 overflow-hidden">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-black tracking-tight text-shadow-sharp leading-none">
@@ -459,7 +466,11 @@ const Hero = ({
                       viewBox="0 0 24 24"
                       strokeWidth={2.5}
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
                     </svg>
                   </div>
                 </Link>
@@ -481,7 +492,11 @@ const Hero = ({
             viewBox="0 0 24 24"
             strokeWidth={2}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </button>
 
@@ -497,17 +512,28 @@ const Hero = ({
             viewBox="0 0 24 24"
             strokeWidth={2}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9 5l7 7-7 7"
+            />
           </svg>
         </button>
 
         {/* Enhanced Slide Indicators with Progress */}
         <div className="absolute bottom-20 sm:bottom-24 left-1/2 transform -translate-x-1/2 z-20 flex items-center space-x-3">
           {slides.map((_, index) => (
-            <button key={index} onClick={() => goToSlide(index)} className="relative group" disabled={isTransitioning}>
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className="relative group"
+              disabled={isTransitioning}
+            >
               <div
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index === currentSlide ? "bg-white scale-125" : "bg-white/50 hover:bg-white/70 hover:scale-110"
+                  index === currentSlide
+                    ? "bg-white scale-125"
+                    : "bg-white/50 hover:bg-white/70 hover:scale-110"
                 }`}
               />
               {index === currentSlide && (

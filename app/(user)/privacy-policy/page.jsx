@@ -27,7 +27,7 @@ const PrivacyPolicy = () => {
               Account Registration Information
             </h4>
             <p className="text-blue-800 text-sm mb-3">
-              When you create an account with Global Divers, we collect the
+              When you create an account with Top Divers, we collect the
               following personal information:
             </p>
             <div className="bg-white p-3 rounded border">
@@ -756,9 +756,7 @@ const PrivacyPolicy = () => {
                 />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Global Divers
-                </h1>
+                <h1 className="text-2xl font-bold text-gray-900">Top Divers</h1>
                 <p className="text-gray-600 text-sm">Privacy Policy</p>
               </div>
             </div>

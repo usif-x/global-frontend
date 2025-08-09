@@ -33,7 +33,7 @@ export default function Home() {
               {/* Company Info */}
               <div className="col-span-1 md:col-span-2">
                 <h3 className="text-xl font-bold mb-4 text-white">
-                  About Global Divers Hurghada
+                  About Top Divers Hurghada
                 </h3>
                 <p className="text-white/80 mb-4 leading-relaxed">
                   Our dive base is managed and supervised by a professional team
@@ -150,7 +150,7 @@ export default function Home() {
             {/* Bottom Bar */}
             <div className="border-t border-white/20 pt-6 flex flex-col md:flex-row justify-between items-center">
               <p className="text-white/60 text-sm mb-2 md:mb-0">
-                © {new Date().getFullYear()} Global Divers. All rights reserved.
+                © {new Date().getFullYear()} Top Divers. All rights reserved.
               </p>
               <div className="flex flex-col md:flex-row md:items-center md:space-x-6 text-sm text-white/60">
                 <div className="flex space-x-6 mb-2 md:mb-0">

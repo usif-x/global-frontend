@@ -23,7 +23,7 @@ const TermsAndConditions = () => {
           <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
             <p className="font-medium text-blue-900">Contract Agreement</p>
             <p className="text-blue-800 mt-1">
-              The contract is stipulated between you and "Global Divers"
+              The contract is stipulated between you and "Top Divers"
             </p>
           </div>
 
@@ -57,9 +57,9 @@ const TermsAndConditions = () => {
               Price Changes
             </p>
             <p className="text-amber-800 mt-1 text-sm">
-              Global Divers reserves the right to change prices due to local
-              taxes or governmental fees. Your booking remains valid at the
-              original price if paid in advance.
+              Top Divers reserves the right to change prices due to local taxes
+              or governmental fees. Your booking remains valid at the original
+              price if paid in advance.
             </p>
           </div>
         </div>
@@ -331,7 +331,7 @@ const TermsAndConditions = () => {
               Website Copyright
             </h4>
             <p className="text-gray-700 text-sm">
-              Global Divers owns all website content copyright. Access doesn't
+              Top Divers owns all website content copyright. Access doesn't
               authorize copying or distribution of materials.
             </p>
           </div>
@@ -354,9 +354,7 @@ const TermsAndConditions = () => {
                 />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Global Divers
-                </h1>
+                <h1 className="text-2xl font-bold text-gray-900">Top Divers</h1>
                 <p className="text-gray-600 text-sm">Terms & Conditions</p>
               </div>
             </div>

@@ -87,7 +87,7 @@ const generateInvoicePDF = async (invoice, user) => {
     doc.setFont("helvetica", "normal");
     doc.setTextColor(123, 136, 151); // Lighter gray
     // Company info positioned to the right of logo
-    doc.text("Global Divers Hurghada", 50, 25);
+    doc.text("Top Divers Hurghada", 50, 25);
     doc.text("Aqua Joy sunrise resort, hurghada - egypt", 50, 30);
     doc.text("Website: globaldivershurghada.com", 50, 35);
 

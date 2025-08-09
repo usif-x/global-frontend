@@ -1,17 +1,17 @@
 export const metadata = {
   title: "Terms & Conditions ",
-  description: "Terms and conditions for Global Divers Hurghada",
-  keywords: "terms, conditions, global divers, hurghada",
+  description: "Terms and conditions for Top Divers Hurghada",
+  keywords: "terms, conditions, Top Divers, hurghada",
   robots: "index, follow",
   authors: [{ name: "Yousseif Muhammad" }],
   openGraph: {
     title: "Terms & Conditions ",
-    description: "Terms and conditions for Global Divers Hurghada",
+    description: "Terms and conditions for Top Divers Hurghada",
   },
   twitter: {
     card: "summary_large_image",
     title: "Terms & Conditions ",
-    description: "Terms and conditions for Global Divers Hurghada",
+    description: "Terms and conditions for Top Divers Hurghada",
   },
   icons: {
     icon: "/favicon.ico",

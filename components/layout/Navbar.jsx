@@ -171,7 +171,7 @@ const Navbar = () => {
             <div className="relative">
               <Image
                 src="/image/logo.png"
-                alt="Global Divers Logo"
+                alt="Top Divers Logo"
                 width={32}
                 height={32}
                 className="sm:w-[40px] sm:h-[40px] md:w-[45px] md:h-[45px] transition-transform duration-300 group-hover:scale-110"
