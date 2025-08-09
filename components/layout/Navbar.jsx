@@ -368,7 +368,7 @@ const Navbar = () => {
           isMobileMenuOpen ? "visible opacity-100" : "invisible opacity-0"
         }`}
       >
-        <div className="absolute inset-0 bg-gray-900/97 backdrop-blur-2xl"></div>
+        <div className="absolute inset-0 bg-gray-900 backdrop-blur-2xl"></div>
 
         {/* Scrollable Content Container */}
         <div className="relative h-full overflow-y-auto">

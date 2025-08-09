@@ -446,7 +446,7 @@ const TestimonialsModal = ({ user, onClose, token }) => {
       (async () => {
         try {
           const res = await fetch(
-            `https://globaldivers.duckdns.org/admins/get-user-testminals/${user.id}`,
+            `${process.env.NEXT_PUBLIC_API_URL}admins/get-user-testminals/${user.id}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           if (!res.ok) throw new Error("Failed to fetch testimonials");
@@ -471,9 +471,9 @@ const TestimonialsModal = ({ user, onClose, token }) => {
       let method = "PUT";
 
       if (action === "accept") {
-        endpoint = `https://globaldivers.duckdns.org/admins/accept-testimonial/${testimonialId}`;
+        endpoint = `${process.env.NEXT_PUBLIC_API_URL}admins/accept-testimonial/${testimonialId}`;
       } else if (action === "reject") {
-        endpoint = `https://globaldivers.duckdns.org/admins/reject-testimonial/${testimonialId}`;
+        endpoint = `${process.env.NEXT_PUBLIC_API_URL}admins/reject-testimonial/${testimonialId}`;
       } else if (action === "delete") {
         const result = await Swal.fire({
           title: "Are you sure?",
@@ -486,7 +486,7 @@ const TestimonialsModal = ({ user, onClose, token }) => {
         });
         if (!result.isConfirmed) return;
 
-        endpoint = `https://globaldivers.duckdns.org/admins/delete-testimonial/${testimonialId}`;
+        endpoint = `${process.env.NEXT_PUBLIC_API_URL}admins/delete-testimonial/${testimonialId}`;
         method = "DELETE";
       }
 
@@ -507,7 +507,7 @@ const TestimonialsModal = ({ user, onClose, token }) => {
 
       // Refresh testimonials
       const res = await fetch(
-        `https://globaldivers.duckdns.org/admins/get-user-testminals/${user.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}admins/get-user-testminals/${user.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (res.ok) {
@@ -791,7 +791,7 @@ const UserService = {
   async getAllUsers(token, params) {
     const query = new URLSearchParams(params).toString();
     const response = await fetch(
-      `https://globaldivers.duckdns.org/admins/get-all-users?${query}`,
+      `${process.env.NEXT_PUBLIC_API_URL}admins/get-all-users?${query}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     if (!response.ok) throw new Error("Failed to fetch users.");
@@ -799,7 +799,7 @@ const UserService = {
   },
   async toggleUserBlock(token, userId) {
     const response = await fetch(
-      `https://globaldivers.duckdns.org/admins/block-user/${userId}`,
+      `${process.env.NEXT_PUBLIC_API_URL}admins/block-user/${userId}`,
       {
         method: "GET",
         headers: {
@@ -812,7 +812,7 @@ const UserService = {
   },
   async toggleUserUnblock(token, userId) {
     const response = await fetch(
-      `https://globaldivers.duckdns.org/admins/unblock-user/${userId}`,
+      `${process.env.NEXT_PUBLIC_API_URL}admins/unblock-user/${userId}`,
       {
         method: "GET",
         headers: {
@@ -825,7 +825,7 @@ const UserService = {
   },
   async deleteUser(token, userId) {
     const response = await fetch(
-      `https://globaldivers.duckdns.org/admins/delete-user/${userId}`,
+      `${process.env.NEXT_PUBLIC_API_URL}admins/delete-user/${userId}`,
       {
         method: "DELETE",
         headers: {
@@ -839,7 +839,7 @@ const UserService = {
 
   async enrollUserToCourse(token, { userId, courseId }) {
     const response = await fetch(
-      `https://globaldivers.duckdns.org/admins/enroll-user`,
+      `${process.env.NEXT_PUBLIC_API_URL}admins/enroll-user`,
       {
         method: "POST",
         headers: {
