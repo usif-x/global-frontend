@@ -1,0 +1,27 @@
+# Global Divers - Robots.txt
+# Allow all search engines to crawl the site
+
+User-agent: *
+Allow: /
+
+# Block access to private/sensitive areas
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /private/
+
+# Optional: Block specific user pages that might be private
+# Disallow: /profile/
+# Uncomment above if you want to keep user profiles private
+
+# Allow important static files
+Allow: /favicon.ico
+Allow: /logo.png
+Allow: /image/
+Allow: /video/
+
+# Sitemap location
+Sitemap: https://global-frontend-lac.vercel.app/sitemap.xml
+
+# Crawl-delay (optional - prevents aggressive crawling)
+# Crawl-delay: 1
