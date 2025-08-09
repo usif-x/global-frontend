@@ -3,6 +3,7 @@ import ConditionalLayout from "@/components/layout/ConditionalLayout.jsx";
 import LoadingOverlay from "@/components/layout/Loading";
 import LoadingProvider from "@/providers/loadingProvider";
 import { IBM_Plex_Sans_Arabic } from "next/font/google";
+import { Suspense } from "react";
 import { ToastContainer } from "react-toastify";
 import "./globals.css";
 
@@ -56,22 +57,24 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${IBM.className}`}>
-        <LoadingProvider>
-          <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick={true}
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light"
-          />
-          <ConditionalLayout>{children}</ConditionalLayout>
-          <LoadingOverlay />
-        </LoadingProvider>
+        <Suspense>
+          <LoadingProvider>
+            <ToastContainer
+              position="top-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick={true}
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
+            <ConditionalLayout>{children}</ConditionalLayout>
+            <LoadingOverlay />
+          </LoadingProvider>
+        </Suspense>
       </body>
     </html>
   );
