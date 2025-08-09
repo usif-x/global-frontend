@@ -24,7 +24,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://https://global-frontend-lac.vercel.app/trips",
+    canonical: "https://global-frontend-lac.vercel.app/trips",
   },
 };
 

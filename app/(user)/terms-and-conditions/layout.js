@@ -17,8 +17,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical:
-      "https://https://global-frontend-lac.vercel.app/terms-and-conditions",
+    canonical: "https://global-frontend-lac.vercel.app/terms-and-conditions",
   },
 };
 

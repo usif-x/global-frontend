@@ -23,16 +23,16 @@ export const metadata = {
   language: "en-US",
   robots: "index, follow",
   alternates: {
-    canonical: "https://https://global-frontend-lac.vercel.app",
+    canonical: "https://global-frontend-lac.vercel.app",
   },
   openGraph: {
     title: "Global Divers Hurghada",
     description: "Experience the Red Sea's Beauty",
-    url: "https://https://global-frontend-lac.vercel.app",
+    url: "https://global-frontend-lac.vercel.app",
     siteName: "Global Divers Hurghada",
     images: [
       {
-        url: "https://https://global-frontend-lac.vercel.app/hero-bg.jpg",
+        url: "https://global-frontend-lac.vercel.app/hero-bg.jpg",
         width: 1200,
         height: 630,
         alt: "Scuba diving in the Red Sea",
