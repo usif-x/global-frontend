@@ -16,7 +16,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://global-frontend-lac.vercel.app/admin/login",
+    canonical: "https://topdivers.online/admin/login",
   },
 };
 export const viewport = {

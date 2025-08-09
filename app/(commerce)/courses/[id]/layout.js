@@ -35,7 +35,7 @@ export async function generateMetadata({ params }) {
       icon: "/favicon.ico",
     },
     alternates: {
-      canonical: `https://global-frontend-lac.vercel.app/courses/${id}`,
+      canonical: `https://topdivers.online/courses/${id}`,
     },
   };
 }

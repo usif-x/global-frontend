@@ -32,7 +32,7 @@ export const metadata = {
     siteName: "Top Divers Hurghada",
     images: [
       {
-        url: "https://global-frontend-lac.vercel.app/hero-bg.jpg",
+        url: "https://topdivers.online/hero-bg.jpg",
         width: 1200,
         height: 630,
         alt: "Scuba diving in the Red Sea",

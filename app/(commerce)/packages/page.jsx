@@ -26,7 +26,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://global-frontend-lac.vercel.app/packages",
+    canonical: "https://topdivers.online/packages",
   },
 };
 

@@ -17,7 +17,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://global-frontend-lac.vercel.app/best-selling",
+    canonical: "https://topdivers.online/best-selling",
   },
 };
 

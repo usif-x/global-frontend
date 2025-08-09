@@ -17,7 +17,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://global-frontend-lac.vercel.app/safety-guidelines",
+    canonical: "https://topdivers.online/safety-guidelines",
   },
 };
 

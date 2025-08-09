@@ -26,7 +26,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://global-frontend-lac.vercel.app/courses",
+    canonical: "https://topdivers.online/courses",
   },
   category: "education",
 };
