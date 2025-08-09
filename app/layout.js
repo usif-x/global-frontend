@@ -1,4 +1,7 @@
+// app/layout.js
 import ConditionalLayout from "@/components/layout/ConditionalLayout.jsx";
+import LoadingOverlay from "@/components/layout/Loading";
+import LoadingProvider from "@/providers/loadingProvider";
 import { IBM_Plex_Sans_Arabic } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "./globals.css";
@@ -7,6 +10,7 @@ const IBM = IBM_Plex_Sans_Arabic({
   subsets: ["latin", "arabic"],
   weight: ["100", "200", "300", "400", "500", "600", "700"],
 });
+
 export const metadata = {
   title: {
     template: "Top Divers - %s",
@@ -23,12 +27,12 @@ export const metadata = {
   language: "en-US",
   robots: "index, follow",
   alternates: {
-    canonical: "https://topdivers.online",
+    canonical: "https://global-frontend-lac.vercel.app",
   },
   openGraph: {
     title: "Top Divers Hurghada",
     description: "Experience the Red Sea's Beauty",
-    url: "https://topdivers.online",
+    url: "https://global-frontend-lac.vercel.app",
     siteName: "Top Divers Hurghada",
     images: [
       {
@@ -52,19 +56,22 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${IBM.className}`}>
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick={true}
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
-        <ConditionalLayout>{children}</ConditionalLayout>
+        <LoadingProvider>
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick={true}
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
+          <ConditionalLayout>{children}</ConditionalLayout>
+          <LoadingOverlay />
+        </LoadingProvider>
       </body>
     </html>
   );
