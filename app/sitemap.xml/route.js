@@ -1,6 +1,6 @@
 export async function GET() {
-  const apiBaseUrl = "https://globaldivers.duckdns.org"; // backend API
-  const siteBaseUrl = "https://global-frontend-lac.vercel.app"; // public site
+  const apiBaseUrl = "https://api.topdivers.online"; // backend API
+  const siteBaseUrl = "https://topdivers.online"; // public site
 
   try {
     // Fetch all data concurrently with timeouts
