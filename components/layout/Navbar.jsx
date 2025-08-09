@@ -28,58 +28,6 @@ const Navbar = () => {
     setIsMounted(true);
   }, []);
 
-  // Load Google Translate script
-  useEffect(() => {
-    const addGoogleTranslateScript = () => {
-      if (!document.querySelector('script[src*="translate.google.com"]')) {
-        const script = document.createElement("script");
-        script.type = "text/javascript";
-        script.src =
-          "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-        script.async = true;
-        document.head.appendChild(script);
-      }
-    };
-
-    const initGoogleTranslate = () => {
-      if (window.google && window.google.translate) {
-        new window.google.translate.TranslateElement(
-          {
-            pageLanguage: "en",
-            includedLanguages: "en,ar,es,fr,de,it,pt,ru,ja,ko,zh",
-            layout:
-              window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-            autoDisplay: false,
-            multilanguagePage: true,
-          },
-          "google_translate_element"
-        );
-
-        // Initialize mobile version too if it exists
-        if (document.getElementById("google_translate_element_mobile")) {
-          new window.google.translate.TranslateElement(
-            {
-              pageLanguage: "en",
-              includedLanguages: "en,ar,es,fr,de,it,pt,ru,ja,ko,zh",
-              layout:
-                window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-              autoDisplay: false,
-              multilanguagePage: true,
-            },
-            "google_translate_element_mobile"
-          );
-        }
-      }
-    };
-
-    // Make the callback function globally available
-    window.googleTranslateElementInit = initGoogleTranslate;
-
-    if (isMounted) {
-      addGoogleTranslateScript();
-    }
-  }, [isMounted]);
-
   const TripsDropdownRef = useRef(null);
   const coursesDropdownRef = useRef(null);
   const profileDropdownRef = useRef(null);
@@ -197,16 +145,8 @@ const Navbar = () => {
             ))}
           </ul>
 
-          {/* Right: Google Translate + Desktop Login/Register/Profile + Mobile Menu Button */}
+          {/* Right: Desktop Login/Register/Profile + Mobile Menu Button */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Google Translate - Desktop */}
-            <div className="hidden lg:block">
-              <div
-                id="google_translate_element"
-                className="google-translate-container"
-              ></div>
-            </div>
-
             {/* Desktop Auth */}
             <div className="hidden lg:flex items-center gap-3">
               {!isAuthenticated ? (
@@ -399,14 +339,6 @@ const Navbar = () => {
             {/* ====== Mobile Navigation Links ====== */}
             {/* ======================================= */}
             <nav className="mb-8">
-              {/* Google Translate - Mobile */}
-              <div className="mb-6 flex justify-center">
-                <div
-                  id="google_translate_element_mobile"
-                  className="google-translate-container-mobile"
-                ></div>
-              </div>
-
               <ul className="space-y-1">
                 {navigationLinks.map((link, index) => (
                   <li key={index}>

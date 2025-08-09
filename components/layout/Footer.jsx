@@ -57,55 +57,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Services */}
-              <div>
-                <h4 className="text-lg font-semibold mb-4 text-white">
-                  Services
-                </h4>
-                <ul className="space-y-2">
-                  <li>
-                    <a
-                      href="#"
-                      className="text-white/80 hover:text-white transition-colors"
-                    >
-                      Beginner Courses
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-white/80 hover:text-white transition-colors"
-                    >
-                      Advanced Diving
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-white/80 hover:text-white transition-colors"
-                    >
-                      Daily Dives
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-white/80 hover:text-white transition-colors"
-                    >
-                      Equipment Rental
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-white/80 hover:text-white transition-colors"
-                    >
-                      Group Expeditions
-                    </a>
-                  </li>
-                </ul>
-              </div>
-
               {/* Contact Info */}
               <div>
                 <h4 className="text-lg font-semibold mb-4 text-white">

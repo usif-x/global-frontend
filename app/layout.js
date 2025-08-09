@@ -1,6 +1,7 @@
 // app/layout.js
 import ConditionalLayout from "@/components/layout/ConditionalLayout.jsx";
 import LoadingOverlay from "@/components/layout/Loading";
+import GoogleTranslateButton from "@/components/layout/TranslateButton";
 import LoadingProvider from "@/providers/loadingProvider";
 import { IBM_Plex_Sans_Arabic } from "next/font/google";
 import { Suspense } from "react";
@@ -71,7 +72,10 @@ export default function RootLayout({ children }) {
               pauseOnHover
               theme="light"
             />
-            <ConditionalLayout>{children}</ConditionalLayout>
+            <ConditionalLayout>
+              {children}
+              <GoogleTranslateButton />
+            </ConditionalLayout>
             <LoadingOverlay />
           </LoadingProvider>
         </Suspense>
