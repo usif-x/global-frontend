@@ -1,21 +1,37 @@
-// components/ui/LoadingOverlay.js
 "use client";
 
-import { useLoading } from "@/providers/loadingProvider";
+import { useLoading } from "@/providers/loadingProvider"; // Make sure this path is correct
 import { useEffect, useState } from "react";
 
 export default function LoadingOverlay() {
-  const { isLoading } = useLoading();
+  const { isLoading, setIsLoading } = useLoading(); // Get setIsLoading from the context
   const [showLoading, setShowLoading] = useState(false);
 
+  // New state to manage the visibility of the close button
+  const [showCloseButton, setShowCloseButton] = useState(false);
+
   useEffect(() => {
-    let timer;
+    let loadingTimer;
+    let closeButtonTimer;
+
     if (isLoading) {
-      timer = setTimeout(() => setShowLoading(true), 100);
+      // Show the loading overlay after a very short delay to avoid flickering on fast loads
+      loadingTimer = setTimeout(() => setShowLoading(true), 100);
+
+      // Show the "close" button only if loading takes more than 3 seconds
+      closeButtonTimer = setTimeout(() => {
+        setShowCloseButton(true);
+      }, 3000);
     } else {
       setShowLoading(false);
+      setShowCloseButton(false); // Hide the button immediately when loading stops
     }
-    return () => clearTimeout(timer);
+
+    // Cleanup timers on unmount or when isLoading changes
+    return () => {
+      clearTimeout(loadingTimer);
+      clearTimeout(closeButtonTimer);
+    };
   }, [isLoading]);
 
   if (!showLoading) return null;
@@ -31,7 +47,17 @@ export default function LoadingOverlay() {
             <div className="bubble bubble2"></div>
             <div className="bubble bubble3"></div>
           </div>
-          <p className="loading-text">Loading</p>
+          <p className="loading-text">Loading...</p>
+
+          {/* --- NEW: "Taking too long?" Button --- */}
+          {showCloseButton && (
+            <button
+              onClick={() => setIsLoading(false)}
+              className="close-loading-button"
+            >
+              Taking too long? Click to continue
+            </button>
+          )}
         </div>
       </div>
 
@@ -108,6 +134,25 @@ export default function LoadingOverlay() {
           font-weight: 500;
           color: #333;
           text-align: center;
+        }
+
+        .close-loading-button {
+          margin-top: 25px;
+          padding: 8px 16px;
+          font-size: 14px;
+          font-weight: 500;
+          color: #1f2937;
+          background-color: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.2s ease-in-out;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1),
+            0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+        .close-loading-button:hover {
+          background-color: #f3f4f6;
+          border-color: #d1d5db;
         }
 
         /* Tablet styles */
