@@ -116,7 +116,7 @@ const Navbar = () => {
             onClick={handleMobileMenuLinkClick}
             className="flex-shrink-0 group"
           >
-            <div className="relative">
+            <div className="relative rounded-full">
               <Image
                 src="/image/logo.png"
                 alt="Top Divers Logo"
