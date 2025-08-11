@@ -46,6 +46,7 @@ export const metadata = {
     ],
     type: "website",
     locale: "en_US",
+    language: "en-US",
   },
 };
 
