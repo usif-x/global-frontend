@@ -122,7 +122,7 @@ const Navbar = () => {
                 alt="Top Divers Logo"
                 width={32}
                 height={32}
-                className="sm:w-[40px] sm:h-[40px] md:w-[45px] md:h-[45px] transition-transform duration-300 group-hover:scale-110"
+                className="sm:w-[40px] sm:h-[40px] md:w-[45px] md:h-[45px] transition-transform duration-300 group-hover:scale-110 rounded-full"
                 priority
               />
               <div className="absolute inset-0 rounded-full bg-cyan-400/20 scale-0 group-hover:scale-110 transition-transform duration-300"></div>
