@@ -1,5 +1,6 @@
 // app/layout.js
 import ConditionalLayout from "@/components/layout/ConditionalLayout.jsx";
+import ChatWidget from "@/components/layout/LiveChat";
 import LoadingOverlay from "@/components/layout/Loading";
 import GoogleTranslateButton from "@/components/layout/TranslateButton";
 import LoadingProvider from "@/providers/loadingProvider";
@@ -75,6 +76,7 @@ export default function RootLayout({ children }) {
             />
             <ConditionalLayout>
               {children}
+              <ChatWidget />
               <GoogleTranslateButton />
             </ConditionalLayout>
             <LoadingOverlay />

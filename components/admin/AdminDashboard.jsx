@@ -6,6 +6,7 @@ import DiveCenterManagementPage from "@/components/admin/components/divecenter/D
 import GalleryManagementPage from "@/components/admin/components/gallery/Gallery";
 import PackageManagement from "@/components/admin/components/package/Package";
 import PaymentsContent from "@/components/admin/components/payment/Payment";
+import AdminChatDashboard from "@/components/admin/components/session/Session";
 import TestimonialManagementPage from "@/components/admin/components/testimonial/Testimonial";
 import TripManagement from "@/components/admin/components/trip/Trip";
 import UserManagementPage from "@/components/admin/components/user/ModernUser";
@@ -23,20 +24,31 @@ import HeroDashboard from "./components/MainContent";
 import AdminSettingsPage from "./components/setting/Setting";
 
 // Notification Component
-const NotificationModal = ({ isOpen, onClose, notifications, onNotificationClick }) => {
+const NotificationModal = ({
+  isOpen,
+  onClose,
+  notifications,
+  onNotificationClick,
+}) => {
   if (!isOpen) return null;
 
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black bg-opacity-25 z-40" onClick={onClose} />
+      <div
+        className="fixed inset-0 bg-black bg-opacity-25 z-40"
+        onClick={onClose}
+      />
 
       {/* Modal */}
       <div className="fixed top-16 right-4 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-96 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          >
             <Icon icon="mdi:close" className="w-5 h-5 text-gray-500" />
           </button>
         </div>
@@ -52,29 +64,40 @@ const NotificationModal = ({ isOpen, onClose, notifications, onNotificationClick
                   className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
                 >
                   <div className="flex items-start">
-                    <div className={`p-2 rounded-full ${notification.color} mr-3 mt-0.5`}>
-                      <Icon icon={notification.icon} className="w-4 h-4 text-white" />
+                    <div
+                      className={`p-2 rounded-full ${notification.color} mr-3 mt-0.5`}
+                    >
+                      <Icon
+                        icon={notification.icon}
+                        className="w-4 h-4 text-white"
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 mb-1">{notification.title}</p>
-                      <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
+                      <p className="text-sm font-medium text-gray-800 mb-1">
+                        {notification.title}
+                      </p>
+                      <p className="text-sm text-gray-600 mb-2">
+                        {notification.message}
+                      </p>
                       <div className="flex items-center justify-between">
                         <span
                           className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                             notification.priority === "high"
                               ? "bg-red-100 text-red-800"
                               : notification.priority === "medium"
-                                ? "bg-orange-100 text-orange-800"
-                                : "bg-blue-100 text-blue-800"
+                              ? "bg-orange-100 text-orange-800"
+                              : "bg-blue-100 text-blue-800"
                           }`}
                         >
                           {notification.priority === "high"
                             ? "Urgent"
                             : notification.priority === "medium"
-                              ? "Important"
-                              : "Info"}
+                            ? "Important"
+                            : "Info"}
                         </span>
-                        <span className="text-xs text-gray-500">{notification.time}</span>
+                        <span className="text-xs text-gray-500">
+                          {notification.time}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -83,14 +106,19 @@ const NotificationModal = ({ isOpen, onClose, notifications, onNotificationClick
             </div>
           ) : (
             <div className="p-8 text-center text-gray-500">
-              <Icon icon="mdi:bell-check" className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <Icon
+                icon="mdi:bell-check"
+                className="w-12 h-12 mx-auto mb-3 text-gray-300"
+              />
               <p className="text-sm">No new notifications</p>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        {notifications.length > 0 && <div className="p-3 border-t border-gray-100"></div>}
+        {notifications.length > 0 && (
+          <div className="p-3 border-t border-gray-100"></div>
+        )}
       </div>
     </>
   );
@@ -153,7 +181,7 @@ const AdminDashboard = () => {
       if (usersRes.status === "fulfilled" && usersRes.value?.users) {
         const today = new Date().toDateString();
         const newUsersToday = usersRes.value.users.filter(
-          (user) => new Date(user.created_at).toDateString() === today,
+          (user) => new Date(user.created_at).toDateString() === today
         ).length;
         stats.new_users_today = newUsersToday;
       }
@@ -210,7 +238,9 @@ const AdminDashboard = () => {
         newNotifications.push({
           id: "new-users",
           title: "New Users Today",
-          message: `${stats.new_users_today} new user${stats.new_users_today > 1 ? "s" : ""} registered today`,
+          message: `${stats.new_users_today} new user${
+            stats.new_users_today > 1 ? "s" : ""
+          } registered today`,
           icon: "mdi:account-plus",
           color: "bg-green-500",
           priority: "low",
@@ -240,7 +270,11 @@ const AdminDashboard = () => {
       }
 
       setNotifications(newNotifications);
-      setNotificationCount(newNotifications.filter((n) => n.priority === "high" || n.priority === "medium").length);
+      setNotificationCount(
+        newNotifications.filter(
+          (n) => n.priority === "high" || n.priority === "medium"
+        ).length
+      );
     } catch (error) {
       console.error("Error loading notifications:", error);
     }
@@ -308,6 +342,12 @@ const AdminDashboard = () => {
       icon: "mdi:diving",
       color: "text-teal-500",
     },
+    {
+      id: "sessions",
+      label: "Live Chat",
+      icon: "mdi:chat",
+      color: "text-indigo-500",
+    },
 
     ...(admin?.admin_level === 2
       ? [
@@ -325,7 +365,9 @@ const AdminDashboard = () => {
       icon: "mdi:comment-quote",
       color: "text-yellow-500",
       badge:
-        notificationStats.unaccepted_testimonials_count > 0 ? notificationStats.unaccepted_testimonials_count : null,
+        notificationStats.unaccepted_testimonials_count > 0
+          ? notificationStats.unaccepted_testimonials_count
+          : null,
     },
     ...(admin?.admin_level === 2
       ? [
@@ -334,7 +376,10 @@ const AdminDashboard = () => {
             label: "Invoices",
             icon: "mdi:calendar-check",
             color: "text-indigo-500",
-            badge: notificationStats.pending_invoices > 0 ? notificationStats.pending_invoices : null,
+            badge:
+              notificationStats.pending_invoices > 0
+                ? notificationStats.pending_invoices
+                : null,
           },
         ]
       : []),
@@ -384,6 +429,8 @@ const AdminDashboard = () => {
         return <GalleryManagementPage />;
       case "divecenters":
         return <DiveCenterManagementPage />;
+      case "sessions":
+        return <AdminChatDashboard />;
       case "admins":
         return <AdminManagementPage />;
       case "testimonials":
@@ -437,7 +484,9 @@ const AdminDashboard = () => {
             >
               <Icon
                 icon={item.icon}
-                className={`w-5 h-5 mr-3 ${activeTab === item.id ? "text-cyan-500" : item.color}`}
+                className={`w-5 h-5 mr-3 ${
+                  activeTab === item.id ? "text-cyan-500" : item.color
+                }`}
               />
               <span className="font-medium flex-1">{item.label}</span>
               {item.badge && (
@@ -499,7 +548,9 @@ const AdminDashboard = () => {
                 {/* Welcome message */}
                 <div className="hidden sm:flex items-center space-x-2">
                   <span className="text-sm text-gray-600">Welcome,</span>
-                  <span className="text-sm font-semibold text-gray-900">{admin.name}</span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {admin.name}
+                  </span>
                 </div>
 
                 {/* Logout button */}
@@ -507,7 +558,11 @@ const AdminDashboard = () => {
                   onClick={handleLogout}
                   className="flex items-center px-3 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300"
                 >
-                  <Icon icon="mdi:logout" className="w-4 h-4 mr-1" aria-hidden="true" />
+                  <Icon
+                    icon="mdi:logout"
+                    className="w-4 h-4 mr-1"
+                    aria-hidden="true"
+                  />
                   <span>Logout</span>
                 </button>
               </div>
@@ -516,7 +571,9 @@ const AdminDashboard = () => {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{renderContent()}</main>
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+          {renderContent()}
+        </main>
       </div>
 
       {/* Notification Modal */}
@@ -529,7 +586,10 @@ const AdminDashboard = () => {
 
       {/* Overlay for mobile */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
     </div>
   );

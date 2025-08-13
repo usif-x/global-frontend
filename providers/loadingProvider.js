@@ -44,7 +44,8 @@ export default function LoadingProvider({ children }) {
       if (newUrl && isHashOnlyNavigation(newUrl, window.location.href)) {
         return; // Don't start loading for hash-only changes
       }
-      setIsLoading(true);
+      // Delay state change to avoid "useInsertionEffect must not schedule updates"
+      setTimeout(() => setIsLoading(true), 0);
     };
 
     // Function to stop loading
@@ -120,7 +121,7 @@ export default function LoadingProvider({ children }) {
       lastPathRef.current !== currentPath ||
       lastSearchRef.current !== currentSearch
     ) {
-      setIsLoading(true);
+      setTimeout(() => setIsLoading(true), 0);
       lastPathRef.current = currentPath;
       lastSearchRef.current = currentSearch;
 
