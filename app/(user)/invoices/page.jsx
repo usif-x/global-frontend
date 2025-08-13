@@ -89,7 +89,7 @@ const generateInvoicePDF = async (invoice, user) => {
     // Company info positioned to the right of logo
     doc.text("Top Divers Hurghada", 50, 25);
     doc.text("Aqua Joy sunrise resort, hurghada - egypt", 50, 30);
-    doc.text("Website: globaldivershurghada.com", 50, 35);
+    doc.text("Website: topdivers.online", 50, 35);
 
     // --- Invoice Details ---
     doc.setFontSize(12);
