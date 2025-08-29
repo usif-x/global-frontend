@@ -11,7 +11,7 @@ import { notFound, redirect } from "next/navigation";
 const formatPrice = (price) => {
   if (price === 0) return "Inquire for Price";
   if (price == null) return "N/A";
-  return `€${Math.round(price)}`;
+  return `EGP${Math.round(price)}`;
 };
 
 const formatDuration = (duration) => {

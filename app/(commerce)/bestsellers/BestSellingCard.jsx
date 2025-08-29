@@ -79,7 +79,7 @@ const BestSellingItemCard = ({ item }) => {
         <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
           {item.price ? (
             <p className="text-xl font-extrabold text-slate-800">
-              ${parseFloat(item.price).toFixed(2)}
+              EGP {parseFloat(item.price).toFixed(2)}
               <span className="text-sm font-normal text-slate-500">
                 {" "}
                 / person

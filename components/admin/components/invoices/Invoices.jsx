@@ -11,15 +11,14 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 
 //=================================================================
-//  HELPER & UI COMPONENTS (Adapted from InvoicesTab & UserManagement)
+//  HELPER & UI COMPONENTS (No changes needed here)
 //=================================================================
 
-// --- Thematic Loading Spinner ---
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center p-8">
     <div className="relative">
@@ -28,8 +27,20 @@ const LoadingSpinner = () => (
     </div>
   </div>
 );
+const ToggleSwitch = ({ checked, onChange }) => {
+  return (
+    <label className="relative inline-flex items-center cursor-pointer">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="sr-only peer"
+      />
+      <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-cyan-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+    </label>
+  );
+};
 
-// --- Table Skeleton Loader ---
 const TableSkeleton = ({ rows = 5, cols = 6 }) => (
   <div className="p-4 space-y-3 animate-pulse">
     {Array.from({ length: rows }).map((_, i) => (
@@ -46,7 +57,6 @@ const TableSkeleton = ({ rows = 5, cols = 6 }) => (
   </div>
 );
 
-// --- Format Date Helper ---
 const formatDate = (dateString) => {
   if (!dateString) return "N/A";
   return new Date(dateString).toLocaleDateString("en-US", {
@@ -58,38 +68,21 @@ const formatDate = (dateString) => {
   });
 };
 
-// --- Format Currency Helper ---
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(amount);
+// --- FIX: The default currency is already EGP, this is correct. ---
+const formatCurrency = (amount, currencyCode = "EGP") => {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "EGP", // Hardcoding to EGP for consistency
+      minimumFractionDigits: 2,
+    }).format(amount);
+  } catch (error) {
+    return `${amount.toFixed(2)} EGP`;
+  }
 };
 
-// --- Get Display Info Helpers ---
-const getInvoiceForDisplay = (invoiceFor) => {
-  const types = {
-    course: { name: "Course", icon: "mdi:school", color: "text-blue-600" },
-    trip: { name: "Trip", icon: "mdi:airplane", color: "text-green-600" },
-    service: { name: "Service", icon: "mdi:tools", color: "text-purple-600" },
-    other: {
-      name: "Other",
-      icon: "mdi:dots-horizontal",
-      color: "text-gray-600",
-    },
-  };
-  return (
-    types[invoiceFor] || {
-      name: invoiceFor,
-      icon: "mdi:file",
-      color: "text-gray-600",
-    }
-  );
-};
-
-// --- Status Badge ---
 const StatusBadge = ({ status }) => {
+  const safeStatus = (status || "pending").toLowerCase();
   const statusConfig = {
     pending: {
       bg: "bg-yellow-100",
@@ -113,18 +106,17 @@ const StatusBadge = ({ status }) => {
       icon: "mdi:timer-off",
     },
   };
-  const config = statusConfig[status] || statusConfig.pending;
+  const config = statusConfig[safeStatus] || statusConfig.pending;
   return (
     <span
       className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
     >
       <Icon icon={config.icon} className="w-3 h-3" />
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+      {safeStatus.charAt(0).toUpperCase() + safeStatus.slice(1)}
     </span>
   );
 };
 
-// --- Modal Wrapper ---
 const ModalWrapper = ({ children, onClose, visible }) => {
   if (!visible) return null;
   return (
@@ -152,12 +144,8 @@ const ModalWrapper = ({ children, onClose, visible }) => {
   );
 };
 
-// --- Invoice Details Modal (Re-styled for Admin Theme) ---
 const InvoiceDetailsModal = ({ invoice, onClose }) => {
   if (!invoice) return null;
-
-  const typeInfo = getInvoiceForDisplay(invoice.invoice_for);
-
   return (
     <ModalWrapper visible={!!invoice} onClose={onClose}>
       <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full animate-in fade-in-0 zoom-in-95">
@@ -168,7 +156,7 @@ const InvoiceDetailsModal = ({ invoice, onClose }) => {
             </div>
             <div>
               <h2 id="modal-title" className="text-2xl font-bold">
-                Invoice #{String(invoice.id).padStart(5, "0")}
+                Invoice Ref: {invoice.customer_reference}
               </h2>
               <p className="text-cyan-100 mt-1">
                 Issued on {formatDate(invoice.created_at)}
@@ -177,112 +165,15 @@ const InvoiceDetailsModal = ({ invoice, onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all duration-200"
+            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all"
           >
             <Icon icon="mdi:close" className="w-6 h-6" />
           </button>
         </div>
-
         <div className="p-8 max-h-[70vh] overflow-y-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="flex items-start space-x-3">
-              <Icon
-                icon="mdi:receipt-text"
-                className="w-6 h-6 text-slate-400 mt-1"
-              />
-              <div>
-                <p className="text-sm font-medium text-slate-500">Status</p>
-                <StatusBadge status={invoice.status} />
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <Icon icon="mdi:cash" className="w-6 h-6 text-slate-400 mt-1" />
-              <div>
-                <p className="text-sm font-medium text-slate-500">
-                  Total Amount
-                </p>
-                <p className="text-xl font-bold text-slate-800">
-                  {formatCurrency(invoice.amount)}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <Icon
-                icon={typeInfo.icon}
-                className="w-6 h-6 text-slate-400 mt-1"
-              />
-              <div>
-                <p className="text-sm font-medium text-slate-500">
-                  Invoice For
-                </p>
-                <p className="text-lg font-semibold text-slate-700">
-                  {typeInfo.name}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {invoice.user && (
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b pb-2">
-                Customer Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center space-x-3">
-                  <Icon
-                    icon="mdi:account-circle"
-                    className="w-5 h-5 text-slate-400"
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-slate-500">Name</p>
-                    <p className="text-slate-700">{invoice.user.full_name}</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Icon icon="mdi:email" className="w-5 h-5 text-slate-400" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-500">Email</p>
-                    <p className="text-slate-700">{invoice.user.email}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div>
-            <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b pb-2">
-              Invoice Items
-            </h3>
-            {invoice.items && invoice.items.length > 0 ? (
-              <div className="space-y-3">
-                {invoice.items.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center py-2"
-                  >
-                    <div>
-                      <p className="font-medium text-slate-800">{item.name}</p>
-                      <p className="text-sm text-slate-500">
-                        {item.description}
-                      </p>
-                    </div>
-                    <p className="font-semibold text-slate-700">
-                      {formatCurrency(item.price)}
-                    </p>
-                  </div>
-                ))}
-                <div className="flex justify-end items-center pt-4 mt-4 border-t-2 border-slate-200">
-                  <span className="text-lg font-bold text-slate-800">
-                    Total: {formatCurrency(invoice.amount)}
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <p className="text-slate-500 text-center py-4">
-                No items listed for this invoice.
-              </p>
-            )}
-          </div>
+          <pre className="bg-slate-50 p-4 rounded-lg text-sm text-slate-700 whitespace-pre-wrap font-sans">
+            {invoice.invoice_description}
+          </pre>
         </div>
       </div>
     </ModalWrapper>
@@ -293,7 +184,8 @@ const InvoiceDetailsModal = ({ invoice, onClose }) => {
 //  MAIN INVOICE MANAGEMENT COMPONENT
 //=================================================================
 export default function InvoiceManagementPage() {
-  const [invoices, setInvoices] = useState([]);
+  const [allInvoices, setAllInvoices] = useState([]);
+  const [filteredInvoices, setFilteredInvoices] = useState([]);
   const [summary, setSummary] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sorting, setSorting] = useState([{ id: "created_at", desc: true }]);
@@ -301,8 +193,7 @@ export default function InvoiceManagementPage() {
   const [pagination, setPagination] = useState({
     page: 1,
     per_page: 10,
-    total: 0,
-    total_pages: 1,
+    hasMore: true,
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -310,7 +201,6 @@ export default function InvoiceManagementPage() {
   const { userType } = useAuthStore();
   const router = useRouter();
 
-  // Redirect if not admin
   useEffect(() => {
     if (userType && userType !== "admin") {
       toast.error("Access Denied. Admins only.");
@@ -318,93 +208,96 @@ export default function InvoiceManagementPage() {
     }
   }, [userType, router]);
 
-  // Fetch data
-  const fetchData = async (
-    page = 1,
-    perPage = 10,
-    status = "all",
-    search = ""
-  ) => {
-    setIsLoading(true);
-    try {
-      // Fetch summary (only on first load or when filters clear)
-      if (!summary || (status === "all" && search === "")) {
-        const summaryData = await InvoiceService.getInvoiceSummaryAdmin();
-        setSummary(summaryData);
+  // --- FIX: Centralized data fetching logic ---
+  const fetchData = useCallback(
+    async (page, perPage, search) => {
+      setIsLoading(true);
+      try {
+        // Fetch summary only on the very first load or when search is cleared
+        if (!summary || (search === "" && page === 1)) {
+          const summaryData = await InvoiceService.getInvoiceSummaryAdmin();
+          setSummary(summaryData);
+        }
+
+        const invoiceData = await InvoiceService.getAllInvoicesAdmin({
+          page,
+          per_page: perPage,
+          search: search || null,
+        });
+
+        const fetchedInvoices = invoiceData || [];
+        setAllInvoices(fetchedInvoices);
+        setPagination((prev) => ({
+          ...prev,
+          page,
+          hasMore: fetchedInvoices.length === perPage,
+        }));
+      } catch (error) {
+        toast.error(
+          "Failed to fetch invoices. " +
+            (error.response?.data?.detail || error.message)
+        );
+        setAllInvoices([]);
+      } finally {
+        setIsLoading(false);
       }
+    },
+    // --- FIX: The dependency array is now empty. ---
+    // This makes the fetchData function "stable" and prevents it from
+    // being recreated on every render, thus stopping the infinite loop.
+    []
+  );
 
-      // Fetch invoices
-      const invoiceData = await InvoiceService.getAllInvoicesAdmin({
-        page,
-        per_page: perPage,
-        status: status === "all" ? null : status.toUpperCase(),
-        search: search || null,
-      });
-
-      setInvoices(invoiceData.invoices || []);
-      setPagination({
-        page: invoiceData.page,
-        per_page: invoiceData.per_page,
-        total: invoiceData.total,
-        total_pages: invoiceData.total_pages,
-      });
-    } catch (error) {
-      toast.error(
-        "Failed to fetch invoices. " +
-          (error.response?.data?.detail || error.message)
+  // Effect for client-side filtering
+  useEffect(() => {
+    let invoicesToDisplay = [...allInvoices];
+    if (statusFilter !== "all") {
+      invoicesToDisplay = invoicesToDisplay.filter(
+        (invoice) => invoice.status.toLowerCase() === statusFilter
       );
-      setInvoices([]);
-    } finally {
-      setIsLoading(false);
     }
-  };
+    setFilteredInvoices(invoicesToDisplay);
+  }, [allInvoices, statusFilter]);
 
-  // Initial fetch and fetch on dependency change
+  // Effect for debounced search and initial load
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchData(1, pagination.per_page, statusFilter, searchTerm);
-    }, 500); // Debounce search
+      fetchData(1, pagination.per_page, searchTerm);
+    }, 500);
     return () => clearTimeout(timer);
-  }, [searchTerm, statusFilter, pagination.per_page]);
+  }, [searchTerm, pagination.per_page, fetchData]);
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= pagination.total_pages) {
-      fetchData(newPage, pagination.per_page, statusFilter, searchTerm);
+    if (newPage >= 1) {
+      fetchData(newPage, pagination.per_page, searchTerm);
     }
   };
 
+  // The rest of the functions are correct and need no changes
   const handleUpdateStatus = async (invoiceId, currentStatus) => {
     const { value: newStatus } = await Swal.fire({
       title: "Update Invoice Status",
       input: "select",
       inputOptions: {
-        paid: "Paid",
-        failed: "Failed",
-        cancelled: "Cancelled",
-        pending: "Pending",
+        PAID: "Paid",
+        FAILED: "Failed",
+        CANCELLED: "Cancelled",
+        PENDING: "Pending",
       },
       inputPlaceholder: "Select a status",
       showCancelButton: true,
-      inputValue: currentStatus,
+      inputValue: currentStatus.toUpperCase(),
       confirmButtonText: "Update",
-      customClass: {
-        confirmButton: "bg-cyan-500 text-white",
-      },
+      customClass: { confirmButton: "bg-cyan-500 text-white" },
     });
 
     if (newStatus && newStatus !== currentStatus) {
       try {
-        await InvoiceService.updateInvoiceStatusAdmin(
-          invoiceId,
-          newStatus.toUpperCase()
-        );
-        toast.success(`Invoice #${invoiceId} status updated to ${newStatus}.`);
-        fetchData(
-          pagination.page,
-          pagination.per_page,
-          statusFilter,
-          searchTerm
-        );
+        await InvoiceService.updateInvoiceAdmin(invoiceId, {
+          status: newStatus,
+        });
+        toast.success(`Invoice status updated to ${newStatus}.`);
+        fetchData(pagination.page, pagination.per_page, searchTerm);
       } catch (error) {
         toast.error(
           "Failed to update status. " +
@@ -414,10 +307,10 @@ export default function InvoiceManagementPage() {
     }
   };
 
-  const handleDeleteInvoice = async (invoiceId) => {
+  const handleDeleteInvoice = async (invoiceId, ref) => {
     const result = await Swal.fire({
       title: "Are you sure?",
-      text: "You won't be able to revert this! This will permanently delete the invoice.",
+      html: `You are about to permanently delete invoice <strong>${ref}</strong>.<br/>This action cannot be undone.`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -428,13 +321,8 @@ export default function InvoiceManagementPage() {
     if (result.isConfirmed) {
       try {
         await InvoiceService.deleteInvoiceAdmin(invoiceId);
-        toast.success(`Invoice #${invoiceId} has been deleted.`);
-        fetchData(
-          pagination.page,
-          pagination.per_page,
-          statusFilter,
-          searchTerm
-        );
+        toast.success(`Invoice #${ref} has been deleted.`);
+        fetchData(pagination.page, pagination.per_page, searchTerm);
       } catch (error) {
         toast.error(
           "Failed to delete invoice. " +
@@ -444,27 +332,58 @@ export default function InvoiceManagementPage() {
     }
   };
 
+  const handleTogglePickedUp = async (invoiceId, currentPickedUpStatus) => {
+    const newPickedUpStatus = !currentPickedUpStatus;
+
+    // Optimistically update the UI for a faster user experience
+    setAllInvoices((prevInvoices) =>
+      prevInvoices.map((inv) =>
+        inv.id === invoiceId ? { ...inv, picked_up: newPickedUpStatus } : inv
+      )
+    );
+
+    try {
+      await InvoiceService.updateInvoicePickedUp(invoiceId, newPickedUpStatus);
+      toast.success(
+        `Invoice #${invoiceId} marked as ${
+          newPickedUpStatus ? "Picked Up" : "Not Picked Up"
+        }.`
+      );
+      // No need to refetch, the UI is already updated.
+    } catch (error) {
+      toast.error("Failed to update status. Reverting change.");
+      // If the API call fails, revert the optimistic update
+      setAllInvoices((prevInvoices) =>
+        prevInvoices.map((inv) =>
+          inv.id === invoiceId
+            ? { ...inv, picked_up: currentPickedUpStatus }
+            : inv
+        )
+      );
+    }
+  };
+
   const columns = useMemo(
     () => [
       {
-        accessorKey: "id",
-        header: "ID",
+        accessorKey: "customer_reference",
+        header: "Invoice Ref",
         cell: ({ row }) => (
           <span className="font-mono font-semibold">
-            #{String(row.original.id).padStart(5, "0")}
+            {row.original.customer_reference}
           </span>
         ),
       },
       {
-        accessorKey: "user",
+        accessorKey: "buyer_name",
         header: "User",
         cell: ({ row }) => (
           <div>
             <div className="font-medium text-slate-800">
-              {row.original.user.full_name}
+              {row.original.buyer_name}
             </div>
             <div className="text-xs text-slate-500">
-              {row.original.user.email}
+              {row.original.buyer_email}
             </div>
           </div>
         ),
@@ -474,29 +393,41 @@ export default function InvoiceManagementPage() {
         header: "Amount",
         cell: ({ row }) => (
           <span className="font-semibold text-slate-800">
-            {formatCurrency(row.original.amount)}
+            {formatCurrency(row.original.amount, row.original.currency)}
           </span>
         ),
-      },
+      }, // Note: we pass the original currency here for potential future use, but our helper defaults to EGP.
       {
         accessorKey: "status",
         header: "Status",
         cell: ({ row }) => <StatusBadge status={row.original.status} />,
       },
       {
-        accessorKey: "invoice_for",
-        header: "Type",
+        accessorKey: "picked_up",
+        header: "Picked Up",
         cell: ({ row }) => {
-          const typeInfo = getInvoiceForDisplay(row.original.invoice_for);
+          const invoice = row.original;
           return (
-            <div
-              className={`inline-flex items-center gap-1.5 font-medium ${typeInfo.color}`}
-            >
-              <Icon icon={typeInfo.icon} className="h-4 w-4" />
-              {typeInfo.name}
-            </div>
+            <ToggleSwitch
+              checked={invoice.picked_up}
+              onChange={() =>
+                handleTogglePickedUp(invoice.id, invoice.picked_up)
+              }
+            />
           );
         },
+      },
+      {
+        accessorKey: "activity",
+        header: "Type",
+        cell: ({ row }) => (
+          <div
+            className={`inline-flex items-center gap-1.5 font-medium text-slate-700`}
+          >
+            <Icon icon="mdi:tag-outline" className="h-4 w-4 text-slate-400" />
+            {row.original.activity}
+          </div>
+        ),
       },
       {
         accessorKey: "created_at",
@@ -529,7 +460,12 @@ export default function InvoiceManagementPage() {
               <Icon icon="mdi:pencil-outline" width={18} />
             </button>
             <button
-              onClick={() => handleDeleteInvoice(row.original.id)}
+              onClick={() =>
+                handleDeleteInvoice(
+                  row.original.id,
+                  row.original.customer_reference
+                )
+              }
               className="p-2 text-slate-500 rounded-full hover:bg-red-100 hover:text-red-600"
               title="Delete Invoice"
             >
@@ -539,18 +475,18 @@ export default function InvoiceManagementPage() {
         ),
       },
     ],
-    [pagination.page, pagination.per_page, statusFilter, searchTerm]
+    []
   );
 
   const table = useReactTable({
-    data: invoices,
+    data: filteredInvoices,
     columns,
     state: { sorting },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    manualPagination: true, // Server-side pagination
-    manualSorting: true, // Server-side sorting
+    manualPagination: true,
+    manualSorting: false,
   });
 
   return (
@@ -577,67 +513,60 @@ export default function InvoiceManagementPage() {
         {/* Stats Cards */}
         {summary && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {[
-              {
-                title: "Total Invoices",
-                value: summary.total_invoices,
-                icon: "mdi:file-document-multiple",
-                color: "blue",
-              },
-              {
-                title: "Total Revenue",
-                value: formatCurrency(summary.total_amount),
-                icon: "mdi:currency-usd",
-                color: "green",
-              },
-              {
-                title: "Pending Invoices",
-                value: summary.pending_invoices || 0,
-                icon: "mdi:clock-outline",
-                color: "yellow",
-              },
-              {
-                title: "Failed/Cancelled",
-                value: summary.failed_invoices || 0,
-                icon: "mdi:alert-circle-outline",
-                color: "red",
-              },
-            ].map((stat, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-6 hover:shadow-xl transition-all duration-200"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-slate-500 text-sm font-medium">
-                      {stat.title}
-                    </p>
-                    <p className="text-2xl font-bold text-slate-800 mt-1">
-                      {stat.value}
-                    </p>
-                  </div>
-                  <div className={`p-3 rounded-xl bg-${stat.color}-100`}>
-                    <Icon
-                      icon={stat.icon}
-                      className={`w-6 h-6 text-${stat.color}-600`}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
+            <div className="bg-white rounded-2xl shadow-lg border p-6 hover:shadow-xl transition-all">
+              <p className="text-slate-500 text-sm font-medium">
+                Total Revenue
+              </p>
+              <p className="text-2xl font-bold text-green-600 mt-1">
+                {formatCurrency(summary.total_revenue)}
+              </p>
+              <p className="text-xs text-slate-400 mt-2">
+                {summary.paid_count} Paid Invoices
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl shadow-lg border p-6 hover:shadow-xl transition-all">
+              <p className="text-slate-500 text-sm font-medium">
+                Pending Amount
+              </p>
+              <p className="text-2xl font-bold text-yellow-600 mt-1">
+                {formatCurrency(summary.pending_amount_total)}
+              </p>
+              <p className="text-xs text-slate-400 mt-2">
+                {summary.pending_count} Pending Invoices
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl shadow-lg border p-6 hover:shadow-xl transition-all">
+              <p className="text-slate-500 text-sm font-medium">
+                Failed/Cancelled
+              </p>
+              <p className="text-2xl font-bold text-red-600 mt-1">
+                {formatCurrency(summary.failed_amount_total)}
+              </p>
+              <p className="text-xs text-slate-400 mt-2">
+                {summary.failed_count} Failed Invoices
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl shadow-lg border p-6 hover:shadow-xl transition-all">
+              <p className="text-slate-500 text-sm font-medium">
+                Total Invoices
+              </p>
+              <p className="text-2xl font-bold text-blue-600 mt-1">
+                {summary.total_invoices}
+              </p>
+              <p className="text-xs text-slate-400 mt-2">Across all statuses</p>
+            </div>
           </div>
         )}
 
-        {/* Main Table */}
         <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden">
           {/* Filters and Search */}
           <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-cyan-50">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-              <div className="relative flex-1 max-w-md">
+              <div className="relative flex-1 max-w-md w-full">
                 <Input
                   icon="mdi:magnify"
                   type="text"
-                  placeholder="Search by user name, email, or invoice ID..."
+                  placeholder="Search by Invoice Ref..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -664,7 +593,6 @@ export default function InvoiceManagementPage() {
             </div>
           </div>
 
-          {/* Table Content */}
           <div className="overflow-x-auto">
             {isLoading ? (
               <TableSkeleton />
@@ -740,25 +668,24 @@ export default function InvoiceManagementPage() {
           </div>
 
           {/* Pagination */}
-          {!isLoading && invoices.length > 0 && pagination.total_pages > 1 && (
+          {!isLoading && allInvoices.length > 0 && (
             <div className="p-4 border-t border-slate-200 bg-gradient-to-r from-slate-50 to-cyan-50">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-slate-600">
-                  Page <strong>{pagination.page}</strong> of{" "}
-                  <strong>{pagination.total_pages}</strong>
+                  Page <strong>{pagination.page}</strong>
                 </span>
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={pagination.page === 1}
-                    className="px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50"
+                    className="px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Previous
                   </button>
                   <button
                     onClick={() => handlePageChange(pagination.page + 1)}
-                    disabled={pagination.page === pagination.total_pages}
-                    className="px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50"
+                    disabled={!pagination.hasMore}
+                    className="px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Next
                   </button>
@@ -769,7 +696,6 @@ export default function InvoiceManagementPage() {
         </div>
       </div>
 
-      {/* Modals */}
       {selectedInvoice && (
         <InvoiceDetailsModal
           invoice={selectedInvoice}

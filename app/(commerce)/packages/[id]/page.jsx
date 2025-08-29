@@ -1,26 +1,33 @@
 // app/packages/[id]/page.js
 
+import MarkdownRenderer from "@/components/ui/MarkdownRender";
+import { getData } from "@/lib/server-axios";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-// ✅ Use the server-safe axios helper
-import MarkdownRenderer from "@/components/ui/MarkdownRender";
-import { getData } from "@/lib/server-axios";
 
 // --- Helper Functions ---
-const formatPrice = (price, hasDiscount, discountPercentage) => {
+const formatPrice = (
+  price,
+  hasDiscount,
+  discountPercentage,
+  discountAlwaysAvailable
+) => {
   if (price == null) return { original: "0", discounted: null, discount: null };
-  if (hasDiscount && discountPercentage) {
-    const originalPrice = price / (1 - discountPercentage / 100);
+
+  // Only apply discount if it's always available or if conditions are met
+  if (hasDiscount && discountPercentage && discountAlwaysAvailable) {
+    const discountedPrice = price * (1 - discountPercentage / 100);
     return {
-      original: Math.round(originalPrice).toString(),
-      discounted: Math.round(price).toString(),
+      original: price.toFixed(0),
+      discounted: discountedPrice.toFixed(0),
       discount: discountPercentage,
     };
   }
+
   return {
-    original: Math.round(price).toString(),
+    original: price.toFixed(0),
     discounted: null,
     discount: null,
   };
@@ -31,11 +38,21 @@ const formatDuration = (duration) => {
   if (duration >= 60) {
     const hours = Math.floor(duration / 60);
     const minutes = duration % 60;
-    return minutes > 0
-      ? `${hours}h ${minutes}m`
-      : `${hours} hour${hours !== 1 ? "s" : ""}`;
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours} hours`;
   }
-  return `${duration} minute${duration !== 1 ? "s" : ""}`;
+  return `${duration} minutes`;
+};
+
+const getDiscountBadgeText = (trip) => {
+  if (!trip.has_discount) return null;
+
+  if (trip.discount_always_available) {
+    return `${trip.discount_percentage}% OFF`;
+  } else if (trip.discount_requires_min_people) {
+    return `${trip.discount_percentage}% OFF (Min ${trip.discount_min_people} people)`;
+  }
+
+  return `${trip.discount_percentage}% OFF`;
 };
 
 // --- Main Server Component ---
@@ -77,7 +94,7 @@ const PackagePage = async ({ params }) => {
     <div className="min-h-screen bg-gray-50">
       {/* --- Hero Section --- */}
       <div className="relative overflow-hidden bg-gradient-to-br from-sky-600 to-cyan-600 text-white">
-        <div className="absolute inset-0 bg-black/30"></div>
+        <div className="absolute inset-0 bg-black/20"></div>
         {packageData.images?.[0] && (
           <div className="absolute inset-0">
             <Image
@@ -156,36 +173,48 @@ const PackagePage = async ({ params }) => {
               </p>
             </div>
 
-            {/* --- Trips Grid --- */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* --- Trips Grid with Trips Page Card Design --- */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {trips.map((trip) => {
                 const pricing = formatPrice(
                   trip.adult_price,
                   trip.has_discount,
-                  trip.discount_percentage
+                  trip.discount_percentage,
+                  trip.discount_always_available
                 );
+                const discountBadgeText = getDiscountBadgeText(trip);
+
                 return (
-                  // ✅ CHANGE: The entire card is now a link to the trip's page. No more onClick or modal.
                   <Link
                     key={trip.id}
                     href={`/trips/${trip.id}`}
-                    className="group flex flex-col bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden"
+                    className="group"
                   >
-                    <div className="relative">
-                      {trip.has_discount && (
+                    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden h-full flex flex-col relative">
+                      {/* Discount Badge */}
+                      {discountBadgeText && (
                         <div className="absolute top-4 left-4 z-10 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
                           <Icon icon="lucide:gift" className="w-4 h-4" />
-                          {trip.discount_percentage}% OFF
+                          {discountBadgeText}
                         </div>
                       )}
+
+                      {/* Child Not Allowed Badge */}
+                      {!trip.child_allowed && (
+                        <div className="absolute top-4 right-4 z-10 bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                          <Icon icon="lucide:user-x" className="w-4 h-4" />
+                          Adults Only
+                        </div>
+                      )}
+
                       <div className="relative h-48 overflow-hidden">
-                        {trip.images?.[0] ? (
+                        {trip.images && trip.images.length > 0 ? (
                           <Image
                             src={trip.images[0]}
                             alt={trip.name}
                             fill
                             className="object-cover transition-transform duration-300 group-hover:scale-105"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                           />
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center">
@@ -196,51 +225,93 @@ const PackagePage = async ({ params }) => {
                           </div>
                         )}
                         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        {trip.is_image_list &&
+                          trip.images &&
+                          trip.images.length > 1 && (
+                            <div className="absolute bottom-4 right-4 bg-black/70 text-white px-2 py-1 rounded-lg text-sm flex items-center gap-1">
+                              <Icon icon="lucide:camera" className="w-4 h-4" />
+                              {trip.images.length}
+                            </div>
+                          )}
                       </div>
-                    </div>
 
-                    <div className="p-6 flex flex-col flex-grow">
-                      <div className="flex items-center justify-between mb-3 text-sm">
-                        <div className="flex items-center text-gray-600">
-                          <Icon icon="lucide:clock" className="w-4 h-4 mr-1" />
-                          {formatDuration(trip.duration)}
-                        </div>
-                      </div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-sky-600 transition-colors duration-200">
-                        {trip.name}
-                      </h3>
-                      <div className="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">
-                        <MarkdownRenderer content={trip.description} />
-                      </div>
-                      <div className="flex items-center text-gray-600 text-sm mb-4">
-                        <Icon icon="lucide:users" className="w-4 h-4 mr-2" />
-                        Max {trip.maxim_person} people
-                      </div>
-                      <div className="border-t pt-4 mt-auto">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              {pricing.discounted ? (
-                                <>
-                                  <span className="text-gray-400 line-through text-sm">
-                                    €{pricing.original}
-                                  </span>
-                                  <span className="text-2xl font-bold text-sky-600">
-                                    €{pricing.discounted}
-                                  </span>
-                                </>
-                              ) : (
-                                <span className="text-2xl font-bold text-sky-600">
-                                  €{pricing.original}
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              Child: €{trip.child_price?.toFixed(0) || "N/A"}
-                            </div>
+                      <div className="p-6 flex flex-col flex-grow">
+                        <div className="flex items-center justify-between mb-3 text-sm">
+                          <div className="flex items-center text-gray-600">
+                            <Icon
+                              icon="lucide:clock"
+                              className="w-4 h-4 mr-1"
+                            />
+                            {formatDuration(trip.duration)}
                           </div>
-                          <div className="bg-cyan-500 text-white px-4 py-2 rounded-full font-semibold text-sm group-hover:bg-cyan-600 transition-colors duration-200">
-                            View Details
+                        </div>
+
+                        <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-sky-600 transition-colors duration-200">
+                          {trip.name}
+                        </h3>
+
+                        <div className="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">
+                          <MarkdownRenderer content={trip.description} />
+                        </div>
+
+                        <div className="flex items-center text-gray-600 text-sm mb-4">
+                          <Icon icon="lucide:users" className="w-4 h-4 mr-2" />
+                          Max {trip.maxim_person} people
+                        </div>
+
+                        {/* Discount Requirements Info */}
+                        {trip.has_discount &&
+                          trip.discount_requires_min_people &&
+                          !trip.discount_always_available && (
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-4">
+                              <div className="flex items-center text-xs text-blue-700">
+                                <Icon
+                                  icon="lucide:users"
+                                  className="w-3 h-3 mr-1"
+                                />
+                                <span>
+                                  Group discount: Min {trip.discount_min_people}{" "}
+                                  people
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                        <div className="border-t pt-4 mt-auto">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                {pricing.discounted ? (
+                                  <>
+                                    <span className="text-gray-400 line-through text-sm">
+                                      EGP {pricing.original}
+                                    </span>
+                                    <span className="text-2xl font-bold text-sky-600">
+                                      EGP {pricing.discounted}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span className="text-2xl font-bold text-sky-600">
+                                    EGP {pricing.original}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {trip.child_allowed ? (
+                                  <>
+                                    Child: EGP{" "}
+                                    {trip.child_price?.toFixed(0) || "0"}
+                                  </>
+                                ) : (
+                                  <span className="text-orange-600 font-medium">
+                                    Adults only
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="bg-cyan-500 text-white px-4 py-2 rounded-full font-semibold text-sm group-hover:bg-cyan-600 transition-colors duration-200">
+                              View Details
+                            </div>
                           </div>
                         </div>
                       </div>

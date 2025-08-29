@@ -108,11 +108,16 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     description: "",
     package_id: "",
     duration: "",
+    // Simplified pricing - single currency (EGP)
     adult_price: "",
     child_price: "",
+    child_allowed: true,
     maxim_person: "",
     has_discount: false,
     discount_percentage: "",
+    discount_requires_min_people: false,
+    discount_always_available: false,
+    discount_min_people: "",
     included: [""],
     not_included: [""],
     terms_and_conditions: [""],
@@ -143,11 +148,18 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
         description: trip.description || "",
         images: trip.images || [],
         is_image_list: trip.is_image_list || false,
+        // Simplified pricing
         adult_price: trip.adult_price?.toString() || "",
         child_price: trip.child_price?.toString() || "",
+        child_allowed:
+          trip.child_allowed !== undefined ? trip.child_allowed : true,
         maxim_person: trip.maxim_person?.toString() || "",
         has_discount: trip.has_discount || false,
         discount_percentage: trip.discount_percentage?.toString() || "",
+        discount_requires_min_people:
+          trip.discount_requires_min_people || false,
+        discount_always_available: trip.discount_always_available || false,
+        discount_min_people: trip.discount_min_people?.toString() || "",
         duration: trip.duration?.toString() || "",
         package_id: trip.package_id?.toString() || "",
         included: trip.included?.length ? trip.included : [""],
@@ -168,6 +180,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
+
   const handleDescriptionChange = (newValue) => {
     setFormData((prev) => ({ ...prev, description: newValue || "" }));
     // Clear error on change
@@ -188,8 +201,10 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
       images: prev.images.map((img, i) => (i === index ? value : img)),
     }));
   };
+
   const addImage = () =>
     setFormData((prev) => ({ ...prev, images: [...prev.images, ""] }));
+
   const removeImage = (index) =>
     setFormData((prev) => ({
       ...prev,
@@ -201,6 +216,8 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     if (!formData.name.trim()) newErrors.name = "Trip name is required";
     if (!formData.description.trim())
       newErrors.description = "Description is required";
+    if (!formData.package_id.trim())
+      newErrors.package_id = "Package selection is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -209,10 +226,19 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     const newErrors = {};
     if (!formData.duration || formData.duration <= 0)
       newErrors.duration = "Valid duration is required";
-    if (!formData.adult_price || formData.adult_price <= 0)
-      newErrors.adult_price = "Valid adult price is required";
     if (!formData.maxim_person || formData.maxim_person <= 0)
       newErrors.maxim_person = "Max persons is required";
+    if (!formData.adult_price || formData.adult_price <= 0)
+      newErrors.adult_price = "Adult price is required";
+
+    // Only validate child price if children are allowed
+    if (
+      formData.child_allowed &&
+      (!formData.child_price || formData.child_price <= 0)
+    )
+      newErrors.child_price =
+        "Child price is required when children are allowed";
+
     if (
       formData.has_discount &&
       (!formData.discount_percentage ||
@@ -221,6 +247,16 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     ) {
       newErrors.discount_percentage = "Discount must be between 1 and 100";
     }
+
+    // Validate discount min people if required
+    if (
+      formData.has_discount &&
+      formData.discount_requires_min_people &&
+      (!formData.discount_min_people || formData.discount_min_people <= 0)
+    ) {
+      newErrors.discount_min_people = "Minimum people required for discount";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -235,16 +271,28 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     try {
       const submitData = {
         ...formData,
+        // Simplified pricing conversion
         adult_price: parseFloat(formData.adult_price),
-        child_price: parseFloat(formData.child_price) || 0,
+        child_price: formData.child_allowed
+          ? parseFloat(formData.child_price || 0)
+          : 0,
+        child_allowed: formData.child_allowed,
         maxim_person: parseInt(formData.maxim_person, 10),
         duration: parseInt(formData.duration, 10),
-        package_id: formData.package_id
-          ? parseInt(formData.package_id, 10)
-          : null,
+        package_id: parseInt(formData.package_id, 10),
         discount_percentage: formData.has_discount
           ? parseFloat(formData.discount_percentage)
           : 0,
+        discount_requires_min_people: formData.has_discount
+          ? formData.discount_requires_min_people
+          : false,
+        discount_always_available: formData.has_discount
+          ? formData.discount_always_available
+          : false,
+        discount_min_people:
+          formData.has_discount && formData.discount_requires_min_people
+            ? parseInt(formData.discount_min_people, 10)
+            : 0,
         included: formData.included.filter((item) => item && item.trim()),
         not_included: formData.not_included.filter(
           (item) => item && item.trim()
@@ -380,12 +428,13 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
                 name="package_id"
                 dir="ltr"
                 options={packages}
-                placeholder="Assign to Package (Optional)"
+                placeholder="Select Package *"
                 value={packages.find((p) => p.value === formData.package_id)}
                 onChange={(opt) => handleSelectChange("package_id", opt)}
                 error={errors.package_id}
                 disabled={isLoading}
                 searchable={true}
+                required={true}
               />
             </div>
           </div>
@@ -394,7 +443,12 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
               type="button"
               onClick={() => setCurrentStep(2)}
               className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
-              disabled={!formData.name || !formData.description || isLoading}
+              disabled={
+                !formData.name ||
+                !formData.description ||
+                !formData.package_id ||
+                isLoading
+              }
             >
               <span>Continue to Logistics</span>
               <Icon icon="mdi:arrow-right" className="w-5 h-5" />
@@ -406,9 +460,9 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
         <div className={`space-y-6 ${currentStep === 2 ? "block" : "hidden"}`}>
           <div className="bg-gradient-to-br from-green-50 to-cyan-50 rounded-2xl p-6 border border-green-100">
             <h3 className="text-lg font-semibold text-slate-800 mb-6">
-              Logistics & Pricing
+              Logistics & Basic Info
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
                 dir="ltr"
                 icon="mdi:clock-outline"
@@ -435,65 +489,238 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
                 required
                 disabled={isLoading}
               />
-              <Input
-                dir="ltr"
-                icon="mdi:account"
-                name="adult_price"
-                type="number"
-                step="0.01"
-                placeholder="Adult Price ($)"
-                value={formData.adult_price}
-                onChange={handleInputChange}
-                error={errors.adult_price}
-                color="green"
-                required
-                disabled={isLoading}
-              />
-              <Input
-                dir="ltr"
-                icon="mdi:account-child"
-                name="child_price"
-                type="number"
-                step="0.01"
-                placeholder="Child Price ($)"
-                value={formData.child_price}
-                onChange={handleInputChange}
-                error={errors.child_price}
-                color="green"
-                disabled={isLoading}
-              />
-              <div className="lg:col-span-2 space-y-3 bg-white/50 p-4 rounded-xl">
+
+              {/* Child Allowed Section */}
+              <div className="md:col-span-2 space-y-3 bg-white/50 p-4 rounded-xl">
+                <label className="flex items-center space-x-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="child_allowed"
+                    checked={formData.child_allowed}
+                    onChange={handleInputChange}
+                    className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
+                    disabled={isLoading}
+                  />
+                  <span className="text-sm font-medium text-slate-700 flex items-center space-x-2">
+                    <Icon icon="mdi:baby-face" className="w-4 h-4" />
+                    <span>Allow Children on this Trip</span>
+                  </span>
+                </label>
+                {!formData.child_allowed && (
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mt-2">
+                    <div className="flex items-start space-x-2">
+                      <Icon
+                        icon="mdi:alert"
+                        className="w-4 h-4 text-orange-600 mt-0.5"
+                      />
+                      <p className="text-sm text-orange-700">
+                        This trip is restricted to adults only. Children will
+                        not be allowed to participate.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Enhanced Discount Section */}
+              <div className="md:col-span-2 space-y-4 bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-100">
+                <div className="flex items-center space-x-2 mb-4">
+                  <Icon
+                    icon="mdi:tag-percent"
+                    className="w-5 h-5 text-purple-600"
+                  />
+                  <h4 className="text-lg font-semibold text-slate-800">
+                    Discount Settings
+                  </h4>
+                </div>
+
                 <label className="flex items-center space-x-3 cursor-pointer">
                   <input
                     type="checkbox"
                     name="has_discount"
                     checked={formData.has_discount}
                     onChange={handleInputChange}
-                    className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
+                    className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
                     disabled={isLoading}
                   />
                   <span className="text-sm font-medium text-slate-700">
-                    Offer a Discount?
+                    Offer a Discount for this Trip
                   </span>
                 </label>
+
                 {formData.has_discount && (
-                  <Input
-                    dir="ltr"
-                    icon="mdi:percent"
-                    name="discount_percentage"
-                    type="number"
-                    step="1"
-                    placeholder="Discount %"
-                    value={formData.discount_percentage}
-                    onChange={handleInputChange}
-                    error={errors.discount_percentage}
-                    color="green"
-                    disabled={isLoading}
-                  />
+                  <div className="space-y-4 bg-white p-4 rounded-lg border border-purple-200">
+                    <Input
+                      dir="ltr"
+                      icon="mdi:percent"
+                      name="discount_percentage"
+                      type="number"
+                      step="1"
+                      min="1"
+                      max="100"
+                      placeholder="Discount Percentage (1-100)"
+                      value={formData.discount_percentage}
+                      onChange={handleInputChange}
+                      error={errors.discount_percentage}
+                      color="purple"
+                      disabled={isLoading}
+                    />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <label className="flex items-start space-x-3 cursor-pointer p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                        <input
+                          type="checkbox"
+                          name="discount_always_available"
+                          checked={formData.discount_always_available}
+                          onChange={handleInputChange}
+                          className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 mt-0.5"
+                          disabled={isLoading}
+                        />
+                        <div>
+                          <span className="text-sm font-medium text-slate-700 block">
+                            Always Available
+                          </span>
+                          <p className="text-xs text-slate-600 mt-1">
+                            Apply discount automatically for all bookings
+                          </p>
+                        </div>
+                      </label>
+
+                      <label className="flex items-start space-x-3 cursor-pointer p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                        <input
+                          type="checkbox"
+                          name="discount_requires_min_people"
+                          checked={formData.discount_requires_min_people}
+                          onChange={handleInputChange}
+                          className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 mt-0.5"
+                          disabled={
+                            isLoading || formData.discount_always_available
+                          }
+                        />
+                        <div>
+                          <span className="text-sm font-medium text-slate-700 block">
+                            Requires Minimum People
+                          </span>
+                          <p className="text-xs text-slate-600 mt-1">
+                            Only apply if minimum people book
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+
+                    {formData.discount_requires_min_people &&
+                      !formData.discount_always_available && (
+                        <Input
+                          dir="ltr"
+                          icon="mdi:account-multiple"
+                          name="discount_min_people"
+                          type="number"
+                          min="2"
+                          placeholder="Minimum People Required for Discount"
+                          value={formData.discount_min_people}
+                          onChange={handleInputChange}
+                          error={errors.discount_min_people}
+                          color="purple"
+                          disabled={isLoading}
+                        />
+                      )}
+
+                    {formData.discount_always_available && (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <div className="flex items-start space-x-2">
+                          <Icon
+                            icon="mdi:check-circle"
+                            className="w-4 h-4 text-green-600 mt-0.5"
+                          />
+                          <p className="text-sm text-green-700">
+                            This discount will be automatically applied to all
+                            bookings for this trip.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
           </div>
+
+          <div className="bg-gradient-to-br from-orange-50 to-green-50 rounded-2xl p-6 border border-orange-100">
+            <h3 className="text-lg font-semibold text-slate-800 mb-6 flex items-center space-x-2">
+              <Icon
+                icon="mdi:cash-multiple"
+                className="w-6 h-6 text-orange-600"
+              />
+              <span>Pricing (EGP)</span>
+            </h3>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="flex items-start space-x-3">
+                <Icon
+                  icon="mdi:information"
+                  className="w-5 h-5 text-blue-600 mt-0.5"
+                />
+                <div>
+                  <p className="text-sm text-blue-800 font-medium">
+                    Payment Processing
+                  </p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    Prices are set in EGP. Our payment provider will
+                    automatically convert to the customer's preferred currency
+                    during checkout.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input
+                dir="ltr"
+                icon="mdi:account"
+                name="adult_price"
+                type="number"
+                step="0.01"
+                placeholder="Adult Price (EGP)"
+                value={formData.adult_price}
+                onChange={handleInputChange}
+                error={errors.adult_price}
+                color="orange"
+                required
+                disabled={isLoading}
+              />
+              {formData.child_allowed && (
+                <Input
+                  dir="ltr"
+                  icon="mdi:account-child"
+                  name="child_price"
+                  type="number"
+                  step="0.01"
+                  placeholder="Child Price (EGP)"
+                  value={formData.child_price}
+                  onChange={handleInputChange}
+                  error={errors.child_price}
+                  color="green"
+                  required={formData.child_allowed}
+                  disabled={isLoading}
+                />
+              )}
+              {!formData.child_allowed && (
+                <div className="bg-gray-100 border border-gray-200 rounded-lg p-4 flex items-center justify-center">
+                  <div className="text-center">
+                    <Icon
+                      icon="mdi:baby-face-off"
+                      className="w-8 h-8 text-gray-400 mx-auto mb-2"
+                    />
+                    <p className="text-sm text-gray-600">
+                      Child pricing not applicable
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Children are not allowed on this trip
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="flex items-center justify-between pt-6 border-t border-slate-200">
             <button
               type="button"

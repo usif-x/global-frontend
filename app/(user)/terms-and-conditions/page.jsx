@@ -169,7 +169,7 @@ const TermsAndConditions = () => {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between py-1 border-b border-gray-100">
                   <span className="text-gray-600">15+ days before:</span>
-                  <span className="font-medium">€50 fixed fee</span>
+                  <span className="font-medium">EGP50 fixed fee</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-gray-100">
                   <span className="text-gray-600">14-5 days before:</span>
@@ -197,7 +197,7 @@ const TermsAndConditions = () => {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between py-1 border-b border-gray-100">
                   <span className="text-gray-600">15+ days before:</span>
-                  <span className="font-medium">€50 fixed fee</span>
+                  <span className="font-medium">EGP50 fixed fee</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-gray-100">
                   <span className="text-gray-600">14-8 days before:</span>

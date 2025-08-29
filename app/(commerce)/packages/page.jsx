@@ -35,22 +35,34 @@ export const viewport = {
   initialScale: 1,
 };
 
+// Helper function to get trip count for package
+const getPackageTripCount = (packages, packageId) => {
+  const pkg = packages.find((p) => p.id === packageId);
+  return pkg?.trip_count || 0;
+};
+
 const PackagesPage = async () => {
   let packages = []; // Default to an empty array
+  let trips = []; // To calculate trip counts per package
 
   try {
-    // This now receives the actual array, because we fixed getData to return `res.data`
-    const data = await getData("/packages");
+    // Fetch both packages and trips to get accurate trip counts
+    const [packagesData, tripsData] = await Promise.all([
+      getData("/packages"),
+      getData("/trips"),
+    ]);
 
-    // ✅ Robustness Check: Ensure the received data is an array before using it.
-    if (Array.isArray(data)) {
-      packages = data;
+    if (Array.isArray(packagesData)) {
+      packages = packagesData;
     } else {
-      // This helps you debug if the API ever returns something other than an array
       console.error(
         "API did not return an array for /packages. Received:",
-        data
+        packagesData
       );
+    }
+
+    if (Array.isArray(tripsData)) {
+      trips = tripsData;
     }
   } catch (err) {
     console.error("Failed to fetch packages:", err.message);
@@ -80,6 +92,34 @@ const PackagesPage = async () => {
       </div>
     );
   }
+
+  // Calculate trip counts for each package
+  const packagesWithTripCounts = packages.map((pkg) => {
+    const tripCount = trips.filter((trip) => trip.package_id === pkg.id).length;
+    const packageTrips = trips.filter((trip) => trip.package_id === pkg.id);
+
+    // Calculate price range for the package
+    let priceRange = null;
+    if (packageTrips.length > 0) {
+      const prices = packageTrips.map((trip) => {
+        // Apply discount if always available
+        const basePrice = trip.adult_price;
+        if (trip.has_discount && trip.discount_always_available) {
+          return basePrice * (1 - trip.discount_percentage / 100);
+        }
+        return basePrice;
+      });
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      priceRange = { min: minPrice, max: maxPrice };
+    }
+
+    return {
+      ...pkg,
+      tripCount,
+      priceRange,
+    };
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -111,7 +151,8 @@ const PackagesPage = async () => {
             Discover Amazing Packages
           </h1>
           <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto">
-            Explore our curated collection of diving and adventure packages.
+            Explore our curated collection of diving and adventure packages
+            designed for every type of traveler.
           </p>
           <div className="flex items-center justify-center mt-8 text-white/90">
             <Icon icon="mdi:map-marker" className="w-5 h-5 mr-2" />
@@ -156,19 +197,20 @@ const PackagesPage = async () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {packages.map((pkg) => (
+              {packagesWithTripCounts.map((pkg) => (
                 <Link
                   href={`/packages/${pkg.id}`}
                   key={pkg.id}
                   className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1"
                 >
-                  <div className="relative h-64">
+                  <div className="relative h-64 overflow-hidden">
                     {pkg.images?.[0] ? (
                       <Image
                         src={pkg.images[0]}
                         alt={pkg.name}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center">
@@ -178,6 +220,26 @@ const PackagesPage = async () => {
                         />
                       </div>
                     )}
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                    {/* Trip Count Badge */}
+                    {pkg.tripCount > 0 && (
+                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-sky-700 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                        <Icon
+                          icon="mdi:map-marker-multiple"
+                          className="w-4 h-4"
+                        />
+                        {pkg.tripCount} Trip{pkg.tripCount !== 1 ? "s" : ""}
+                      </div>
+                    )}
+
+                    {/* Image Gallery Indicator */}
+                    {pkg.images && pkg.images.length > 1 && (
+                      <div className="absolute bottom-4 right-4 bg-black/70 text-white px-2 py-1 rounded-lg text-sm flex items-center gap-1">
+                        <Icon icon="lucide:camera" className="w-4 h-4" />
+                        {pkg.images.length}
+                      </div>
+                    )}
                   </div>
 
                   <div className="p-6 flex flex-col">
@@ -185,19 +247,79 @@ const PackagesPage = async () => {
                       <span className="bg-sky-100 text-sky-600 px-3 py-1 rounded-full text-sm font-semibold">
                         Package
                       </span>
+                      {pkg.tripCount > 0 && (
+                        <div className="flex items-center text-gray-500 text-sm">
+                          <Icon
+                            icon="mdi:compass-outline"
+                            className="w-4 h-4 mr-1"
+                          />
+                          {pkg.tripCount} adventures
+                        </div>
+                      )}
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 flex-grow">
+
+                    <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-sky-600 transition-colors duration-200">
                       {pkg.name}
                     </h3>
-                    <div className="text-gray-600 text-sm mb-4 line-clamp-3">
+
+                    <div className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">
                       <MarkdownRenderer content={pkg.description} />
                     </div>
-                    <div className="mt-auto text-sky-600 group-hover:text-sky-700 font-semibold text-sm flex items-center gap-1 transition-colors">
-                      View Details{" "}
-                      <Icon
-                        icon="mdi:arrow-right"
-                        className="w-4 h-4 transition-transform group-hover:translate-x-1"
-                      />
+
+                    {/* Price Range Display */}
+                    {pkg.priceRange && (
+                      <div className="mb-4 p-3 bg-sky-50 rounded-lg border border-sky-100">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-sky-700 font-medium">
+                            Starting from
+                          </span>
+                          <div className="text-right">
+                            {pkg.priceRange.min === pkg.priceRange.max ? (
+                              <span className="text-lg font-bold text-sky-600">
+                                EGP {pkg.priceRange.min.toFixed(0)}
+                              </span>
+                            ) : (
+                              <span className="text-lg font-bold text-sky-600">
+                                EGP {pkg.priceRange.min.toFixed(0)} -{" "}
+                                {pkg.priceRange.max.toFixed(0)}
+                              </span>
+                            )}
+                            <div className="text-xs text-sky-600">
+                              per person
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* No Trips Available State */}
+                    {pkg.tripCount === 0 && (
+                      <div className="mb-4 p-3 bg-orange-50 rounded-lg border border-orange-100">
+                        <div className="flex items-center text-orange-700 text-sm">
+                          <Icon
+                            icon="mdi:clock-outline"
+                            className="w-4 h-4 mr-2"
+                          />
+                          <span>New trips coming soon!</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="mt-auto">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sky-600 group-hover:text-sky-700 font-semibold text-sm flex items-center gap-1 transition-colors">
+                          View Details
+                          <Icon
+                            icon="mdi:arrow-right"
+                            className="w-4 h-4 transition-transform group-hover:translate-x-1"
+                          />
+                        </div>
+                        {pkg.tripCount > 0 && (
+                          <div className="bg-sky-500 text-white px-3 py-1 rounded-full text-xs font-medium group-hover:bg-sky-600 transition-colors duration-200">
+                            Explore
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </Link>

@@ -1,112 +1,135 @@
-import { deleteData, getData, patchData, postData } from "@/lib/axios";
+// lib/services/invoiceService.js (or wherever you store this file)
+
+import { deleteData, getData, postData, putData } from "@/lib/axios";
 
 class InvoiceService {
-  // Get current user's invoices (with optional pagination & status)
-  async getMyInvoices({ page = 1, per_page = 10, status = null }) {
-    let url = `/invoices/my?page=${page}&per_page=${per_page}`;
-    if (status) url += `&status=${status}`;
-    return await getData(url, true);
+  // =================================================================
+  // == User-Facing Methods
+  // =================================================================
+
+  /**
+   * Get all invoices for the currently authenticated user.
+   * @returns {Promise<Array>} A list of the user's invoices.
+   */
+  async getMyInvoices() {
+    return await getData("/invoices/me", true);
   }
 
-  // Get current user's invoice summary
+  /**
+   * Get an analytics summary for the currently authenticated user.
+   * Includes counts and total amounts for paid, pending, and failed invoices.
+   * @returns {Promise<Object>} The user's invoice summary data.
+   */
   async getMyInvoiceSummary() {
-    return await getData("/invoices/my/summary", true);
+    // This correctly calls the new user summary endpoint.
+    return await getData("/invoices/me/summary", true);
   }
 
-  // Get single invoice by ID (if owned by current user)
+  /**
+   * Get a single invoice by its ID.
+   * The backend ensures the user can only access their own invoice.
+   * @param {number | string} invoiceId - The ID of the invoice to fetch.
+   * @returns {Promise<Object>} The invoice details.
+   */
   async getInvoiceById(invoiceId) {
     return await getData(`/invoices/${invoiceId}`, true);
   }
 
-  // Create a new invoice
+  /**
+   * Create a new invoice and its associated payment link.
+   * @param {Object} data - The invoice creation payload.
+   * @returns {Promise<Object>} The newly created invoice response with a pay_url.
+   */
   async createInvoice(data) {
-    return await postData("/invoices", data, true);
+    return await postData("/invoices/", data, true); // Added trailing slash to match backend
   }
 
-  // Update an invoice (if not paid)
-  async updateInvoice(invoiceId, data) {
-    return await patchData(`/invoices/${invoiceId}`, data, true);
+  async getUserLastInvoice() {
+    return await getData("/invoices/me/last", true);
   }
 
-  // Cancel an invoice (status update)
-  async cancelInvoice(invoiceId) {
-    return await putData(
-      `/invoices/${invoiceId}/status`,
-      {
-        status: "CANCELLED",
-      },
-      true
-    );
+  async getInvoiceByReference(customerReference) {
+    return await getData(`/invoices/by-reference/${customerReference}`, true);
   }
 
-  // ADMIN: Get all invoices
-  async getAllInvoicesAdmin({ page = 1, per_page = 10, status = null }) {
-    let url = `/invoices/admin/all?page=${page}&per_page=${per_page}`;
-    if (status) url += `&status=${status}`;
+  // NOTE: User-facing update/cancel methods have been removed.
+  // In this business logic, once an invoice is created, it cannot be modified or
+  // cancelled by the user directly via the API. Status changes (e.g., to FAILED
+  // or PAID) are handled by the payment provider or admins.
+
+  // =================================================================
+  // == Admin-Only Methods
+  // =================================================================
+
+  /**
+   * [ADMIN] Get an analytics summary of ALL invoices in the system.
+   * @returns {Promise<Object>} The global invoice summary data.
+   */
+  async getInvoiceSummaryAdmin() {
+    // This correctly calls the new global admin summary endpoint.
+    return await getData("/invoices/admin/summary", true);
+  }
+
+  /**
+   * [ADMIN] Get a paginated list of all invoices in the system.
+   * Can be filtered by a search term.
+   * @param {Object} params - The query parameters.
+   * @param {number} [params.page=1] - The page number to fetch.
+   * @param {number} [params.per_page=10] - The number of items per page.
+   * @param {string|null} [params.search=null] - A search term for customer reference.
+   * @returns {Promise<Array>} A list of all invoices.
+   */
+  async getAllInvoicesAdmin({ page = 1, per_page = 10, search = null }) {
+    // Backend uses skip/limit, so we convert page/per_page for convenience.
+    const limit = per_page;
+    const skip = (page - 1) * per_page;
+
+    let url = `/invoices/admin/all?skip=${skip}&limit=${limit}`;
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`;
+    }
     return await getData(url, true);
   }
 
-  // ADMIN: Get user-specific invoices
-  async getUserInvoicesAdmin(
-    userId,
-    { page = 1, per_page = 10, status = null }
-  ) {
-    let url = `/invoices/admin/user/${userId}?page=${page}&per_page=${per_page}`;
-    if (status) url += `&status=${status}`;
-    return await getData(url, true);
+  /**
+   * [ADMIN] Get a single invoice by its ID.
+   * @param {number | string} invoiceId - The ID of the invoice to fetch.
+   * @returns {Promise<Object>} The invoice details.
+   */
+  async getInvoiceByIdAdmin(invoiceId) {
+    return await getData(`/invoices/${invoiceId}/admin`, true);
   }
 
-  // ADMIN: Update any invoice
+  // NOTE: Admin update/delete methods have been removed as they are not defined
+  // in the provided backend router. If you add endpoints for these actions
+  // in the future, you can add the corresponding service methods here.
+
+  // NOTE: Webhook-related methods have been removed.
+  // These actions (markAsPaid, markAsFailed) are initiated by the payment provider
+  // calling your backend webhook, not by the frontend client. They do not belong in a
+  // frontend service.
+
   async updateInvoiceAdmin(invoiceId, data) {
-    return await patchData(`/invoices/admin/${invoiceId}`, data, true);
+    // This calls the new PATCH endpoint
+    return await putData(`/invoices/admin/${invoiceId}`, data, true);
   }
 
-  // ADMIN: Update invoice status
-  async updateInvoiceStatusAdmin(invoiceId, status) {
-    return await patchData(
-      `/invoices/admin/${invoiceId}/status`,
-      {
-        status: status.toLowerCase(),
-      },
+  async updateInvoicePickedUp(invoiceId, picked_up) {
+    // This calls the new PATCH endpoint
+    return await getData(
+      `/invoices/invoice/picked-up?invoice_id=${invoiceId}&picked_up=${picked_up}`,
       true
     );
   }
 
-  // ADMIN: Delete invoice
+  /**
+   * [ADMIN] Permanently delete an invoice.
+   * @param {number | string} invoiceId - The ID of the invoice to delete.
+   * @returns {Promise<void>}
+   */
   async deleteInvoiceAdmin(invoiceId) {
+    // This calls the new DELETE endpoint
     return await deleteData(`/invoices/admin/${invoiceId}`, true);
-  }
-
-  // ADMIN: Get summary (for all or specific user)
-  async getInvoiceSummaryAdmin(userId = null) {
-    const url = userId
-      ? `/invoices/admin/summary?user_id=${userId}`
-      : `/invoices/admin/summary`;
-    return await getData(url, true);
-  }
-
-  // ADMIN: Expire old pending invoices
-  async expirePendingInvoices(daysOld = 7) {
-    return await postData(
-      `/invoices/admin/expire-pending?days_old=${daysOld}`,
-      true
-    );
-  }
-
-  // WEBHOOK: Mark invoice as paid
-  async markAsPaid(invoiceId) {
-    return await postData(
-      `/invoices/webhook/payment-success/${invoiceId}`,
-      true
-    );
-  }
-
-  // WEBHOOK: Mark invoice as failed
-  async markAsFailed(invoiceId) {
-    return await postData(
-      `/invoices/webhook/payment-failed/${invoiceId}`,
-      true
-    );
   }
 }
 

@@ -125,7 +125,7 @@ const BestSellingPage = async () => {
               No Best Sellers Yet
             </h3>
             <p className="text-slate-600 mt-2">
-              Check back soon to see our most popular items!
+              Check back soon to see our most popular activities!
             </p>
           </div>
         )}

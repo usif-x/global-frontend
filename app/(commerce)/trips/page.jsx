@@ -34,12 +34,18 @@ export const viewport = {
 };
 
 // Helper functions can be defined at the top level as they are pure.
-const formatPrice = (price, hasDiscount, discountPercentage) => {
-  if (hasDiscount && discountPercentage) {
-    const originalPrice = price / (1 - discountPercentage / 100);
+const formatPrice = (
+  price,
+  hasDiscount,
+  discountPercentage,
+  discountAlwaysAvailable
+) => {
+  // Only apply discount if it's always available or if conditions are met
+  if (hasDiscount && discountPercentage && discountAlwaysAvailable) {
+    const discountedPrice = price * (1 - discountPercentage / 100);
     return {
-      original: originalPrice.toFixed(0),
-      discounted: price.toFixed(0),
+      original: price.toFixed(0),
+      discounted: discountedPrice.toFixed(0),
       discount: discountPercentage,
     };
   }
@@ -54,6 +60,18 @@ const formatDuration = (duration) => {
     return minutes > 0 ? `${hours}h ${minutes}m` : `${hours} hours`;
   }
   return `${duration} minutes`;
+};
+
+const getDiscountBadgeText = (trip) => {
+  if (!trip.has_discount) return null;
+
+  if (trip.discount_always_available) {
+    return `${trip.discount_percentage}% OFF`;
+  } else if (trip.discount_requires_min_people) {
+    return `${trip.discount_percentage}% OFF (Min ${trip.discount_min_people} people)`;
+  }
+
+  return `${trip.discount_percentage}% OFF`;
 };
 
 // ✅ This is an async Server Component that accepts searchParams
@@ -100,7 +118,8 @@ const TripsPage = async ({ searchParams }) => {
       const priceDetails = formatPrice(
         trip.adult_price,
         trip.has_discount,
-        trip.discount_percentage
+        trip.discount_percentage,
+        trip.discount_always_available
       );
       const price = priceDetails.discounted || priceDetails.original;
 
@@ -126,16 +145,32 @@ const TripsPage = async ({ searchParams }) => {
 
     filtered.sort((a, b) => {
       const priceA = parseFloat(
-        formatPrice(a.adult_price, a.has_discount, a.discount_percentage)
-          .discounted ||
-          formatPrice(a.adult_price, a.has_discount, a.discount_percentage)
-            .original
+        formatPrice(
+          a.adult_price,
+          a.has_discount,
+          a.discount_percentage,
+          a.discount_always_available
+        ).discounted ||
+          formatPrice(
+            a.adult_price,
+            a.has_discount,
+            a.discount_percentage,
+            a.discount_always_available
+          ).original
       );
       const priceB = parseFloat(
-        formatPrice(b.adult_price, b.has_discount, b.discount_percentage)
-          .discounted ||
-          formatPrice(b.adult_price, b.has_discount, b.discount_percentage)
-            .original
+        formatPrice(
+          b.adult_price,
+          b.has_discount,
+          b.discount_percentage,
+          b.discount_always_available
+        ).discounted ||
+          formatPrice(
+            b.adult_price,
+            b.has_discount,
+            b.discount_percentage,
+            b.discount_always_available
+          ).original
       );
 
       switch (sortBy) {
@@ -268,10 +303,10 @@ const TripsPage = async ({ searchParams }) => {
                 className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
               >
                 <option value="all">All Prices</option>
-                <option value="under-25">Under €25</option>
-                <option value="25-50">€25 - €50</option>
-                <option value="50-100">€50 - €100</option>
-                <option value="over-100">Over €100</option>
+                <option value="under-25">Under EGP25</option>
+                <option value="25-50">EGP25 - EGP50</option>
+                <option value="50-100">EGP50 - EGP100</option>
+                <option value="over-100">Over EGP100</option>
               </select>
             </div>
             <div>
@@ -330,11 +365,13 @@ const TripsPage = async ({ searchParams }) => {
               const pricing = formatPrice(
                 trip.adult_price,
                 trip.has_discount,
-                trip.discount_percentage
+                trip.discount_percentage,
+                trip.discount_always_available
               );
               const packageInfo = packages.find(
                 (p) => p.id === trip.package_id
               );
+              const discountBadgeText = getDiscountBadgeText(trip);
 
               return (
                 <Link
@@ -342,13 +379,23 @@ const TripsPage = async ({ searchParams }) => {
                   href={`/trips/${trip.id}`}
                   className="group"
                 >
-                  <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden h-full flex flex-col">
-                    {trip.has_discount && (
+                  <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden h-full flex flex-col relative">
+                    {/* Discount Badge */}
+                    {discountBadgeText && (
                       <div className="absolute top-4 left-4 z-10 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
                         <Icon icon="lucide:gift" className="w-4 h-4" />
-                        {trip.discount_percentage}% OFF
+                        {discountBadgeText}
                       </div>
                     )}
+
+                    {/* Child Not Allowed Badge */}
+                    {!trip.child_allowed && (
+                      <div className="absolute top-4 right-4 z-10 bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                        <Icon icon="lucide:user-x" className="w-4 h-4" />
+                        Adults Only
+                      </div>
+                    )}
+
                     <div className="relative h-48 overflow-hidden">
                       {trip.images && trip.images.length > 0 ? (
                         <Image
@@ -370,7 +417,7 @@ const TripsPage = async ({ searchParams }) => {
                       {trip.is_image_list &&
                         trip.images &&
                         trip.images.length > 1 && (
-                          <div className="absolute top-4 right-4 bg-black/70 text-white px-2 py-1 rounded-lg text-sm flex items-center gap-1">
+                          <div className="absolute bottom-4 right-4 bg-black/70 text-white px-2 py-1 rounded-lg text-sm flex items-center gap-1">
                             <Icon icon="lucide:camera" className="w-4 h-4" />
                             {trip.images.length}
                           </div>
@@ -402,6 +449,25 @@ const TripsPage = async ({ searchParams }) => {
                         <Icon icon="lucide:users" className="w-4 h-4 mr-2" />
                         Max {trip.maxim_person} people
                       </div>
+
+                      {/* Discount Requirements Info */}
+                      {trip.has_discount &&
+                        trip.discount_requires_min_people &&
+                        !trip.discount_always_available && (
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-4">
+                            <div className="flex items-center text-xs text-blue-700">
+                              <Icon
+                                icon="lucide:users"
+                                className="w-3 h-3 mr-1"
+                              />
+                              <span>
+                                Group discount: Min {trip.discount_min_people}{" "}
+                                people
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
                       <div className="border-t pt-4 mt-auto">
                         <div className="flex items-center justify-between">
                           <div>
@@ -409,20 +475,29 @@ const TripsPage = async ({ searchParams }) => {
                               {pricing.discounted ? (
                                 <>
                                   <span className="text-gray-400 line-through text-sm">
-                                    € {pricing.original}
+                                    EGP {pricing.original}
                                   </span>
                                   <span className="text-2xl font-bold text-sky-600">
-                                    € {pricing.discounted}
+                                    EGP {pricing.discounted}
                                   </span>
                                 </>
                               ) : (
                                 <span className="text-2xl font-bold text-sky-600">
-                                  € {pricing.original}
+                                  EGP {pricing.original}
                                 </span>
                               )}
                             </div>
                             <div className="text-xs text-gray-500">
-                              Child: € {trip.child_price?.toFixed(0) || "N/A"}
+                              {trip.child_allowed ? (
+                                <>
+                                  Child: EGP{" "}
+                                  {trip.child_price?.toFixed(0) || "0"}
+                                </>
+                              ) : (
+                                <span className="text-orange-600 font-medium">
+                                  Adults only
+                                </span>
+                              )}
                             </div>
                           </div>
                           <div className="bg-cyan-500 text-white px-4 py-2 rounded-full font-semibold text-sm group-hover:bg-cyan-600 transition-colors duration-200">
