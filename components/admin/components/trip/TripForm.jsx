@@ -120,6 +120,8 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     discount_min_people: "",
     included: [""],
     not_included: [""],
+    duration: "",
+    duration_unit: "day/s",
     terms_and_conditions: [""],
     images: [],
     is_image_list: false,
@@ -468,7 +470,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
                 icon="mdi:clock-outline"
                 name="duration"
                 type="number"
-                placeholder="Duration (in days)"
+                placeholder="Duration"
                 value={formData.duration}
                 onChange={handleInputChange}
                 error={errors.duration}
@@ -476,6 +478,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
                 required
                 disabled={isLoading}
               />
+
               <Input
                 dir="ltr"
                 icon="mdi:account-group"

@@ -20,15 +20,22 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    price_available: true,
     price: "",
+    images: [],
+    is_image_list: false,
     course_level: "Beginner",
     course_duration: "",
+    provider: "",
+    has_discount: false,
+    discount_requires_min_people: false,
+    discount_always_available: false,
+    discount_percentage: "",
+    discount_min_people: "",
     course_type: "Basic",
     has_certificate: false,
     certificate_type: "Standard",
     has_online_content: false,
-    images: [],
-    is_image_list: false,
     contents: [],
   });
 
@@ -38,15 +45,23 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
       setFormData({
         name: course.name || "",
         description: course.description || "",
+        price_available: course.price_available ?? true,
         price: course.price?.toString() || "",
+        images: course.images || [],
+        is_image_list: course.is_image_list || false,
         course_level: course.course_level || "Beginner",
         course_duration: course.course_duration?.toString() || "",
+        provider: course.provider || "",
+        has_discount: course.has_discount || false,
+        discount_requires_min_people:
+          course.discount_requires_min_people || false,
+        discount_always_available: course.discount_always_available || false,
+        discount_percentage: course.discount_percentage?.toString() || "",
+        discount_min_people: course.discount_min_people?.toString() || "",
         course_type: course.course_type || "Basic",
         has_certificate: course.has_certificate || false,
         certificate_type: course.certificate_type || "Standard",
         has_online_content: course.has_online_content || false,
-        images: course.images || [],
-        is_image_list: course.is_image_list || false,
         contents: course.contents || [],
       });
     }
@@ -122,14 +137,39 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
     if (!formData.name.trim()) newErrors.name = "Course name is required";
     if (!formData.description.trim())
       newErrors.description = "Description is required";
-    if (!formData.price || formData.price < 0)
-      newErrors.price = "Valid price is required";
+    if (!formData.provider.trim()) newErrors.provider = "Provider is required";
+
+    // Only validate price if price is available
+    if (formData.price_available) {
+      if (!formData.price || formData.price < 0)
+        newErrors.price = "Valid price is required";
+    }
+
     if (!formData.course_duration || formData.course_duration <= 0)
       newErrors.course_duration = "Duration in days is required";
     if (!formData.course_level)
       newErrors.course_level = "Please select a difficulty level";
     if (!formData.course_type)
       newErrors.course_type = "Please select a course type";
+
+    // Validate discount fields if discount is enabled
+    if (formData.has_discount) {
+      if (
+        !formData.discount_percentage ||
+        formData.discount_percentage <= 0 ||
+        formData.discount_percentage >= 100
+      ) {
+        newErrors.discount_percentage =
+          "Discount percentage must be between 1-99";
+      }
+      if (
+        formData.discount_requires_min_people &&
+        (!formData.discount_min_people || formData.discount_min_people <= 0)
+      ) {
+        newErrors.discount_min_people =
+          "Minimum people required for discount must be greater than 0";
+      }
+    }
 
     // Validate content if has_online_content is true
     if (formData.has_online_content && formData.contents.length === 0) {
@@ -152,15 +192,26 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
       const submitData = {
         name: formData.name,
         description: formData.description,
-        price: parseInt(formData.price, 10),
+        price_available: formData.price_available,
+        price: formData.price_available ? parseInt(formData.price, 10) : 0,
+        images: formData.images.filter((img) => img && img.trim()),
+        is_image_list: formData.is_image_list,
         course_level: formData.course_level,
         course_duration: parseInt(formData.course_duration, 10),
+        provider: formData.provider,
+        has_discount: formData.has_discount,
+        discount_requires_min_people: formData.discount_requires_min_people,
+        discount_always_available: formData.discount_always_available,
+        discount_percentage: formData.has_discount
+          ? parseInt(formData.discount_percentage, 10)
+          : 0,
+        discount_min_people: formData.discount_requires_min_people
+          ? parseInt(formData.discount_min_people, 10)
+          : 0,
         course_type: formData.course_type,
         has_certificate: formData.has_certificate,
         certificate_type: formData.certificate_type,
         has_online_content: formData.has_online_content,
-        images: formData.images.filter((img) => img && img.trim()),
-        is_image_list: formData.is_image_list,
         contents: formData.has_online_content
           ? formData.contents.filter((content) => content.title.trim())
           : [],
@@ -197,8 +248,8 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
   // Updated to three steps
   const steps = [
     { id: 1, name: "Core Info", icon: "mdi:information-variant-circle" },
-    { id: 2, name: "Content & Features", icon: "mdi:book-open-page-variant" },
-    { id: 3, name: "Media & Display", icon: "mdi:image-multiple" },
+    { id: 2, name: "Pricing & Discounts", icon: "mdi:cash-multiple" },
+    { id: 3, name: "Content & Media", icon: "mdi:book-open-page-variant" },
   ];
 
   const levelOptions = [
@@ -312,6 +363,21 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
                 required
                 disabled={isLoading}
               />
+
+              <Input
+                dir="ltr"
+                icon="mdi:domain"
+                name="provider"
+                type="text"
+                placeholder="Course Provider (e.g., Ocean Academy)"
+                value={formData.provider}
+                onChange={handleInputChange}
+                error={errors.provider}
+                color="turquoise"
+                required
+                disabled={isLoading}
+              />
+
               <div>
                 <MarkdownEditor
                   value={formData.description}
@@ -332,24 +398,9 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
 
           <div className="bg-gradient-to-br from-green-50 to-cyan-50 rounded-2xl p-6 border border-green-100">
             <h3 className="text-lg font-semibold text-slate-800 mb-6">
-              Pricing & Logistics
+              Course Details
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Input
-                dir="ltr"
-                icon="mdi:currency-usd"
-                name="price"
-                type="number"
-                step="1"
-                placeholder="Price ($)"
-                value={formData.price}
-                onChange={handleInputChange}
-                error={errors.price}
-                color="green"
-                required
-                disabled={isLoading}
-              />
-
               <Select
                 icon="mdi:school"
                 name="course_level"
@@ -377,9 +428,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
                 required
                 disabled={isLoading}
               />
-            </div>
 
-            <div className="mt-6">
               <Select
                 icon="mdi:tag"
                 name="course_type"
@@ -403,14 +452,197 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
               className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
               disabled={isLoading}
             >
+              <span>Continue to Pricing</span>
+              <Icon icon="mdi:arrow-right" className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Step 2: Pricing & Discounts */}
+        <div className={`space-y-6 ${currentStep === 2 ? "block" : "hidden"}`}>
+          <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-6 border border-emerald-100">
+            <h3 className="text-lg font-semibold text-slate-800 mb-6">
+              Pricing Information
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between bg-white rounded-xl p-4 border border-emerald-200">
+                <label className="flex items-center space-x-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="price_available"
+                    checked={formData.price_available}
+                    onChange={handleInputChange}
+                    className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
+                    disabled={isLoading}
+                  />
+                  <div>
+                    <span className="text-sm font-medium text-slate-700">
+                      Price Available
+                    </span>
+                    <p className="text-xs text-slate-500">
+                      Display pricing information for this course
+                    </p>
+                  </div>
+                </label>
+                <Icon
+                  icon="mdi:currency-usd"
+                  className="w-6 h-6 text-emerald-500"
+                />
+              </div>
+
+              {formData.price_available && (
+                <Input
+                  dir="ltr"
+                  icon="mdi:currency-usd"
+                  name="price"
+                  type="number"
+                  step="1"
+                  placeholder="Price ($)"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  error={errors.price}
+                  color="green"
+                  required
+                  disabled={isLoading}
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl p-6 border border-orange-100">
+            <h3 className="text-lg font-semibold text-slate-800 mb-6">
+              Discount Options
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between bg-white rounded-xl p-4 border border-orange-200">
+                <label className="flex items-center space-x-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="has_discount"
+                    checked={formData.has_discount}
+                    onChange={handleInputChange}
+                    className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
+                    disabled={isLoading}
+                  />
+                  <div>
+                    <span className="text-sm font-medium text-slate-700">
+                      Offer Discount
+                    </span>
+                    <p className="text-xs text-slate-500">
+                      Provide special pricing for this course
+                    </p>
+                  </div>
+                </label>
+                <Icon icon="mdi:percent" className="w-6 h-6 text-orange-500" />
+              </div>
+
+              {formData.has_discount && (
+                <div className="space-y-4">
+                  <Input
+                    dir="ltr"
+                    icon="mdi:percent"
+                    name="discount_percentage"
+                    type="number"
+                    min="1"
+                    max="99"
+                    placeholder="Discount Percentage (1-99)"
+                    value={formData.discount_percentage}
+                    onChange={handleInputChange}
+                    error={errors.discount_percentage}
+                    color="orange"
+                    required
+                    disabled={isLoading}
+                  />
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between bg-white rounded-xl p-4 border border-orange-200">
+                      <label className="flex items-center space-x-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          name="discount_always_available"
+                          checked={formData.discount_always_available}
+                          onChange={handleInputChange}
+                          className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
+                          disabled={isLoading}
+                        />
+                        <div>
+                          <span className="text-sm font-medium text-slate-700">
+                            Always Available
+                          </span>
+                          <p className="text-xs text-slate-500">
+                            Discount is always active
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+
+                    <div className="flex items-center justify-between bg-white rounded-xl p-4 border border-orange-200">
+                      <label className="flex items-center space-x-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          name="discount_requires_min_people"
+                          checked={formData.discount_requires_min_people}
+                          onChange={handleInputChange}
+                          className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
+                          disabled={isLoading}
+                        />
+                        <div>
+                          <span className="text-sm font-medium text-slate-700">
+                            Requires Minimum People
+                          </span>
+                          <p className="text-xs text-slate-500">
+                            Discount only applies with minimum enrollments
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+
+                    {formData.discount_requires_min_people && (
+                      <Input
+                        dir="ltr"
+                        icon="mdi:account-group"
+                        name="discount_min_people"
+                        type="number"
+                        min="1"
+                        placeholder="Minimum People Required"
+                        value={formData.discount_min_people}
+                        onChange={handleInputChange}
+                        error={errors.discount_min_people}
+                        color="orange"
+                        required
+                        disabled={isLoading}
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-6 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={() => setCurrentStep(1)}
+              className="flex items-center space-x-2 text-slate-600 hover:text-slate-800 font-medium transition-colors duration-200"
+              disabled={isLoading}
+            >
+              <Icon icon="mdi:arrow-left" className="w-5 h-5" />
+              <span>Back</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCurrentStep(3)}
+              className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+              disabled={isLoading}
+            >
               <span>Continue to Content</span>
               <Icon icon="mdi:arrow-right" className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Step 2: Content & Features */}
-        <div className={`space-y-6 ${currentStep === 2 ? "block" : "hidden"}`}>
+        {/* Step 3: Content & Media */}
+        <div className={`space-y-6 ${currentStep === 3 ? "block" : "hidden"}`}>
           <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
             <h3 className="text-lg font-semibold text-slate-800 mb-6">
               Certificate Options
@@ -637,35 +869,11 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-6 border-t border-slate-200">
-            <button
-              type="button"
-              onClick={() => setCurrentStep(1)}
-              className="flex items-center space-x-2 text-slate-600 hover:text-slate-800 font-medium transition-colors duration-200"
-              disabled={isLoading}
-            >
-              <Icon icon="mdi:arrow-left" className="w-5 h-5" />
-              <span>Back</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentStep(3)}
-              className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
-              disabled={isLoading}
-            >
-              <span>Continue to Media</span>
-              <Icon icon="mdi:arrow-right" className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Step 3: Media & Display */}
-        <div className={`space-y-6 ${currentStep === 3 ? "block" : "hidden"}`}>
-          <div className="bg-gradient-to-br from-orange-50 to-pink-50 rounded-2xl p-6 border border-orange-100">
+          <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-2xl p-6 border border-rose-100">
             <h3 className="text-lg font-semibold text-slate-800 mb-6">
               Media & Display Options
             </h3>
-            <div className="bg-white rounded-xl p-4 border border-orange-200 mb-6">
+            <div className="bg-white rounded-xl p-4 border border-rose-200 mb-6">
               <div className="flex items-center justify-between">
                 <label className="flex items-center space-x-3 cursor-pointer">
                   <input
@@ -673,7 +881,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
                     name="is_image_list"
                     checked={formData.is_image_list}
                     onChange={handleInputChange}
-                    className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
+                    className="w-5 h-5 text-rose-600 rounded focus:ring-rose-500"
                     disabled={isLoading}
                   />
                   <div>
@@ -691,7 +899,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
                       ? "mdi:view-list"
                       : "mdi:view-gallery"
                   }
-                  className="w-6 h-6 text-orange-500"
+                  className="w-6 h-6 text-rose-500"
                 />
               </div>
             </div>
@@ -702,7 +910,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
               <button
                 type="button"
                 onClick={addImage}
-                className="bg-gradient-to-r from-orange-500 to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+                className="bg-gradient-to-r from-rose-500 to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
                 disabled={isLoading}
               >
                 <Icon icon="mdi:plus-circle" className="w-4 h-4" />
@@ -744,7 +952,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
                       placeholder="Paste image URL here..."
                       value={image}
                       onChange={(e) => handleImageChange(index, e.target.value)}
-                      color="orange"
+                      color="rose"
                       className="w-full"
                       disabled={isLoading}
                     />
@@ -774,7 +982,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
                   <button
                     type="button"
                     onClick={addImage}
-                    className="bg-gradient-to-r from-orange-500 to-pink-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                    className="bg-gradient-to-r from-rose-500 to-pink-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
                     disabled={isLoading}
                   >
                     Add First Image

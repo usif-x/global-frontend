@@ -8,15 +8,78 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-const formatPrice = (price) => {
-  if (price === 0) return "Inquire for Price";
-  if (price == null) return "N/A";
-  return `EGP${Math.round(price)}`;
+const formatPrice = (courseData) => {
+  if (!courseData.price_available) return "Inquire for Price";
+  if (courseData.price === 0) return "Free";
+  if (courseData.price == null) return "N/A";
+
+  const basePrice = courseData.price;
+
+  if (courseData.has_discount) {
+    if (courseData.discount_always_available) {
+      const discountedPrice =
+        basePrice * (1 - courseData.discount_percentage / 100);
+      return (
+        <div className="flex flex-col">
+          <span className="text-2xl line-through text-gray-500">
+            EGP{Math.round(basePrice)}
+          </span>
+          <span className="text-4xl md:text-5xl font-black text-green-400">
+            EGP{Math.round(discountedPrice)}
+          </span>
+          <span className="text-sm text-green-300">
+            {courseData.discount_percentage}% OFF
+          </span>
+        </div>
+      );
+    } else if (courseData.discount_requires_min_people) {
+      return (
+        <div className="flex flex-col">
+          <span className="text-4xl md:text-5xl font-black">
+            EGP{Math.round(basePrice)}
+          </span>
+          <span className="text-sm text-green-300">
+            {courseData.discount_percentage}% OFF for{" "}
+            {courseData.discount_min_people}+ people
+          </span>
+        </div>
+      );
+    }
+  }
+
+  return `EGP${Math.round(basePrice)}`;
 };
 
 const formatDuration = (duration) => {
   if (!duration) return "Duration TBD";
   return `${duration} hour${duration !== 1 ? "s" : ""} total`;
+};
+
+const getCourseTypeIcon = (courseType) => {
+  switch (courseType?.toLowerCase()) {
+    case "online":
+      return "lucide:monitor";
+    case "in-person":
+    case "offline":
+      return "lucide:users";
+    case "hybrid":
+      return "lucide:globe";
+    default:
+      return "lucide:book";
+  }
+};
+
+const getCertificateIcon = (certificateType) => {
+  switch (certificateType?.toLowerCase()) {
+    case "professional":
+      return "lucide:award";
+    case "completion":
+      return "lucide:check-circle";
+    case "accredited":
+      return "lucide:shield-check";
+    default:
+      return "lucide:certificate";
+  }
 };
 
 // --- Main Server Component ---
@@ -89,7 +152,7 @@ const CourseDetailPage = async ({ params, searchParams }) => {
   }
 
   // STEP 3: PREPARE DATA AND RENDER THE PAGE
-  const priceDisplay = formatPrice(courseData.price);
+  const priceDisplay = formatPrice(courseData);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -128,6 +191,8 @@ const CourseDetailPage = async ({ params, searchParams }) => {
           >
             {courseData.name}
           </h1>
+
+          {/* Course Info Badges */}
           <div className="flex flex-wrap items-center gap-4 text-white/90 mb-8 text-base">
             <div className="flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full capitalize">
               <Icon icon="lucide:bar-chart-3" className="w-5 h-5 mr-2" />
@@ -137,11 +202,47 @@ const CourseDetailPage = async ({ params, searchParams }) => {
               <Icon icon="lucide:clock" className="w-5 h-5 mr-2" />
               <span>{formatDuration(courseData.course_duration)}</span>
             </div>
+            {courseData.course_type && (
+              <div className="flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full capitalize">
+                <Icon
+                  icon={getCourseTypeIcon(courseData.course_type)}
+                  className="w-5 h-5 mr-2"
+                />
+                <span>{courseData.course_type}</span>
+              </div>
+            )}
+            {courseData.provider && (
+              <div className="flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
+                <Icon icon="lucide:building" className="w-5 h-5 mr-2" />
+                <span>{courseData.provider}</span>
+              </div>
+            )}
+            {courseData.has_certificate && (
+              <div className="flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
+                <Icon
+                  icon={getCertificateIcon(courseData.certificate_type)}
+                  className="w-5 h-5 mr-2"
+                />
+                <span>Certificate Included</span>
+              </div>
+            )}
+            {courseData.has_online_content && (
+              <div className="flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
+                <Icon icon="lucide:wifi" className="w-5 h-5 mr-2" />
+                <span>Online Content</span>
+              </div>
+            )}
           </div>
+
+          {/* Price Display */}
           <div className="flex items-center gap-4">
-            <span className="text-4xl md:text-5xl font-black text-white">
-              {priceDisplay}
-            </span>
+            {typeof priceDisplay === "string" ? (
+              <span className="text-4xl md:text-5xl font-black text-white">
+                {priceDisplay}
+              </span>
+            ) : (
+              priceDisplay
+            )}
           </div>
         </div>
       </div>
@@ -162,7 +263,37 @@ const CourseDetailPage = async ({ params, searchParams }) => {
               <MarkdownRenderer content={courseData.description} />
             </div>
 
-            {/* Example of a "What You'll Learn" section. Add this data to your API if desired. */}
+            {/* Course Contents Section */}
+            {courseData.contents && courseData.contents.length > 0 && (
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                  <Icon
+                    icon="lucide:list"
+                    className="w-6 h-6 mr-2 text-blue-600"
+                  />
+                  Course Contents
+                </h3>
+                <div className="space-y-4">
+                  {courseData.contents.map((content, index) => (
+                    <div
+                      key={index}
+                      className="border-l-4 border-blue-500 pl-4 py-2"
+                    >
+                      <h4 className="font-semibold text-gray-800">
+                        {content.title}
+                      </h4>
+                      {content.description && (
+                        <p className="text-gray-600 mt-1">
+                          {content.description}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Learning Objectives - keeping the original structure */}
             {courseData.learning_objectives &&
               Array.isArray(courseData.learning_objectives) && (
                 <div className="bg-blue-50 rounded-2xl shadow-xl p-8">
@@ -186,18 +317,120 @@ const CourseDetailPage = async ({ params, searchParams }) => {
                   </ul>
                 </div>
               )}
+
+            {/* Course Features */}
+            <div className="bg-white rounded-2xl shadow-xl p-8">
+              <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <Icon
+                  icon="lucide:star"
+                  className="w-6 h-6 mr-2 text-blue-600"
+                />
+                Course Features
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="flex items-center p-4 bg-gray-50 rounded-lg">
+                  <Icon
+                    icon={getCourseTypeIcon(courseData.course_type)}
+                    className="w-6 h-6 mr-3 text-blue-600"
+                  />
+                  <div>
+                    <span className="font-semibold capitalize">
+                      {courseData.course_type || "Standard"}
+                    </span>
+                    <p className="text-sm text-gray-600">Course Format</p>
+                  </div>
+                </div>
+
+                {courseData.has_certificate && (
+                  <div className="flex items-center p-4 bg-green-50 rounded-lg">
+                    <Icon
+                      icon={getCertificateIcon(courseData.certificate_type)}
+                      className="w-6 h-6 mr-3 text-green-600"
+                    />
+                    <div>
+                      <span className="font-semibold capitalize">
+                        {courseData.certificate_type || "Standard"} Certificate
+                      </span>
+                      <p className="text-sm text-gray-600">Upon Completion</p>
+                    </div>
+                  </div>
+                )}
+
+                {courseData.has_online_content && (
+                  <div className="flex items-center p-4 bg-blue-50 rounded-lg">
+                    <Icon
+                      icon="lucide:wifi"
+                      className="w-6 h-6 mr-3 text-blue-600"
+                    />
+                    <div>
+                      <span className="font-semibold">Online Resources</span>
+                      <p className="text-sm text-gray-600">
+                        Digital Materials Included
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {courseData.provider && (
+                  <div className="flex items-center p-4 bg-purple-50 rounded-lg">
+                    <Icon
+                      icon="lucide:building"
+                      className="w-6 h-6 mr-3 text-purple-600"
+                    />
+                    <div>
+                      <span className="font-semibold">
+                        {courseData.provider}
+                      </span>
+                      <p className="text-sm text-gray-600">Course Provider</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Right Column - Inquiry Box */}
           <div className="lg:col-span-1">
             <div className="sticky top-8">
               <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
+                {/* Price Section */}
+                <div className="text-center mb-6 p-6 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl">
+                  <div className="flex items-center justify-center">
+                    {typeof priceDisplay === "string" ? (
+                      <span className="text-3xl md:text-4xl font-black text-gray-800">
+                        {priceDisplay}
+                      </span>
+                    ) : (
+                      priceDisplay
+                    )}
+                  </div>
+
+                  {/* Discount Information */}
+                  {courseData.has_discount &&
+                    !courseData.discount_always_available &&
+                    courseData.discount_requires_min_people && (
+                      <div className="mt-3 p-3 bg-green-100 rounded-lg border border-green-200">
+                        <p className="text-sm text-green-800 font-medium">
+                          <Icon
+                            icon="lucide:users"
+                            className="w-4 h-4 inline mr-1"
+                          />
+                          Group Discount Available:{" "}
+                          {courseData.discount_percentage}% off for{" "}
+                          {courseData.discount_min_people}+ participants
+                        </p>
+                      </div>
+                    )}
+                </div>
+
                 <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
                   <Icon
                     icon="lucide:send"
                     className="w-6 h-6 mr-2 text-blue-600"
                   />
-                  Request Information
+                  {courseData.price_available
+                    ? "Enroll Now"
+                    : "Request Information"}
                 </h3>
 
                 {resolvedSearchParams.error && (
@@ -234,7 +467,11 @@ const CourseDetailPage = async ({ params, searchParams }) => {
                   <Input
                     name="message"
                     textarea
-                    placeholder="Your Questions (Optional)"
+                    placeholder={
+                      courseData.price_available
+                        ? "Any questions or special requirements? (Optional)"
+                        : "Tell us about your interest in this course (Optional)"
+                    }
                     icon="mdi:message-text-outline"
                     rows="4"
                   />
@@ -243,13 +480,25 @@ const CourseDetailPage = async ({ params, searchParams }) => {
                     type="submit"
                     className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-3 px-6 rounded-xl font-bold text-lg transition-transform duration-300 hover:scale-105 shadow-lg flex items-center justify-center gap-2"
                   >
-                    Send Inquiry
+                    {courseData.price_available ? (
+                      <>
+                        <Icon icon="lucide:credit-card" className="w-5 h-5" />
+                        Enroll Now
+                      </>
+                    ) : (
+                      <>
+                        <Icon icon="lucide:send" className="w-5 h-5" />
+                        Send Inquiry
+                      </>
+                    )}
                   </button>
                 </form>
 
                 <div className="mt-6 pt-6 border-t border-gray-200 text-center">
                   <p className="text-gray-600 text-sm">
-                    We'll get back to you within 24 hours.
+                    {courseData.price_available
+                      ? "We'll confirm your enrollment within 24 hours."
+                      : "We'll get back to you within 24 hours with pricing and availability."}
                   </p>
                 </div>
               </div>

@@ -35,19 +35,59 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
 };
+
 // --- Helper Functions (Updated for Course Data) ---
 
-// ✅ IMPROVED: Handles a price of 0 gracefully.
-const formatPrice = (price) => {
-  if (price === 0) return "Inquire for Price";
-  if (price == null) return "N/A";
-  return `€${Math.round(price)}`;
+const formatPrice = (courseData) => {
+  if (!courseData.price_available) return "Inquire for Price";
+  if (courseData.price === 0) return "Free";
+  if (courseData.price == null) return "N/A";
+
+  const basePrice = courseData.price;
+
+  if (courseData.has_discount && courseData.discount_always_available) {
+    const discountedPrice =
+      basePrice * (1 - courseData.discount_percentage / 100);
+    return {
+      original: `EGP${Math.round(basePrice)}`,
+      discounted: `EGP${Math.round(discountedPrice)}`,
+      discount: courseData.discount_percentage,
+    };
+  }
+
+  return `EGP${Math.round(basePrice)}`;
 };
 
-// ✅ IMPROVED: Assumes the duration unit is hours, which is more likely for courses.
 const formatDuration = (duration) => {
   if (!duration) return "Duration TBD";
   return `${duration} hour${duration !== 1 ? "s" : ""}`;
+};
+
+const getCourseTypeIcon = (courseType) => {
+  switch (courseType?.toLowerCase()) {
+    case "online":
+      return "lucide:monitor";
+    case "in-person":
+    case "offline":
+      return "lucide:users";
+    case "hybrid":
+      return "lucide:globe";
+    default:
+      return "lucide:book";
+  }
+};
+
+const getCertificateIcon = (certificateType) => {
+  switch (certificateType?.toLowerCase()) {
+    case "professional":
+      return "lucide:award";
+    case "completion":
+      return "lucide:check-circle";
+    case "accredited":
+      return "lucide:shield-check";
+    default:
+      return "lucide:certificate";
+  }
 };
 
 // --- Main Server Component ---
@@ -168,63 +208,198 @@ const CoursesPage = async () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {courses.map((course) => (
-                <Link
-                  href={`/courses/${course.id}`}
-                  key={course.id}
-                  className="group flex flex-col bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1"
-                >
-                  <div className="relative h-56">
-                    {course.images?.[0] ? (
-                      <Image
-                        src={course.images[0]}
-                        alt={course.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
-                        <Icon
-                          icon="lucide:graduation-cap"
-                          className="w-16 h-16 text-white/50"
-                        />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                    <div className="absolute bottom-4 left-4">
-                      {/* ✅ CHANGED: Using course_level from your API data */}
-                      {course.course_level && (
-                        <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold capitalize">
-                          {course.course_level}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+              {courses.map((course) => {
+                const priceDisplay = formatPrice(course);
 
-                  <div className="p-6 flex flex-col flex-grow">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                      {course.name}
-                    </h3>
-                    <div className="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">
-                      <MarkdownRenderer content={course.description} />
-                    </div>
-                    <div className="flex items-center justify-between text-sm text-gray-500 border-t pt-4 mt-auto">
-                      <div className="flex items-center gap-2">
-                        <Icon
-                          icon="lucide:clock"
-                          className="w-4 h-4 text-gray-400"
+                return (
+                  <Link
+                    href={`/courses/${course.id}`}
+                    key={course.id}
+                    className="group flex flex-col bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2"
+                  >
+                    {/* Course Image */}
+                    <div className="relative h-48">
+                      {course.images?.[0] ? (
+                        <Image
+                          src={course.images[0]}
+                          alt={course.name}
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
-                        {/* ✅ CHANGED: Using course_duration from your API data */}
-                        <span>{formatDuration(course.course_duration)}</span>
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
+                          <Icon
+                            icon="lucide:graduation-cap"
+                            className="w-16 h-16 text-white/50"
+                          />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+
+                      {/* Course Level Badge */}
+                      <div className="absolute top-4 left-4">
+                        {course.course_level && (
+                          <span className="bg-blue-600/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-semibold capitalize">
+                            {course.course_level}
+                          </span>
+                        )}
                       </div>
-                      <div className="text-2xl font-bold text-blue-600">
-                        {formatPrice(course.price)}
+
+                      {/* Discount Badge */}
+                      {course.has_discount &&
+                        course.discount_always_available && (
+                          <div className="absolute top-4 right-4">
+                            <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                              -{course.discount_percentage}%
+                            </span>
+                          </div>
+                        )}
+
+                      {/* Course Type Icon */}
+                      <div className="absolute bottom-4 right-4">
+                        <div className="bg-white/20 backdrop-blur-sm p-2 rounded-full">
+                          <Icon
+                            icon={getCourseTypeIcon(course.course_type)}
+                            className="w-5 h-5 text-white"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+
+                    {/* Course Content */}
+                    <div className="p-6 flex flex-col flex-grow">
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="text-xl font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors flex-1">
+                          {course.name}
+                        </h3>
+                      </div>
+
+                      {/* Provider */}
+                      {course.provider && (
+                        <div className="flex items-center text-sm text-gray-600 mb-3">
+                          <Icon
+                            icon="lucide:building"
+                            className="w-4 h-4 mr-2 text-gray-400"
+                          />
+                          <span>{course.provider}</span>
+                        </div>
+                      )}
+
+                      {/* Course Description */}
+                      <div className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">
+                        <MarkdownRenderer content={course.description} />
+                      </div>
+
+                      {/* Course Features */}
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {course.has_certificate && (
+                          <div className="flex items-center bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">
+                            <Icon
+                              icon={getCertificateIcon(course.certificate_type)}
+                              className="w-3 h-3 mr-1"
+                            />
+                            <span>Certificate</span>
+                          </div>
+                        )}
+                        {course.has_online_content && (
+                          <div className="flex items-center bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">
+                            <Icon icon="lucide:wifi" className="w-3 h-3 mr-1" />
+                            <span>Online Content</span>
+                          </div>
+                        )}
+                        {course.course_type && (
+                          <div className="flex items-center bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs capitalize">
+                            <Icon
+                              icon={getCourseTypeIcon(course.course_type)}
+                              className="w-3 h-3 mr-1"
+                            />
+                            <span>{course.course_type}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Group Discount Info */}
+                      {course.has_discount &&
+                        course.discount_requires_min_people && (
+                          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+                            <div className="flex items-center text-orange-700 text-xs">
+                              <Icon
+                                icon="lucide:users"
+                                className="w-4 h-4 mr-2"
+                              />
+                              <span className="font-medium">
+                                {course.discount_percentage}% off for{" "}
+                                {course.discount_min_people}+ people
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                      {/* Course Duration and Price */}
+                      <div className="flex items-center justify-between text-sm border-t pt-4 mt-auto">
+                        <div className="flex items-center gap-2 text-gray-500">
+                          <Icon
+                            icon="lucide:clock"
+                            className="w-4 h-4 text-gray-400"
+                          />
+                          <span>{formatDuration(course.course_duration)}</span>
+                        </div>
+
+                        <div className="text-right">
+                          {typeof priceDisplay === "object" ? (
+                            <div className="flex flex-col items-end">
+                              <span className="text-sm line-through text-gray-400">
+                                {priceDisplay.original}
+                              </span>
+                              <span className="text-lg font-bold text-green-600">
+                                {priceDisplay.discounted}
+                              </span>
+                              <span className="text-xs bg-red-500 text-white px-1 rounded">
+                                -{priceDisplay.discount}%
+                              </span>
+                            </div>
+                          ) : (
+                            <span
+                              className={`text-lg font-bold ${
+                                !course.price_available
+                                  ? "text-orange-600"
+                                  : "text-blue-600"
+                              }`}
+                            >
+                              {priceDisplay}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Call to Action */}
+                      <div className="mt-4 pt-4 border-t">
+                        <div className="flex items-center justify-center gap-2 text-blue-600 group-hover:text-blue-700 font-medium text-sm">
+                          {course.price_available ? (
+                            <>
+                              <Icon
+                                icon="lucide:credit-card"
+                                className="w-4 h-4"
+                              />
+                              <span>Enroll Now</span>
+                            </>
+                          ) : (
+                            <>
+                              <Icon icon="lucide:mail" className="w-4 h-4" />
+                              <span>Request Info</span>
+                            </>
+                          )}
+                          <Icon
+                            icon="lucide:arrow-right"
+                            className="w-4 h-4 transition-transform group-hover:translate-x-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </>
         )}
