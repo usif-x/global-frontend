@@ -103,11 +103,20 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
   const [errors, setErrors] = useState({});
   const [currentStep, setCurrentStep] = useState(1);
 
+  // Duration unit options
+  const durationUnitOptions = [
+    { value: "hour/s", label: "Hour(s)" },
+    { value: "day/s", label: "Day(s)" },
+    { value: "week/s", label: "Week(s)" },
+    { value: "month/s", label: "Month(s)" },
+  ];
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     package_id: "",
     duration: "",
+    duration_unit: "day/s", // Default to days
     // Simplified pricing - single currency (EGP)
     adult_price: "",
     child_price: "",
@@ -120,8 +129,6 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     discount_min_people: "",
     included: [""],
     not_included: [""],
-    duration: "",
-    duration_unit: "day/s",
     terms_and_conditions: [""],
     images: [],
     is_image_list: false,
@@ -163,6 +170,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
         discount_always_available: trip.discount_always_available || false,
         discount_min_people: trip.discount_min_people?.toString() || "",
         duration: trip.duration?.toString() || "",
+        duration_unit: trip.duration_unit || "day/s",
         package_id: trip.package_id?.toString() || "",
         included: trip.included?.length ? trip.included : [""],
         not_included: trip.not_included?.length ? trip.not_included : [""],
@@ -228,6 +236,8 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     const newErrors = {};
     if (!formData.duration || formData.duration <= 0)
       newErrors.duration = "Valid duration is required";
+    if (!formData.duration_unit.trim())
+      newErrors.duration_unit = "Duration unit is required";
     if (!formData.maxim_person || formData.maxim_person <= 0)
       newErrors.maxim_person = "Max persons is required";
     if (!formData.adult_price || formData.adult_price <= 0)
@@ -281,6 +291,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
         child_allowed: formData.child_allowed,
         maxim_person: parseInt(formData.maxim_person, 10),
         duration: parseInt(formData.duration, 10),
+        duration_unit: formData.duration_unit,
         package_id: parseInt(formData.package_id, 10),
         discount_percentage: formData.has_discount
           ? parseFloat(formData.discount_percentage)
@@ -465,6 +476,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
               Logistics & Basic Info
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Duration and Duration Unit - Side by Side */}
               <Input
                 dir="ltr"
                 icon="mdi:clock-outline"
@@ -477,6 +489,22 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
                 color="green"
                 required
                 disabled={isLoading}
+              />
+
+              <Select
+                icon="mdi:calendar-clock"
+                name="duration_unit"
+                dir="ltr"
+                options={durationUnitOptions}
+                placeholder="Select Duration Unit *"
+                value={durationUnitOptions.find(
+                  (unit) => unit.value === formData.duration_unit
+                )}
+                onChange={(opt) => handleSelectChange("duration_unit", opt)}
+                error={errors.duration_unit}
+                disabled={isLoading}
+                searchable={false}
+                required={true}
               />
 
               <Input

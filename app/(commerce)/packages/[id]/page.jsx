@@ -2,6 +2,7 @@
 
 import MarkdownRenderer from "@/components/ui/MarkdownRender";
 import { getData } from "@/lib/server-axios";
+import { formatDuration } from "@/utils/formatDurations";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -31,16 +32,6 @@ const formatPrice = (
     discounted: null,
     discount: null,
   };
-};
-
-const formatDuration = (duration) => {
-  if (!duration) return "Duration TBD";
-  if (duration >= 60) {
-    const hours = Math.floor(duration / 60);
-    const minutes = duration % 60;
-    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours} hours`;
-  }
-  return `${duration} minutes`;
 };
 
 const getDiscountBadgeText = (trip) => {
@@ -242,7 +233,7 @@ const PackagePage = async ({ params }) => {
                               icon="lucide:clock"
                               className="w-4 h-4 mr-1"
                             />
-                            {formatDuration(trip.duration)}
+                            {formatDuration(trip.duration, trip.duration_unit)}
                           </div>
                         </div>
 

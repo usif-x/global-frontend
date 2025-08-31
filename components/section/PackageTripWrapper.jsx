@@ -1,4 +1,5 @@
 "use client";
+import { formatDuration } from "@/utils/formatDurations";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -23,16 +24,6 @@ const formatPrice = (
     };
   }
   return { original: price.toFixed(0), discounted: null, discount: null };
-};
-
-const formatDuration = (duration) => {
-  if (!duration) return "Duration TBD";
-  if (duration >= 60) {
-    const hours = Math.floor(duration / 60);
-    const minutes = duration % 60;
-    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours} hours`;
-  }
-  return `${duration} minutes`;
 };
 
 const getDiscountBadgeText = (trip) => {
@@ -98,7 +89,7 @@ const TripCard = ({ trip, packages }) => {
           <div className="flex items-center justify-between mb-3 text-sm">
             <div className="flex items-center text-gray-600">
               <Icon icon="lucide:clock" className="w-4 h-4 mr-1" />
-              {formatDuration(trip.duration)}
+              {formatDuration(trip.duration, trip.duration_unit)}
             </div>
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-sky-600 transition-colors duration-200">
