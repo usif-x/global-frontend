@@ -11,7 +11,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "globaldivers.duckdns.org",
+        hostname: "backend.topdivers.online",
         pathname: "/storage/**",
       },
     ],
