@@ -1,5 +1,5 @@
 export async function GET() {
-  const apiBaseUrl = "https://api.topdivers.online"; // backend API
+  const apiBaseUrl = "https://backend.topdivers.online"; // backend API
   const siteBaseUrl = "https://topdivers.online"; // public site
 
   try {
