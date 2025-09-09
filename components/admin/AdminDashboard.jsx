@@ -6,7 +6,6 @@ import DiveCenterManagementPage from "@/components/admin/components/divecenter/D
 import GalleryManagementPage from "@/components/admin/components/gallery/Gallery";
 import PackageManagement from "@/components/admin/components/package/Package";
 import PaymentsContent from "@/components/admin/components/payment/Payment";
-import AdminChatDashboard from "@/components/admin/components/session/Session";
 import TestimonialManagementPage from "@/components/admin/components/testimonial/Testimonial";
 import TripManagement from "@/components/admin/components/trip/Trip";
 import UserManagementPage from "@/components/admin/components/user/ModernUser";
@@ -342,12 +341,6 @@ const AdminDashboard = () => {
       icon: "mdi:diving",
       color: "text-teal-500",
     },
-    {
-      id: "sessions",
-      label: "Live Chat",
-      icon: "mdi:chat",
-      color: "text-indigo-500",
-    },
 
     ...(admin?.admin_level === 2
       ? [
@@ -429,8 +422,6 @@ const AdminDashboard = () => {
         return <GalleryManagementPage />;
       case "divecenters":
         return <DiveCenterManagementPage />;
-      case "sessions":
-        return <AdminChatDashboard />;
       case "admins":
         return <AdminManagementPage />;
       case "testimonials":

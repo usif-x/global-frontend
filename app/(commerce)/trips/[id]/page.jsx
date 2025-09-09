@@ -117,21 +117,39 @@ const TripPage = ({ params }) => {
         }
         setTripData(trip);
 
+        // --- CHANGE: Enhanced logic to fetch related trips ---
+        let otherTrips = [];
         if (trip.package_id) {
           try {
+            // First, get package info for the header
             const pkg = await getData(`/packages/${trip.package_id}`);
             setPackageData(pkg);
+            // Then, get other trips from that same package
+            const tripsInPackage = await getData(
+              `/packages/${trip.package_id}/trips`
+            );
+            otherTrips = (tripsInPackage?.data || [])
+              .filter((t) => t.id.toString() !== id.toString())
+              .slice(0, 3); // Show up to 3 other trips
           } catch (err) {
-            console.warn("Failed to load package data:", err);
+            console.warn(
+              "Failed to load package data or trips from package:",
+              err
+            );
           }
         }
 
-        try {
-          const related = await getData("/trips", { limit: 3, exclude: id });
-          setRelatedTrips(related?.data || []);
-        } catch (err) {
-          console.warn("Failed to load related trips:", err);
+        // If we couldn't find trips from the package, or the trip isn't in one, get generic related trips as a fallback.
+        if (otherTrips.length === 0) {
+          try {
+            const related = await getData("/trips", { limit: 3, exclude: id });
+            otherTrips = related?.data || [];
+          } catch (err) {
+            console.warn("Failed to load generic related trips:", err);
+          }
         }
+        setRelatedTrips(otherTrips);
+        // --- END CHANGE ---
       } catch (err) {
         setError("Failed to load trip data");
       } finally {
@@ -539,6 +557,61 @@ const TripPage = ({ params }) => {
                   </ul>
                 </div>
               )}
+
+            {/* --- NEW SECTION: YOU MIGHT ALSO PREFER --- */}
+            {relatedTrips.length > 0 && (
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
+                  <Icon
+                    icon="lucide:sparkles"
+                    className="w-8 h-8 mr-3 text-blue-600"
+                  />
+                  You Might Also Prefer
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {relatedTrips.map((otherTrip) => (
+                    <Link
+                      href={`/trips/${otherTrip.id}`}
+                      key={otherTrip.id}
+                      className="group block rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 bg-white border border-gray-100"
+                    >
+                      <div className="relative h-40">
+                        <Image
+                          src={
+                            otherTrip.images?.[0] || "/placeholder-image.jpg"
+                          }
+                          alt={otherTrip.name}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                        <div className="absolute bottom-2 left-3 text-white">
+                          <span className="font-bold text-lg">
+                            EGP {formatPrice(otherTrip.adult_price)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-bold text-gray-800 text-lg leading-tight group-hover:text-blue-600 transition-colors">
+                          {otherTrip.name}
+                        </h3>
+                        <p className="text-sm text-gray-500 mt-2 flex items-center">
+                          <Icon
+                            icon="lucide:clock"
+                            className="w-4 h-4 mr-1.5"
+                          />
+                          {formatDuration(
+                            otherTrip.duration,
+                            otherTrip.duration_unit
+                          )}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* --- END NEW SECTION --- */}
           </div>
 
           <div className="lg:col-span-1">

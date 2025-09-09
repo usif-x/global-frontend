@@ -1,6 +1,6 @@
 export async function GET() {
-  const apiBaseUrl = "https://backend.topdivers.online"; // backend API
-  const siteBaseUrl = "https://topdivers.online"; // public site
+  const apiBaseUrl = "http://0.0.0.0:8000"; // backend API
+  const siteBaseUrl = "http://localhost:3000"; // public site
 
   try {
     // Fetch all data concurrently with timeouts

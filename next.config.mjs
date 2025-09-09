@@ -11,7 +11,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "backend.topdivers.online",
+        hostname: "0.0.0.0:8000",
         pathname: "/storage/**",
       },
     ],
