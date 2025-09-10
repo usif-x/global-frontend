@@ -14,6 +14,11 @@ const nextConfig = {
         hostname: "0.0.0.0:8000",
         pathname: "/storage/**",
       },
+      {
+        protocol: "https",
+        hostname: "timeforkids.com",
+        pathname: "/wp-content/**",
+      },
     ],
   },
   trailingSlash: true,

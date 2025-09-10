@@ -33,7 +33,7 @@ const TermsAndConditions = () => {
                 Pricing & Packages
               </h4>
               <ul className="text-gray-700 space-y-1 text-sm">
-                <li>• All prices listed in Euros, per person</li>
+                <li>• All prices listed in EGP, per person</li>
                 <li>• Dive packages are personal and non-transferable</li>
                 <li>• Online prices require full payment 2+ days in advance</li>
               </ul>

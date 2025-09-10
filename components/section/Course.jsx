@@ -1,7 +1,9 @@
-import { getData } from "@/lib/server-axios";
+"use client";
+import { getData } from "@/lib/axios";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import MarkdownRenderer from "../ui/MarkdownRender";
+import { useEffect, useState } from "react";
 
 // --- Reusable UI Components ---
 const ErrorMessage = ({ error }) => (
@@ -489,16 +491,23 @@ const FeaturedCourseCard = ({ course }) => {
 };
 
 // --- Main Server Component ---
-const DivingCourses = async () => {
-  let courses = [];
-  let error = null;
+const DivingCourses = () => {
+  const [courses, setCourses] = useState([]);
+  const [error, setError] = useState(null);
+  const [showAll, setShowAll] = useState(false);
 
-  try {
-    courses = await getData("/courses");
-  } catch (err) {
-    error = err.message || "Failed to fetch courses";
-    console.error("Error fetching courses:", err);
-  }
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const data = await getData("/courses");
+        setCourses(data);
+      } catch (err) {
+        setError(err.message || "Failed to fetch courses");
+        console.error("Error fetching courses:", err);
+      }
+    };
+    fetchCourses();
+  }, []);
 
   if (error) return <ErrorMessage error={error} />;
   if (!courses || courses.length === 0) return <EmptyState />;
@@ -511,6 +520,8 @@ const DivingCourses = async () => {
   const regularCourses = courses.filter(
     (course) => !featuredCourses.includes(course)
   );
+
+  const visibleCourses = showAll ? regularCourses : regularCourses.slice(0, 2);
 
   return (
     <main id="booking" className="min-h-screen bg-gray-50 py-12 md:py-20">
@@ -559,7 +570,7 @@ const DivingCourses = async () => {
         )}
 
         {/* All Courses Section */}
-        <section>
+        <section className="relative">
           {featuredCourses.length > 0 && (
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-800 mb-4">
@@ -571,41 +582,57 @@ const DivingCourses = async () => {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {(featuredCourses.length > 0 ? regularCourses : courses).map(
-              (course) => (
+          <div
+            className={`relative transition-all duration-500 ${
+              !showAll && regularCourses.length > 2
+                ? "max-h-[80rem] overflow-hidden"
+                : ""
+            }`}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {visibleCourses.map((course) => (
                 <CourseCard key={course.id} course={course} />
-              )
-            )}
-          </div>
-        </section>
-
-        {/* Bottom CTA */}
-        <div className="text-center mt-16">
-          <div className="bg-white rounded-2xl p-8 shadow-lg max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">
-              Not Sure Which Course is Right for You?
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Our diving professionals can help you choose the perfect course
-              based on your experience and goals.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/courses"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-xl text-lg transition-all duration-300 hover:shadow-lg"
-              >
-                View All Courses
-              </Link>
-              <Link
-                href="/contact"
-                className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-3 px-8 rounded-xl text-lg transition-all duration-300 shadow-md hover:shadow-lg border border-gray-200"
-              >
-                Get Consultation
-              </Link>
+              ))}
             </div>
           </div>
+
+          {!showAll && regularCourses.length > 2 && (
+  <div className="relative mt-12">
+    {/* Subtle fade overlay */}
+    <div className="absolute -top-8 left-0 right-0 h-24 bg-gradient-to-t from-gray-50 via-gray-50/70 to-transparent pointer-events-none z-10" />
+    
+    {/* Compact show more container */}
+    <div className="relative z-20 text-center">
+      <div className="inline-flex items-center bg-white rounded-full shadow-lg border border-gray-200 px-6 py-3 mb-4">
+        <div className="flex items-center space-x-2 text-gray-600 text-sm">
+          <Icon icon="lucide:layers" className="w-4 h-4" />
+          <span>{visibleCourses.length} of {regularCourses.length} courses shown</span>
         </div>
+      </div>
+      
+      <Link
+        href={"/courses"}
+        className="group inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 space-x-3"
+      >
+        <Icon 
+          icon="lucide:plus-circle" 
+          className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" 
+        />
+        <span>Show {regularCourses.length - visibleCourses.length} More Courses</span>
+        <Icon 
+          icon="lucide:arrow-right" 
+          className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" 
+        />
+      </Link>
+      
+      {/* Quick stats */}
+      <div className="mt-4 text-sm text-gray-500">
+        <span>✨ All courses include certification and equipment</span>
+      </div>
+    </div>
+  </div>
+)}
+        </section>
       </div>
     </main>
   );

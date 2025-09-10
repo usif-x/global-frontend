@@ -347,7 +347,7 @@ const PrivacyPolicy = () => {
                 </div>
                 <div className="flex items-start gap-3">
                   <Icon
-                    icon="solar:court-hammer-bold"
+                    icon="ph:court-basketball-duotone"
                     className="w-5 h-5 text-red-500 mt-0.5"
                   />
                   <div>
@@ -502,7 +502,7 @@ const PrivacyPolicy = () => {
     {
       id: "cookies",
       title: "Cookies & Tracking",
-      icon: "solar:cookie-bold",
+      icon: "fluent:cookies-28-filled",
       content: (
         <div className="space-y-4">
           <div className="bg-amber-50 p-4 rounded-lg border-l-4 border-amber-500">

@@ -365,7 +365,7 @@ const SafetyGuidelines = () => {
               <ul className="text-gray-700 space-y-2 text-sm">
                 <li className="flex items-start gap-2">
                   <Icon
-                    icon="solar:water-drop-bold"
+                    icon="icon-park-twotone:water"
                     className="w-4 h-4 text-blue-500 mt-0.5"
                   />
                   <span>
@@ -381,7 +381,7 @@ const SafetyGuidelines = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <Icon
-                    icon="solar:tools-bold"
+                    icon="iconoir:tools"
                     className="w-4 h-4 text-gray-500 mt-0.5"
                   />
                   <span>Regular professional servicing every 12 months</span>
@@ -801,7 +801,7 @@ const SafetyGuidelines = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <Icon
-                    icon="solar:speedometer-bold"
+                    icon="game-icons:speed-boat"
                     className="w-4 h-4 text-orange-500 mt-0.5"
                   />
                   <span>Check maximum depth and current conditions</span>
@@ -815,7 +815,7 @@ const SafetyGuidelines = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <Icon
-                    icon="solar:fish-bold"
+                    icon="game-icons:fish-smoking"
                     className="w-4 h-4 text-green-500 mt-0.5"
                   />
                   <span>Brief on marine life and points of interest</span>
