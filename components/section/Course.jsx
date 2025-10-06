@@ -2,8 +2,8 @@
 import { getData } from "@/lib/axios";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
-import MarkdownRenderer from "../ui/MarkdownRender";
 import { useEffect, useState } from "react";
+import MarkdownRenderer from "../ui/MarkdownRender";
 
 // --- Reusable UI Components ---
 const ErrorMessage = ({ error }) => (
@@ -499,7 +499,7 @@ const DivingCourses = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const data = await getData("/courses");
+        const data = await getData("/courses/");
         setCourses(data);
       } catch (err) {
         setError(err.message || "Failed to fetch courses");
@@ -597,41 +597,49 @@ const DivingCourses = () => {
           </div>
 
           {!showAll && regularCourses.length > 2 && (
-  <div className="relative mt-12">
-    {/* Subtle fade overlay */}
-    <div className="absolute -top-8 left-0 right-0 h-24 bg-gradient-to-t from-gray-50 via-gray-50/70 to-transparent pointer-events-none z-10" />
-    
-    {/* Compact show more container */}
-    <div className="relative z-20 text-center">
-      <div className="inline-flex items-center bg-white rounded-full shadow-lg border border-gray-200 px-6 py-3 mb-4">
-        <div className="flex items-center space-x-2 text-gray-600 text-sm">
-          <Icon icon="lucide:layers" className="w-4 h-4" />
-          <span>{visibleCourses.length} of {regularCourses.length} courses shown</span>
-        </div>
-      </div>
-      
-      <Link
-        href={"/courses"}
-        className="group inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 space-x-3"
-      >
-        <Icon 
-          icon="lucide:plus-circle" 
-          className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" 
-        />
-        <span>Show {regularCourses.length - visibleCourses.length} More Courses</span>
-        <Icon 
-          icon="lucide:arrow-right" 
-          className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" 
-        />
-      </Link>
-      
-      {/* Quick stats */}
-      <div className="mt-4 text-sm text-gray-500">
-        <span>✨ All courses include certification and equipment</span>
-      </div>
-    </div>
-  </div>
-)}
+            <div className="relative mt-12">
+              {/* Subtle fade overlay */}
+              <div className="absolute -top-8 left-0 right-0 h-24 bg-gradient-to-t from-gray-50 via-gray-50/70 to-transparent pointer-events-none z-10" />
+
+              {/* Compact show more container */}
+              <div className="relative z-20 text-center">
+                <div className="inline-flex items-center bg-white rounded-full shadow-lg border border-gray-200 px-6 py-3 mb-4">
+                  <div className="flex items-center space-x-2 text-gray-600 text-sm">
+                    <Icon icon="lucide:layers" className="w-4 h-4" />
+                    <span>
+                      {visibleCourses.length} of {regularCourses.length} courses
+                      shown
+                    </span>
+                  </div>
+                </div>
+
+                <Link
+                  href={"/courses"}
+                  className="group inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 space-x-3"
+                >
+                  <Icon
+                    icon="lucide:plus-circle"
+                    className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300"
+                  />
+                  <span>
+                    Show {regularCourses.length - visibleCourses.length} More
+                    Courses
+                  </span>
+                  <Icon
+                    icon="lucide:arrow-right"
+                    className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300"
+                  />
+                </Link>
+
+                {/* Quick stats */}
+                <div className="mt-4 text-sm text-gray-500">
+                  <span>
+                    ✨ All courses include certification and equipment
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
       </div>
     </main>
