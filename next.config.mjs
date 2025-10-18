@@ -19,6 +19,11 @@ const nextConfig = {
         hostname: "timeforkids.com",
         pathname: "/wp-content/**",
       },
+      {
+        protocol: "https",
+        hostname: "api.topdivers.online",
+        pathname: "/**",
+      },
     ],
   },
   trailingSlash: true,
