@@ -48,8 +48,8 @@ const PackagesPage = async () => {
   try {
     // Fetch both packages and trips to get accurate trip counts
     const [packagesData, tripsData] = await Promise.all([
-      getData("/packages"),
-      getData("/trips"),
+      getData("/packages/"),
+      getData("/trips/"),
     ]);
 
     if (Array.isArray(packagesData)) {

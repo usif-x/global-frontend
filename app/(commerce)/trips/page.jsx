@@ -82,8 +82,8 @@ const TripsPage = async ({ searchParams }) => {
 
   try {
     const [tripsData, packagesData] = await Promise.all([
-      getData("/trips"),
-      getData("/packages"),
+      getData("/trips/"),
+      getData("/packages/"),
     ]);
     trips = tripsData || [];
     packages = packagesData || [];

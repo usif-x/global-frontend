@@ -70,8 +70,8 @@ const PackageTripDisplay = async () => {
   try {
     // Fetch both packages and trips using server-axios
     const [packagesData, tripsData] = await Promise.all([
-      getData("/packages"),
-      getData("/trips"),
+      getData("/packages/"),
+      getData("/trips/"),
     ]);
 
     packages = packagesData || [];

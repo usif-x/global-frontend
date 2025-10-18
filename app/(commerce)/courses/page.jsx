@@ -95,7 +95,7 @@ const CoursesPage = async () => {
   let courses = [];
 
   try {
-    const data = await getData("/courses");
+    const data = await getData("/courses/");
     if (Array.isArray(data)) {
       courses = data;
     } else {
