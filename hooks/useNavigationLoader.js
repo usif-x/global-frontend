@@ -1,13 +1,14 @@
 // hooks/useNavigationLoader.js
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useLoading } from "../components/providers/LoadingProvider";
 
 export default function useNavigationLoader() {
   const { startLoading, stopLoading } = useLoading();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     let loadingTimer;
@@ -19,6 +20,14 @@ export default function useNavigationLoader() {
     const originalForward = router.forward;
 
     router.push = async (...args) => {
+      const targetUrl = args[0];
+
+      // Check if navigating to the same page
+      if (pathname === targetUrl) {
+        // Don't show loading for same page navigation
+        return;
+      }
+
       startLoading();
       loadingTimer = setTimeout(stopLoading, 5000); // Fallback timeout
       try {
@@ -31,6 +40,14 @@ export default function useNavigationLoader() {
     };
 
     router.replace = async (...args) => {
+      const targetUrl = args[0];
+
+      // Check if navigating to the same page
+      if (pathname === targetUrl) {
+        // Don't show loading for same page navigation
+        return;
+      }
+
       startLoading();
       loadingTimer = setTimeout(stopLoading, 5000);
       try {
@@ -66,7 +83,7 @@ export default function useNavigationLoader() {
       router.back = originalBack;
       router.forward = originalForward;
     };
-  }, [router, startLoading, stopLoading]);
+  }, [router, startLoading, stopLoading, pathname]);
 
   // Listen for browser navigation events
   useEffect(() => {

@@ -12,7 +12,8 @@ export const metadata = {
   icons: {
     icon: "/favicon.ico",
   },
-  description: "Experience the Red Sea's Beauty",
+  description:
+    "Experience the Red Sea’s Beauty with TopDiverS — Dive into crystal-clear waters, explore vibrant coral reefs, and discover a world of marine life like never before. Whether you’re a beginner or a pro, every dive is an unforgettable adventure.",
   keywords:
     "diving, trips, packages, courses, destinations, safari, egypt, red sea, diving trips, diving packages, diving courses, diving destinations, diving safari, diving egypt, diving red sea",
   creator: "Top Divers Hurghada",
@@ -24,7 +25,8 @@ export const metadata = {
   },
   openGraph: {
     title: "Top Divers Hurghada",
-    description: "Experience the Red Sea's Beauty",
+    description:
+      "Experience the Red Sea’s Beauty with TopDiverS — Dive into crystal-clear waters, explore vibrant coral reefs, and discover a world of marine life like never before. Whether you’re a beginner or a pro, every dive is an unforgettable adventure.",
     url: "https://topdivers.online",
     siteName: "Top Divers Hurghada",
     images: [

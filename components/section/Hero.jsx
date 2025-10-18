@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 const Hero = ({
@@ -7,7 +6,7 @@ const Hero = ({
     {
       backgroundImageUrl: "/image/hero-bg2.jpg",
       title: "Top Divers",
-      subtitle: "Experience the Red Sea's Beauty",
+      subtitle: "Experience the Red Sea's Beauty with TopDivers",
       description:
         "Book your dive today and get ready for an unforgettable adventure!",
       buttonText: "Book A Trip",
@@ -88,10 +87,8 @@ const Hero = ({
     [currentSlide, isTransitioning]
   );
 
-  // Auto-play functionality with progress
   useEffect(() => {
     let progressInterval;
-    let slideInterval;
 
     if (!isTransitioning) {
       progressInterval = setInterval(() => {
@@ -107,7 +104,6 @@ const Hero = ({
 
     return () => {
       if (progressInterval) clearInterval(progressInterval);
-      if (slideInterval) clearInterval(slideInterval);
     };
   }, [currentSlide, isTransitioning, autoPlayInterval, nextSlide]);
 
@@ -166,11 +162,6 @@ const Hero = ({
       100% { transform: translateX(100%); }
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 0.4; }
-      50% { opacity: 0.8; }
-    }
-
     @keyframes slideUp {
       from {
         opacity: 0;
@@ -179,17 +170,6 @@ const Hero = ({
       to {
         opacity: 1;
         transform: translate3d(0, 0, 0);
-      }
-    }
-
-    @keyframes zoomIn {
-      from {
-        opacity: 0;
-        transform: scale(0.9) translateZ(0);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1) translateZ(0);
       }
     }
 
@@ -202,6 +182,11 @@ const Hero = ({
         opacity: 1;
         transform: scale(1) translateZ(0);
       }
+    }
+
+    @keyframes kenburns {
+      0% { transform: scale(1) translate(0, 0); }
+      100% { transform: scale(1.08) translate(-2%, -2%); }
     }
 
     .animate-slideInFromBottom {
@@ -229,20 +214,16 @@ const Hero = ({
       animation: shimmer 2s infinite;
     }
 
-    .animate-pulse-slow {
-      animation: pulse 3s ease-in-out infinite;
-    }
-
     .animate-slideUp {
       animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    .animate-zoomIn {
-      animation: zoomIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
     .animate-fadeInScale {
       animation: fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .animate-kenburns {
+      animation: kenburns 20s ease-out infinite alternate;
     }
 
     .animate-delay-100 { animation-delay: 0.1s; }
@@ -254,33 +235,50 @@ const Hero = ({
     .animate-delay-700 { animation-delay: 0.7s; }
     .animate-delay-800 { animation-delay: 0.8s; }
 
+    .text-shadow-luxury {
+      text-shadow:
+        0 2px 4px rgba(0, 0, 0, 1),
+        0 4px 8px rgba(0, 0, 0, 0.95),
+        0 8px 16px rgba(0, 0, 0, 0.8),
+        0 16px 32px rgba(0, 0, 0, 0.6),
+        0 32px 64px rgba(0, 0, 0, 0.4);
+    }
+
     .text-shadow-sharp {
       text-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.9),
-        0 4px 8px rgba(0, 0, 0, 0.7),
-        0 8px 16px rgba(0, 0, 0, 0.3);
+        0 4px 8px rgba(0, 0, 0, 0.95),
+        0 8px 16px rgba(0, 0, 0, 0.8),
+        0 16px 32px rgba(0, 0, 0, 0.6);
     }
 
-    .text-shadow-soft {
-      text-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.8),
-        0 4px 16px rgba(0, 0, 0, 0.4);
+    .glass-morphism-premium {
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.15) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.6),
+        0 6px 20px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
     }
 
-    .glass-morphism {
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .glass-button {
-      backdrop-filter: blur(16px) saturate(180%);
-      -webkit-backdrop-filter: blur(16px) saturate(180%);
+    .luxury-glass {
+      backdrop-filter: blur(35px) saturate(200%);
+      -webkit-backdrop-filter: blur(35px) saturate(200%);
+      background: linear-gradient(135deg, 
+        rgba(0, 0, 0, 0.45) 0%, 
+        rgba(0, 0, 0, 0.25) 50%, 
+        rgba(0, 0, 0, 0.15) 100%);
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.7),
+        0 10px 30px rgba(0, 0, 0, 0.5),
+        inset 0 2px 0 rgba(255, 255, 255, 0.12),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.2);
     }
 
     .slide-transition {
-      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
       will-change: transform, opacity;
     }
 
@@ -291,7 +289,7 @@ const Hero = ({
 
     .slide-inactive {
       opacity: 0;
-      transform: scale(1.1) translateZ(0);
+      transform: scale(1.05) translateZ(0);
     }
 
     .content-transition {
@@ -309,49 +307,69 @@ const Hero = ({
       transform: translateY(20px) translateZ(0);
     }
 
-    .parallax-element {
-      transform: translate3d(0, 0, 0);
-      will-change: transform;
+    .button-glow-premium {
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.6),
+        0 4px 16px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(255, 255, 255, 0.08),
+        inset 0 2px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.25);
     }
 
-    .button-glow {
+    .button-glow-premium:hover {
       box-shadow:
-        0 0 20px rgba(255, 255, 255, 0.1),
-        0 0 40px rgba(255, 255, 255, 0.05),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    }
-
-    .button-glow:hover {
-      box-shadow:
-        0 0 30px rgba(255, 255, 255, 0.2),
-        0 0 60px rgba(255, 255, 255, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        0 16px 48px rgba(0, 0, 0, 0.7),
+        0 8px 24px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(255, 255, 255, 0.15),
+        inset 0 2px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.3);
     }
 
     .progress-bar {
       background: linear-gradient(90deg,
-        rgba(255, 255, 255, 0.8) 0%,
-        rgba(255, 255, 255, 0.4) 100%);
+        rgba(255, 255, 255, 0.9) 0%,
+        rgba(255, 255, 255, 0.5) 100%);
     }
 
-    /* Performance optimizations */
     .gpu-accelerated {
       transform: translate3d(0, 0, 0);
       will-change: transform;
     }
 
-    /* Mobile optimizations */
+    /* Mobile responsiveness improvements */
     @media (max-width: 640px) {
       .animate-slideInFromLeft, .animate-slideInFromBottom {
         animation-duration: 0.6s;
       }
-
+      
+      .text-shadow-luxury {
+        text-shadow:
+          0 2px 4px rgba(0, 0, 0, 1),
+          0 4px 8px rgba(0, 0, 0, 0.9),
+          0 8px 16px rgba(0, 0, 0, 0.7);
+      }
+      
       .text-shadow-sharp {
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95), 0 1px 2px rgba(0, 0, 0, 0.8);
+        text-shadow:
+          0 2px 4px rgba(0, 0, 0, 0.9),
+          0 4px 8px rgba(0, 0, 0, 0.7);
       }
     }
 
-    /* Reduced motion support */
+    @media (max-width: 480px) {
+      .glass-morphism-premium, .luxury-glass {
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+      
+      .button-glow-premium {
+        box-shadow:
+          0 4px 16px rgba(0, 0, 0, 0.6),
+          0 2px 8px rgba(0, 0, 0, 0.4),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       * {
         animation-duration: 0.01ms !important;
@@ -364,37 +382,43 @@ const Hero = ({
   return (
     <>
       <style>{styles}</style>
-      <section className="relative min-h-screen h-screen w-full overflow-hidden">
-        {/* Background Images with improved transitions */}
+      <section className="relative min-h-screen h-screen w-full overflow-hidden bg-black">
+        {/* Background Images with Ken Burns effect */}
         {slides.map((slide, index) => (
           <div
             key={index}
-            className={`absolute inset-0 bg-cover bg-center slide-transition gpu-accelerated ${
+            className={`absolute inset-0 slide-transition gpu-accelerated ${
               index === currentSlide ? "slide-active" : "slide-inactive"
             }`}
-            style={{
-              backgroundImage: `url('${slide.backgroundImageUrl}')`,
-              backgroundAttachment: "fixed",
-            }}
           >
-            {/* Enhanced gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/70 to-black/40"></div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30"></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-900/10 via-transparent to-purple-900/10"></div>
+            <div
+              className={`absolute inset-0 bg-cover bg-center ${
+                index === currentSlide ? "animate-kenburns" : ""
+              }`}
+              style={{
+                backgroundImage: `url('${slide.backgroundImageUrl}')`,
+                backgroundPosition: "center center",
+              }}
+            />
+
+            {/* Refined gradient overlays for better image visibility */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/30"></div>
+            <div className="absolute inset-0 bg-gradient-to-bl from-transparent via-black/20 to-black/60"></div>
           </div>
         ))}
 
         {/* Animated particles */}
         <div className="absolute inset-0 pointer-events-none">
-          {[...Array(6)].map((_, i) => (
+          {[...Array(8)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-1 h-1 bg-white/20 rounded-full animate-float opacity-0 animate-fadeInScale gpu-accelerated"
+              className="absolute w-1 h-1 bg-white/30 rounded-full animate-float opacity-0 animate-fadeInScale gpu-accelerated"
               style={{
-                top: `${20 + i * 15}%`,
-                right: `${10 + i * 5}%`,
-                animationDelay: `${i * 0.5}s`,
-                animationDuration: `${4 + i}s`,
+                top: `${15 + i * 12}%`,
+                right: `${5 + i * 8}%`,
+                animationDelay: `${i * 0.4}s`,
+                animationDuration: `${5 + i * 0.5}s`,
               }}
             />
           ))}
@@ -402,99 +426,111 @@ const Hero = ({
 
         {/* Main Content */}
         <div className="relative z-10 h-full flex items-center">
-          <div className="container mx-auto px-4 sm:px-6 md:px-12">
+          <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
             <div
-              className={`max-w-5xl content-transition ${
+              className={`max-w-4xl lg:max-w-5xl xl:max-w-6xl content-transition ${
                 isContentVisible ? "content-visible" : "content-hidden"
               }`}
             >
-              {/* Main Title */}
-              <div className="mb-6 overflow-hidden">
-                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-black tracking-tight text-shadow-sharp leading-none">
+              {/* Responsive Main Title */}
+              <div className="mb-4 sm:mb-6 md:mb-8 overflow-hidden">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-black tracking-tight text-shadow-luxury leading-[0.85] uppercase">
                   {slides[currentSlide].title.split(" ").map((word, index) => (
                     <span
                       key={index}
-                      className={`block text-white animate-slideInFromLeft opacity-0 gpu-accelerated`}
-                      style={{ animationDelay: `${index * 0.1}s` }}
+                      className={`block text-white animate-slideInFromLeft opacity-0 gpu-accelerated relative`}
+                      style={{
+                        animationDelay: `${index * 0.15}s`,
+                        letterSpacing: "0.04em",
+                      }}
                     >
                       {word}
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/8 via-white/4 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-700"></div>
                     </span>
                   ))}
                 </h1>
               </div>
 
-              {/* Subtitle */}
-              <div className="mb-8 overflow-hidden">
-                <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-light text-white/95 text-shadow-soft tracking-wide leading-tight animate-slideInFromRight animate-delay-300 opacity-0 gpu-accelerated">
+              {/* Responsive Subtitle */}
+              <div className="mb-6 sm:mb-8 md:mb-10 overflow-hidden">
+                <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-light text-white text-shadow-sharp tracking-wide leading-relaxed animate-slideInFromRight animate-delay-300 opacity-0 gpu-accelerated">
                   {slides[currentSlide].subtitle}
                 </p>
               </div>
 
-              {/* Animated accent line */}
-              <div className="relative mb-10 overflow-hidden">
-                <div className="w-32 sm:w-40 md:w-48 h-0.5 bg-gradient-to-r from-white via-white/80 to-transparent animate-scaleInLine animate-delay-400 opacity-0 gpu-accelerated">
-                  <div className="absolute inset-0 bg-white/60 blur-sm"></div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer"></div>
+              {/* Responsive accent lines */}
+              <div className="relative mb-6 sm:mb-8 md:mb-10 overflow-hidden">
+                <div className="flex items-center gap-3 sm:gap-4 md:gap-5">
+                  <div className="w-24 sm:w-32 md:w-40 lg:w-48 h-[1.5px] sm:h-[2px] bg-gradient-to-r from-white via-white/90 to-white/20 animate-scaleInLine animate-delay-400 opacity-0 gpu-accelerated relative">
+                    <div className="absolute inset-0 bg-white/50 blur-sm"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/70 to-transparent animate-shimmer"></div>
+                  </div>
+                  <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-white rounded-full animate-fadeInScale animate-delay-500 opacity-0 shadow-lg shadow-white/50"></div>
+                  <div className="w-12 sm:w-16 md:w-20 lg:w-24 h-[1.5px] sm:h-[2px] bg-gradient-to-r from-white/70 to-transparent animate-scaleInLine animate-delay-600 opacity-0 gpu-accelerated"></div>
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="mb-12 overflow-hidden">
-                <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-light text-white/90 leading-relaxed max-w-3xl text-shadow-soft animate-slideInFromBottom animate-delay-500 opacity-0 gpu-accelerated">
-                  {slides[currentSlide].description}
-                </p>
+              {/* Responsive Description */}
+              <div className="mb-8 sm:mb-10 md:mb-12 overflow-hidden">
+                <div className="glass-morphism-premium p-4 sm:p-6 md:p-8 max-w-3xl lg:max-w-4xl animate-slideInFromBottom animate-delay-700 opacity-0 gpu-accelerated rounded-sm">
+                  <p className="text-sm sm:text-base md:text-lg lg:text-xl font-light text-white leading-relaxed text-shadow-sharp tracking-wide">
+                    {slides[currentSlide].description}
+                  </p>
+                </div>
               </div>
 
-              {/* Enhanced CTA Button */}
-              <div className="animate-fadeInScale animate-delay-600 opacity-0 gpu-accelerated">
-                <Link
+              {/* Responsive CTA Button */}
+              <div className="animate-fadeInScale animate-delay-800 opacity-0 gpu-accelerated">
+                <a
                   href={slides[currentSlide].buttonLink}
-                  className="group relative inline-flex items-center gap-4 glass-button button-glow text-white font-bold py-4 sm:py-5 px-8 sm:px-10 rounded-full transition-all duration-500 transform hover:scale-105 overflow-hidden border border-white/30 hover:border-white/50"
+                  className="group relative inline-flex items-center gap-3 sm:gap-4 md:gap-6 luxury-glass button-glow-premium text-white font-bold py-3 sm:py-4 md:py-6 px-6 sm:px-8 md:px-12 transition-all duration-700 transform hover:scale-105 overflow-hidden border-2 border-white/20 hover:border-white/40 uppercase tracking-[0.15em] sm:tracking-[0.2em] rounded-sm"
                 >
-                  {/* Background shimmer */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+                  {/* Enhanced shimmer effects */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1200"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-300%] group-hover:translate-x-[300%] transition-transform duration-1500"></div>
 
-                  {/* Button content */}
-                  <span className="relative z-10 text-sm sm:text-base md:text-lg tracking-wide">
+                  <span className="relative z-10 text-xs sm:text-sm md:text-base lg:text-lg tracking-[0.1em] sm:tracking-[0.15em] font-semibold">
                     {slides[currentSlide].buttonText}
                   </span>
-                  <div className="relative z-10 w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-all duration-300 group-hover:rotate-90">
+                  <div className="relative z-10 w-6 h-6 sm:w-7 sm:h-7 md:w-9 md:h-9 bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-all duration-500 group-hover:rotate-90 shadow-lg">
                     <svg
-                      className="w-4 h-4 transition-transform duration-300"
+                      className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 transition-transform duration-500"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
-                      strokeWidth={2.5}
+                      strokeWidth={3}
                     >
                       <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                        strokeLinecap="square"
+                        strokeLinejoin="miter"
                         d="M13 7l5 5m0 0l-5 5m5-5H6"
                       />
                     </svg>
                   </div>
-                </Link>
+
+                  <div className="absolute inset-1 bg-gradient-to-r from-white/8 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                </a>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Enhanced Navigation Arrows */}
+        {/* Responsive Navigation Arrows */}
         <button
           onClick={prevSlide}
           disabled={isTransitioning}
-          className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2 z-20 w-12 h-12 sm:w-14 sm:h-14 glass-morphism rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed group"
+          className="absolute left-3 sm:left-4 md:left-6 lg:left-8 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 luxury-glass flex items-center justify-center transition-all duration-500 hover:scale-110 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed group border-2 border-white/20 hover:border-white/30 rounded-sm"
         >
           <svg
-            className="w-6 h-6 text-white transition-transform duration-300 group-hover:-translate-x-0.5"
+            className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 text-white transition-transform duration-500 group-hover:-translate-x-1"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
-            strokeWidth={2}
+            strokeWidth={3}
           >
             <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              strokeLinecap="square"
+              strokeLinejoin="miter"
               d="M15 19l-7-7 7-7"
             />
           </svg>
@@ -503,25 +539,25 @@ const Hero = ({
         <button
           onClick={nextSlide}
           disabled={isTransitioning}
-          className="absolute right-4 sm:right-6 top-1/2 transform -translate-y-1/2 z-20 w-12 h-12 sm:w-14 sm:h-14 glass-morphism rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed group"
+          className="absolute right-3 sm:right-4 md:right-6 lg:right-8 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 luxury-glass flex items-center justify-center transition-all duration-500 hover:scale-110 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed group border-2 border-white/20 hover:border-white/30 rounded-sm"
         >
           <svg
-            className="w-6 h-6 text-white transition-transform duration-300 group-hover:translate-x-0.5"
+            className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 text-white transition-transform duration-500 group-hover:translate-x-1"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
-            strokeWidth={2}
+            strokeWidth={3}
           >
             <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              strokeLinecap="square"
+              strokeLinejoin="miter"
               d="M9 5l7 7-7 7"
             />
           </svg>
         </button>
 
-        {/* Enhanced Slide Indicators with Progress */}
-        <div className="absolute bottom-20 sm:bottom-24 left-1/2 transform -translate-x-1/2 z-20 flex items-center space-x-3">
+        {/* Responsive Slide Indicators with Progress */}
+        <div className="absolute bottom-16 sm:bottom-20 md:bottom-24 lg:bottom-28 left-1/2 transform -translate-x-1/2 z-20 flex items-center space-x-3 sm:space-x-4 md:space-x-6">
           {slides.map((_, index) => (
             <button
               key={index}
@@ -530,22 +566,27 @@ const Hero = ({
               disabled={isTransitioning}
             >
               <div
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                className={`w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 transition-all duration-500 rounded-sm ${
                   index === currentSlide
-                    ? "bg-white scale-125"
-                    : "bg-white/50 hover:bg-white/70 hover:scale-110"
+                    ? "bg-white scale-125 shadow-lg shadow-white/50"
+                    : "bg-white/40 hover:bg-white/70 hover:scale-110"
                 }`}
               />
               {index === currentSlide && (
-                <div className="absolute inset-0 rounded-full border-2 border-white/30">
+                <div className="absolute inset-0 border-2 border-white/50 rounded-sm">
                   <div
-                    className="absolute inset-0 rounded-full progress-bar"
+                    className="absolute inset-0 progress-bar rounded-sm"
                     style={{
                       clipPath: `polygon(0 0, ${progress}% 0, ${progress}% 100%, 0 100%)`,
                     }}
                   />
                 </div>
               )}
+              <div
+                className={`absolute inset-0 bg-white/30 blur-md transition-opacity duration-500 rounded-sm ${
+                  index === currentSlide ? "opacity-100" : "opacity-0"
+                }`}
+              ></div>
             </button>
           ))}
         </div>

@@ -148,8 +148,8 @@ const GoogleTranslateButton = () => {
 
             <div className="space-y-4">
               <p className="text-sm text-gray-600">
-                The content of this page will be automatically translated into
-                your selected language.
+                The content of this page will be automatically translated by
+                google into your selected language.
               </p>
 
               <div
@@ -162,8 +162,13 @@ const GoogleTranslateButton = () => {
                 className="w-full mt-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
               >
                 <Icon icon="lucide:rotate-ccw" className="w-4 h-4" />
-                Reset to Original
+                Reset Translation
               </button>
+            </div>
+            <div className="flex justify-center items-center p-4 m-4 border border-dashed border-gray-300 rounded-lg bg-gray-50 mt-6">
+              <p className="text-sm text-gray-600">
+                if you want to select another language reset the current one.
+              </p>
             </div>
           </div>
         </div>

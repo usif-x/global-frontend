@@ -1,6 +1,6 @@
 export async function GET() {
-  const apiBaseUrl = "http://0.0.0.0:8000"; // backend API
-  const siteBaseUrl = "http://localhost:3000"; // public site
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL; // backend API
+  const siteBaseUrl = process.env.NEXT_PUBLIC_APP_URL; // public site
 
   try {
     // Fetch all data concurrently with timeouts
@@ -115,24 +115,9 @@ ${urls
       { url: `${siteBaseUrl}/packages`, priority: "0.9", changefreq: "daily" },
       { url: `${siteBaseUrl}/courses`, priority: "0.9", changefreq: "daily" },
       {
-        url: `${siteBaseUrl}/dive-sites`,
-        priority: "0.8",
-        changefreq: "weekly",
-      },
-      {
-        url: `${siteBaseUrl}/destinations`,
-        priority: "0.8",
-        changefreq: "weekly",
-      },
-      {
         url: `${siteBaseUrl}/bestsellers`,
         priority: "0.7",
         changefreq: "daily",
-      },
-      {
-        url: `${siteBaseUrl}/center-location`,
-        priority: "0.6",
-        changefreq: "monthly",
       },
       { url: `${siteBaseUrl}/profile`, priority: "0.5", changefreq: "monthly" },
       { url: `${siteBaseUrl}/login`, priority: "0.4", changefreq: "yearly" },

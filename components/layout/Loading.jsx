@@ -1,20 +1,39 @@
 "use client";
 
 import { useLoading } from "@/providers/loadingProvider"; // Make sure this path is correct
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function LoadingOverlay() {
   const { isLoading, setIsLoading } = useLoading(); // Get setIsLoading from the context
   const [showLoading, setShowLoading] = useState(false);
+  const [previousPath, setPreviousPath] = useState("");
+  const pathname = usePathname();
 
   // New state to manage the visibility of the close button
   const [showCloseButton, setShowCloseButton] = useState(false);
+
+  // Track pathname changes and auto-dismiss loading if navigating to same page
+  useEffect(() => {
+    if (pathname && previousPath && pathname === previousPath && isLoading) {
+      // If user clicked on the same route they're already on, dismiss loading immediately
+      setIsLoading(false);
+    }
+    setPreviousPath(pathname);
+  }, [pathname, previousPath, isLoading, setIsLoading]);
 
   useEffect(() => {
     let loadingTimer;
     let closeButtonTimer;
 
     if (isLoading) {
+      // Check if we're navigating to the same page
+      if (pathname === previousPath) {
+        // If same page, don't show loading
+        setIsLoading(false);
+        return;
+      }
+
       // Show the loading overlay after a very short delay to avoid flickering on fast loads
       loadingTimer = setTimeout(() => setShowLoading(true), 100);
 
@@ -32,7 +51,7 @@ export default function LoadingOverlay() {
       clearTimeout(loadingTimer);
       clearTimeout(closeButtonTimer);
     };
-  }, [isLoading]);
+  }, [isLoading, pathname, previousPath, setIsLoading]);
 
   if (!showLoading) return null;
 

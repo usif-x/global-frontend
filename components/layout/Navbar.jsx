@@ -4,6 +4,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 const Navbar = () => {
@@ -13,6 +14,7 @@ const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(null);
   const [isMounted, setIsMounted] = useState(false);
 
+  const pathname = usePathname();
   const authStore = useAuthStore();
   const isAuthenticated = authStore.isAuthenticated;
   const userType = authStore.userType;
@@ -86,14 +88,19 @@ const Navbar = () => {
 
   const navigationLinks = [
     { href: "/", label: "Home" },
-    { href: "/destinations", label: "Destinations" },
-    { href: "/dive-sites", label: "Dive Sites" },
     { href: "/packages", label: "Packages" },
     { href: "/trips", label: "Trips" },
     { href: "/courses", label: "Courses" },
     { href: "/bestsellers", label: "Best Sellers" },
-    { href: "/center-location", label: "Diving Centers" },
   ];
+
+  // Helper function to check if link is active
+  const isActiveLink = (href) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
+    return pathname.startsWith(href);
+  };
 
   return (
     <>
@@ -133,16 +140,27 @@ const Navbar = () => {
           {/* == Middle: Desktop Navigation Links === */}
           {/* ======================================= */}
           <ul className="hidden lg:flex items-center gap-4 xl:gap-6 text-white text-sm font-medium">
-            {navigationLinks.map((link, index) => (
-              <li key={index}>
-                <Link href={link.href} className="relative group py-2 px-1">
-                  <span className="relative z-10 transition-colors duration-300 group-hover:text-cyan-300 whitespace-nowrap">
-                    {link.label}
-                  </span>
-                  <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300 group-hover:w-full"></div>
-                </Link>
-              </li>
-            ))}
+            {navigationLinks.map((link, index) => {
+              const isActive = isActiveLink(link.href);
+              return (
+                <li key={index}>
+                  <Link href={link.href} className="relative group py-2 px-1">
+                    <span
+                      className={`relative z-10 transition-colors duration-300 whitespace-nowrap ${
+                        isActive ? "text-cyan-300" : "group-hover:text-cyan-300"
+                      }`}
+                    >
+                      {link.label}
+                    </span>
+                    <div
+                      className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300 ${
+                        isActive ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                    ></div>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
 
           {/* Right: Desktop Login/Register/Profile + Mobile Menu Button */}
@@ -340,21 +358,34 @@ const Navbar = () => {
             {/* ======================================= */}
             <nav className="mb-8">
               <ul className="space-y-1">
-                {navigationLinks.map((link, index) => (
-                  <li key={index}>
-                    <Link
-                      href={link.href}
-                      className="flex items-center justify-between text-white hover:text-cyan-300 transition-all duration-300 py-4 px-4 rounded-xl hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-blue-500/10 border border-transparent hover:border-white/10 group"
-                      onClick={handleMobileMenuLinkClick}
-                    >
-                      <span className="text-lg font-medium">{link.label}</span>
-                      <Icon
-                        icon="lucide:chevron-right"
-                        className="w-5 h-5 opacity-50 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1"
-                      />
-                    </Link>
-                  </li>
-                ))}
+                {navigationLinks.map((link, index) => {
+                  const isActive = isActiveLink(link.href);
+                  return (
+                    <li key={index}>
+                      <Link
+                        href={link.href}
+                        className={`flex items-center justify-between text-white transition-all duration-300 py-4 px-4 rounded-xl border group ${
+                          isActive
+                            ? "text-cyan-300 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-cyan-400/30"
+                            : "hover:text-cyan-300 hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-blue-500/10 border-transparent hover:border-white/10"
+                        }`}
+                        onClick={handleMobileMenuLinkClick}
+                      >
+                        <span className="text-lg font-medium">
+                          {link.label}
+                        </span>
+                        <Icon
+                          icon="lucide:chevron-right"
+                          className={`w-5 h-5 transition-all duration-300 group-hover:translate-x-1 ${
+                            isActive
+                              ? "opacity-100"
+                              : "opacity-50 group-hover:opacity-100"
+                          }`}
+                        />
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </nav>
 
