@@ -39,7 +39,7 @@ const PaymentsContent = () => {
   const paymentCards = [
     {
       title: "Total Revenue",
-      value: `${(paymentStats.total_amount || 0).toLocaleString()}`,
+      value: `${(paymentStats.total_revenue || 0).toLocaleString()}`,
       icon: "mdi:cash-multiple",
       color: "bg-green-500",
       description: `From ${paymentStats.total_invoices || 0} total invoices`,
@@ -53,7 +53,7 @@ const PaymentsContent = () => {
     },
     {
       title: "Pending Payments",
-      value: `${(paymentStats.pending_amount || 0).toLocaleString()}`,
+      value: `${(paymentStats.pending_amount_total || 0).toLocaleString()}`,
       icon: "mdi:clock-outline",
       color: "bg-orange-500",
       description: `${paymentStats.pending_invoices || 0} awaiting payment`,
