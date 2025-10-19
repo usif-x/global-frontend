@@ -43,13 +43,13 @@ export default function Home() {
                 </p>
                 <div className="flex space-x-4">
                   <a
-                    href="#"
+                    href="https://www.facebook.com/profile.php?id=61579625321316"
                     className="text-white/60 hover:text-white transition-colors"
                   >
                     <Icon icon="mdi:facebook" width={20} height={20} />
                   </a>
                   <a
-                    href="#"
+                    href="https://www.instagram.com/topdivers.hurghada"
                     className="text-white/60 hover:text-white transition-colors"
                   >
                     <Icon icon="mdi:instagram" width={20} height={20} />
@@ -126,7 +126,7 @@ export default function Home() {
                 </div>
                 <span className="text-white/40">|</span>
                 <a
-                  href="https://yousseif.vercel.app"
+                  href="https://yousseif.xyz"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors"

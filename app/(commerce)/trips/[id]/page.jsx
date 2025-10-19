@@ -142,7 +142,7 @@ const TripPage = ({ params }) => {
         // If we couldn't find trips from the package, or the trip isn't in one, get generic related trips as a fallback.
         if (otherTrips.length === 0) {
           try {
-            const related = await getData("/trips", { limit: 3, exclude: id });
+            const related = await getData(`/packages/${trip.package_id}/trips`);
             otherTrips = related?.data || [];
           } catch (err) {
             console.warn("Failed to load generic related trips:", err);
