@@ -20,6 +20,7 @@ import { toast } from "react-toastify";
 import CourseManagement from "./components/course/Course";
 import InvoiceManagementPage from "./components/invoices/Invoices";
 import HeroDashboard from "./components/MainContent";
+import OrderManagement from "./components/order/Order";
 import AdminSettingsPage from "./components/setting/Setting";
 
 // Notification Component
@@ -126,7 +127,8 @@ const NotificationModal = ({
 const AdminDashboard = () => {
   const { admin, logout, isAdmin } = useAuthStore();
   const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // For mobile
+  const [isCollapsed, setIsCollapsed] = useState(false); // For desktop
   const [activeTab, setActiveTab] = useState("dashboard");
 
   // Notification states
@@ -345,6 +347,16 @@ const AdminDashboard = () => {
     ...(admin?.admin_level === 2
       ? [
           {
+            id: "orders",
+            label: "Orders",
+            icon: "mdi:receipt-text-check-outline",
+            color: "text-lime-500",
+          },
+        ]
+      : []),
+    ...(admin?.admin_level === 2
+      ? [
+          {
             id: "admins",
             label: "Admins",
             icon: "mdi:shield-account",
@@ -422,6 +434,8 @@ const AdminDashboard = () => {
         return <GalleryManagementPage />;
       case "divecenters":
         return <DiveCenterManagementPage />;
+      case "orders":
+        return <OrderManagement />;
       case "admins":
         return <AdminManagementPage />;
       case "testimonials":
@@ -445,12 +459,24 @@ const AdminDashboard = () => {
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-50 bg-white shadow-lg transform transition-all duration-300 ease-in-out 
+                   ${
+                     sidebarOpen
+                       ? "translate-x-0 w-64"
+                       : "-translate-x-full w-64"
+                   }
+                   lg:relative lg:translate-x-0 ${
+                     isCollapsed ? "lg:w-20" : "lg:w-64"
+                   }`}
       >
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-800">Admin Panel</h2>
+        <div
+          className={`flex items-center justify-between h-14 px-6 border-b border-gray-200 ${
+            isCollapsed ? "px-0 justify-center" : ""
+          }`}
+        >
+          {!isCollapsed && (
+            <h2 className="text-xl font-bold text-gray-800">Admin Panel</h2>
+          )}
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
@@ -459,7 +485,7 @@ const AdminDashboard = () => {
           </button>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+        <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
           {menuItems.map((item) => (
             <button
               key={item.id}
@@ -467,44 +493,76 @@ const AdminDashboard = () => {
                 setActiveTab(item.id);
                 setSidebarOpen(false);
               }}
-              className={`relative w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors duration-200 ${
+              className={`relative w-full flex items-center px-4 py-2.5 text-left rounded-lg transition-colors duration-200 ${
                 activeTab === item.id
-                  ? "bg-cyan-50 text-cyan-700 border-r-4 border-cyan-500"
+                  ? "bg-cyan-50 text-cyan-700"
                   : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              }`}
+              } ${isCollapsed ? "justify-center" : ""}`}
+              title={isCollapsed ? item.label : ""}
             >
               <Icon
                 icon={item.icon}
-                className={`w-5 h-5 mr-3 ${
+                className={`w-5 h-5 ${isCollapsed ? "mr-0" : "mr-3"} ${
                   activeTab === item.id ? "text-cyan-500" : item.color
                 }`}
               />
-              <span className="font-medium flex-1">{item.label}</span>
-              {item.badge && (
+              {!isCollapsed && (
+                <span className="font-medium flex-1">{item.label}</span>
+              )}
+              {!isCollapsed && item.badge && (
                 <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
                   {item.badge}
                 </span>
+              )}
+              {isCollapsed && item.badge && (
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               )}
             </button>
           ))}
         </nav>
 
-        {/* User Info */}
-        <div className="border-t border-gray-200 p-4">
-          <div className="flex items-center mb-4">
-            <div className="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center">
-              <Icon icon="mdi:account" className="w-6 h-6 text-white" />
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-700">{admin.name}</p>
-              <p className="text-xs text-gray-500">{admin.email}</p>
-            </div>
+        {/* User Info, Collapse Button & Logout */}
+        <div
+          className={`border-t border-gray-200 p-2 ${
+            isCollapsed ? "p-2" : "p-4"
+          }`}
+        >
+          <div
+            className={`flex items-center ${
+              isCollapsed ? "justify-center" : "justify-between"
+            }`}
+          >
+            {!isCollapsed && (
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center">
+                  <Icon icon="mdi:account" className="w-6 h-6 text-white" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-700">
+                    {admin.name}
+                  </p>
+                  <p className="text-xs text-gray-500">{admin.email}</p>
+                </div>
+              </div>
+            )}
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="hidden lg:flex items-center justify-center p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+              title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              <Icon
+                icon={
+                  isCollapsed ? "mdi:arrow-right-thick" : "mdi:arrow-left-thick"
+                }
+                className="w-5 h-5"
+              />
+            </button>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200">
           <div className="flex items-center justify-between px-4 py-4">
