@@ -171,9 +171,27 @@ export default function LastInvoicePage() {
         </div>
       );
     }
+    if (status === "failed" && invoice.pay_url) {
+      return (
+        <div className="text-center bg-red-50 p-6 rounded-xl border border-red-200 space-y-4">
+          <p className="text-lg font-semibold text-red-700">
+            There was an issue with this payment.
+          </p>
+          <a
+            href={invoice.pay_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-3 bg-red-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-red-600 transition-colors transform hover:scale-105"
+          >
+            <Icon icon="mdi:reload" className="w-5 h-5" />
+            <span>Try Again</span>
+          </a>
+        </div>
+      );
+    }
     return (
-      <div className="text-center text-lg font-semibold text-red-600 bg-red-50 p-4 rounded-lg">
-        There was an issue with this payment. Please contact support for
+      <div className="text-center text-lg font-semibold text-slate-600 bg-slate-100 p-4 rounded-lg">
+        This invoice cannot be paid at this time. Please contact support for
         assistance.
       </div>
     );
