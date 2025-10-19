@@ -46,13 +46,13 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
 
     // Invoice data
     total_invoices: 0,
-    total_amount: 0,
-    pending_invoices: 0,
-    pending_amount: 0,
-    paid_invoices: 0,
-    paid_amount: 0,
-    failed_invoices: 0,
-    failed_amount: 0,
+    total_revenue: 0,
+    pending_count: 0,
+    pending_amount_total: 0,
+    paid_count: 0,
+    paid_amount: 0, // This seems to be missing from new structure, assuming total_revenue is the paid amount
+    failed_count: 0,
+    failed_amount_total: 0,
   });
 
   const [recentUsers, setRecentUsers] = useState([]);
@@ -129,7 +129,7 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
   const statsCards = [
     {
       title: "Total Revenue",
-      value: `$${(stats.total_amount || 0).toLocaleString()}`,
+      value: `$${(stats.total_revenue || 0).toLocaleString()}`,
       icon: "mdi:cash-multiple",
       color: "bg-green-500",
       change: `$${(stats.paid_amount || 0).toLocaleString()} collected`,
@@ -138,7 +138,7 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
       tooltip: "Click to view all invoices",
       subText: `${calculateConversionRate(
         stats.paid_amount,
-        stats.total_amount
+        stats.total_revenue
       )}% conversion rate`,
     },
     {
@@ -157,15 +157,15 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
     },
     {
       title: "Pending Invoices",
-      value: (stats.pending_invoices || 0).toLocaleString(),
+      value: (stats.pending_count || 0).toLocaleString(),
       icon: "mdi:clock-outline",
       color: "bg-orange-500",
-      change: `$${(stats.pending_amount || 0).toLocaleString()} pending`,
-      changeType: stats.pending_invoices > 0 ? "warning" : "neutral",
+      change: `$${(stats.pending_amount_total || 0).toLocaleString()} pending`,
+      changeType: stats.pending_count > 0 ? "warning" : "neutral",
       tab: "invoices",
       tooltip: "Click to review pending payments",
-      subText: `${stats.paid_invoices || 0} paid, ${
-        stats.failed_invoices || 0
+      subText: `${stats.paid_count || 0} paid, ${
+        stats.failed_count || 0
       } failed`,
     },
     {
