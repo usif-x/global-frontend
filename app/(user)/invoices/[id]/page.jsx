@@ -1,4 +1,4 @@
-// app/(user)/invoices/last/page.jsx
+// app/(user)/invoices/[id]/page.jsx
 
 "use client";
 
@@ -6,6 +6,7 @@ import InvoiceService from "@/services/invoiceService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -109,40 +110,42 @@ const ErrorState = ({ message }) => (
 );
 
 //=================================================================
-//  MAIN LAST INVOICE PAGE COMPONENT
+//  MAIN INVOICE DETAIL PAGE COMPONENT
 //=================================================================
-export default function LastInvoicePage() {
+export default function InvoiceDetailPage() {
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { isAuthenticated } = useAuthStore();
+  const { id: invoiceId } = useParams(); // Get invoice ID from URL
 
-  const fetchLastInvoice = useCallback(async () => {
+  const fetchInvoice = useCallback(async () => {
+    if (!invoiceId) return;
+
     setError(null);
     try {
-      const data = await InvoiceService.getUserLastInvoice(); // Correctly using the service method
+      const data = await InvoiceService.getInvoiceById(invoiceId); // Use the new service method
       setInvoice(data);
     } catch (err) {
       const errorMessage =
-        err.response?.data?.detail ||
-        "Could not load your last invoice. You may not have any invoices yet.";
+        err.response?.data?.detail || "Could not load the specified invoice.";
       setError(errorMessage);
       toast.error(errorMessage);
     }
-  }, []);
+  }, [invoiceId]);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && invoiceId) {
       setLoading(true);
-      fetchLastInvoice().finally(() => setLoading(false));
+      fetchInvoice().finally(() => setLoading(false));
     }
-  }, [isAuthenticated, fetchLastInvoice]);
+  }, [isAuthenticated, invoiceId, fetchInvoice]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await fetchLastInvoice();
+    await fetchInvoice();
     setIsRefreshing(false);
     toast.success("Invoice status has been updated.");
   };
@@ -215,11 +218,11 @@ export default function LastInvoicePage() {
                     className="w-16 h-16 text-cyan-500 mx-auto mb-4"
                   />
                   <h1 className="text-3xl md:text-4xl font-extrabold text-slate-800">
-                    Your Booking is Confirmed!
+                    Invoice Details
                   </h1>
                   <p className="text-slate-500 mt-2">
-                    Here are the details of your latest invoice. Please review
-                    and proceed to payment if needed.
+                    Here are the details of your invoice. Please review and
+                    proceed to payment if needed.
                   </p>
                 </div>
 

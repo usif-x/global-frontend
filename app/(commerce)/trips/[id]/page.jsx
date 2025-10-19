@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import CheckStatus from "./CheckStatus";
 // --- CHANGE: REMOVED conversion logic. It's no longer needed. ---
 
 // Helper Functions
@@ -298,7 +299,7 @@ const TripPage = ({ params }) => {
       toast.success("Invoice created! Opening payment page...");
       if (invoiceResponse.pay_url) {
         window.open(invoiceResponse.pay_url, "_blank");
-        router.push("/invoices/last");
+        router.push(`/invoices/${invoiceResponse.id}`);
       } else {
         throw new Error("Payment URL not received from server.");
       }
@@ -618,6 +619,7 @@ const TripPage = ({ params }) => {
             <div className="sticky top-8">
               <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
                 <div className="text-center mb-8 p-6 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl">
+                  <CheckStatus />
                   <span className="text-4xl font-black text-blue-600">
                     EGP {formatPrice(currentPricing.adult)}
                   </span>

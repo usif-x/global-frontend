@@ -9,7 +9,10 @@ const CheckStatus = () => {
   return (
     <>
       {!isAuthenticated && (
-        <Alert children="You must be logged in to book." className="m-5" />
+        <Alert
+          children="You must be logged in to book a trip."
+          className="m-5"
+        />
       )}
     </>
   );
