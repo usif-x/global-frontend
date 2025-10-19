@@ -527,37 +527,32 @@ const AdminDashboard = () => {
             isCollapsed ? "p-2" : "p-4"
           }`}
         >
-          <div
-            className={`flex items-center ${
-              isCollapsed ? "justify-center" : "justify-between"
-            }`}
-          >
-            {!isCollapsed && (
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center">
-                  <Icon icon="mdi:account" className="w-6 h-6 text-white" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-700">
-                    {admin.name}
-                  </p>
-                  <p className="text-xs text-gray-500">{admin.email}</p>
-                </div>
+          {!isCollapsed && (
+            <div className="flex items-center mb-3">
+              <div className="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center">
+                <Icon icon="mdi:account" className="w-6 h-6 text-white" />
               </div>
-            )}
-            <button
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="hidden lg:flex items-center justify-center p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-              title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-            >
-              <Icon
-                icon={
-                  isCollapsed ? "mdi:arrow-right-thick" : "mdi:arrow-left-thick"
-                }
-                className="w-5 h-5"
-              />
-            </button>
-          </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-700">
+                  {admin.name}
+                </p>
+                <p className="text-xs text-gray-500">{admin.email}</p>
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="hidden lg:flex items-center justify-center p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 w-full"
+            title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            <Icon
+              icon={
+                isCollapsed ? "mdi:arrow-right-thick" : "mdi:arrow-left-thick"
+              }
+              className="w-5 h-5"
+            />
+          </button>
         </div>
       </div>
 
