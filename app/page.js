@@ -3,7 +3,6 @@ import DivingCourses from "@/components/section/Course";
 import WhyChooseUs from "@/components/section/Future";
 import Hero from "@/components/section/Hero";
 import PackageTripDisplay from "@/components/section/PackageTrip";
-import TestimonialShowcase from "@/components/section/Testimonial";
 export const metadata = {
   title: {
     template: "Top Divers - %s",
@@ -55,7 +54,6 @@ export default function Home() {
       <BestSellersHero />
       <DivingCourses />
       <PackageTripDisplay />
-      <TestimonialShowcase />
     </>
   );
 }

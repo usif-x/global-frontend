@@ -1,3 +1,4 @@
+"use client";
 import { Icon } from "@iconify/react";
 
 // Data for the features - easy to update or add new ones
@@ -24,66 +25,61 @@ const features = [
 
 const WhyChooseUs = () => {
   return (
-    <section className="relative bg-gradient-to-b from-sky-50 to-white py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32 overflow-hidden">
-      {/* Floating bubbles animation - responsive positioning */}
+    <section className="relative bg-gradient-to-b from-sky-50 to-white py-20 sm:py-24 md:py-32 overflow-hidden">
+      {/* Floating bubbles animation */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-1/4 left-1/4 w-3 h-3 sm:w-4 sm:h-4 bg-cyan-300 rounded-full opacity-60 animate-bounce"></div>
+        <div className="absolute top-1/4 left-1/4 w-4 h-4 bg-cyan-200/50 rounded-full animate-bounce"></div>
         <div
-          className="absolute top-3/4 right-1/4 w-2 h-2 sm:w-3 sm:h-3 bg-sky-400 rounded-full opacity-50 animate-bounce"
+          className="absolute top-3/4 right-1/4 w-3 h-3 bg-sky-300/50 rounded-full animate-bounce"
           style={{ animationDelay: "0.5s" }}
         ></div>
         <div
-          className="absolute top-1/2 left-3/4 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-cyan-400 rounded-full opacity-70 animate-bounce"
+          className="absolute top-1/2 left-3/4 w-2 h-2 bg-cyan-300/50 rounded-full animate-bounce"
           style={{ animationDelay: "1s" }}
         ></div>
         <div
-          className="absolute top-1/3 right-1/3 w-4 h-4 sm:w-5 sm:h-5 bg-sky-300 rounded-full opacity-40 animate-bounce"
+          className="absolute top-1/3 right-1/3 w-5 h-5 bg-sky-200/50 rounded-full animate-bounce"
           style={{ animationDelay: "1.5s" }}
         ></div>
       </div>
 
-      {/* Main content with higher z-index */}
+      {/* Main content */}
       <div className="relative z-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* Section Header - responsive typography and spacing */}
-          <div className="mx-auto max-w-2xl text-center lg:text-center">
-            <h2 className="text-sm sm:text-base font-semibold leading-6 sm:leading-7 text-sky-600">
-              Ready for some fun?
+          {/* Section Header */}
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-base font-semibold leading-7 text-sky-600">
+              UNMATCHED EXCELLENCE
             </h2>
-            <p className="mt-2 text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-gray-900">
-              Open the wonderful underwater world
+            <p className="mt-2 text-4xl sm:text-5xl font-bold tracking-tight text-gray-900">
+              Why Choose TopDivers?
             </p>
-            <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-6 sm:leading-8 text-gray-600 px-4 sm:px-0">
-              If diving has always been your dream, you're in the right place.
-              We help dreams come true by providing safe, fun, and unforgettable
-              experiences.
+            <p className="mt-6 text-lg leading-8 text-gray-600">
+              We are committed to providing an unparalleled diving experience,
+              blending safety, expertise, and pure underwater magic.
             </p>
           </div>
 
-          {/* Features Grid - responsive grid and spacing */}
-          <div className="mx-auto mt-12 sm:mt-16 lg:mt-20 xl:mt-24 max-w-2xl lg:max-w-none">
-            <dl className="grid grid-cols-1 gap-8 sm:gap-12 md:grid-cols-2 lg:grid-cols-3 lg:gap-8 xl:gap-12">
-              {features.map((feature, index) => (
+          {/* Features Grid */}
+          <div className="mx-auto mt-16 sm:mt-20 lg:mt-24 max-w-none">
+            <dl className="grid grid-cols-1 gap-10 sm:gap-12 md:grid-cols-2 lg:grid-cols-3">
+              {features.map((feature) => (
                 <div
                   key={feature.title}
-                  className="flex flex-col items-center text-center sm:items-center sm:text-center lg:items-start lg:text-left transform hover:scale-105 transition-all duration-300 hover:bg-sky-200 p-4 sm:p-5 lg:p-6 rounded-lg group"
-                  style={{ animationDelay: `${index * 0.2}s` }}
+                  className="group flex flex-col items-center text-center p-8 transition-all duration-300 transform hover:-translate-y-2 bg-white/50 rounded-xl shadow-sm hover:shadow-2xl hover:shadow-sky-100 border border-slate-200/80"
                 >
-                  {/* Icon container - responsive sizing */}
-                  <div className="flex h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 items-center justify-center rounded-lg bg-gradient-to-r from-sky-500 to-cyan-500 shadow-lg hover:shadow-xl transition-shadow duration-300 group-hover:shadow-2xl">
-                    <Icon
-                      icon={feature.icon}
-                      className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-white"
-                    />
+                  {/* Icon container */}
+                  <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-cyan-500/30">
+                    <Icon icon={feature.icon} className="h-8 w-8 text-white" />
                   </div>
 
-                  {/* Title - responsive typography */}
-                  <dt className="mt-3 sm:mt-4 text-lg sm:text-xl lg:text-xl font-semibold leading-6 sm:leading-7 text-gray-900">
+                  {/* Title */}
+                  <dt className="mt-6 text-xl font-semibold leading-7 text-gray-900">
                     {feature.title}
                   </dt>
 
-                  {/* Description - responsive typography and padding */}
-                  <dd className="mt-2 flex-auto text-sm sm:text-base leading-6 sm:leading-7 text-gray-600 px-2 sm:px-0">
+                  {/* Description */}
+                  <dd className="mt-2 flex-auto text-base leading-7 text-gray-600">
                     {feature.description}
                   </dd>
                 </div>
