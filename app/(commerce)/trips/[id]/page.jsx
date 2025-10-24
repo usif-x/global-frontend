@@ -287,6 +287,18 @@ const TripPage = ({ params }) => {
         buyer_phone: formData.phone,
         invoice_description: invoiceDescription,
         activity: tripData.name,
+        activity_details: [
+          {
+            name: tripData.name,
+            activity_date: formData.preferredDate,
+            adults: formData.adults,
+            children: formData.children,
+            hotel_name: formData.hotelName,
+            room_number: formData.roomNumber,
+            special_requests: formData.specialRequests,
+          },
+        ],
+        picked_up: false,
         amount: finalPrice, // Use the final calculated price
         currency: formData.currency,
       };
