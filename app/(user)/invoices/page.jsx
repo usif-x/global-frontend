@@ -260,22 +260,48 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
             </button>
           </div>
           <div className="p-8 max-h-[70vh] overflow-y-auto space-y-8">
-            <div className="flex items-center justify-between">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <p className="text-sm font-medium text-slate-500">Status</p>
                 <StatusBadge status={invoice.status} />
               </div>
-              <div>
-                <p className="text-sm font-medium text-slate-500 text-right">
+              <div className="text-center">
+                <p className="text-sm font-medium text-slate-500">
+                  Payment Type
+                </p>
+                <div className="mt-1">
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${
+                      invoice.invoice_type === "online"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-green-100 text-green-800"
+                    }`}
+                  >
+                    <Icon
+                      icon={
+                        invoice.invoice_type === "online"
+                          ? "mdi:credit-card"
+                          : "mdi:cash"
+                      }
+                      className="w-4 h-4"
+                    />
+                    {invoice.invoice_type === "online"
+                      ? "Online Payment"
+                      : "Cash at Center"}
+                  </span>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium text-slate-500">
                   Total Amount
                 </p>
-                <p className="text-2xl font-bold text-slate-800 text-right">
+                <p className="text-2xl font-bold text-slate-800">
                   {formatCurrency(invoice.amount, "EGP")}
                 </p>
-                <p className="text-sm font-medium text-slate-500 text-right">
+                <p className="text-sm font-medium text-slate-500">
                   Pay Currency
                 </p>
-                <p className="text-2xl font-bold text-slate-800 text-right">
+                <p className="text-lg font-bold text-slate-800">
                   {invoice.currency}
                 </p>
               </div>
@@ -289,18 +315,33 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
               </pre>
             </div>
             <div className="pt-6 border-t border-slate-200 flex flex-wrap gap-3">
-              {invoice.status.toLowerCase() === "pending" &&
-                invoice.pay_url && (
-                  <a
-                    href={invoice.pay_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center space-x-2"
-                  >
-                    <Icon icon="mdi:credit-card" className="w-5 h-5" />
-                    <span>Pay Now</span>
-                  </a>
-                )}
+              {invoice.status.toLowerCase() === "pending" && (
+                <>
+                  {invoice.invoice_type === "online" && invoice.pay_url ? (
+                    <a
+                      href={invoice.pay_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center space-x-2"
+                    >
+                      <Icon icon="mdi:credit-card" className="w-5 h-5" />
+                      <span>Pay Online Now</span>
+                    </a>
+                  ) : invoice.invoice_type === "cash" ? (
+                    <div className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center space-x-2">
+                      <Icon icon="mdi:cash" className="w-5 h-5" />
+                      <span>Pay at Diving Center</span>
+                    </div>
+                  ) : null}
+                </>
+              )}
+              <a
+                href={`/invoices/${invoice.id}`}
+                className="flex-1 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center space-x-2"
+              >
+                <Icon icon="mdi:file-document-outline" className="w-5 h-5" />
+                <span>View Invoice Page</span>
+              </a>
               <button
                 onClick={() => onDownload(invoice)}
                 className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center space-x-2"
@@ -450,6 +491,30 @@ export default function MyInvoicesPage() {
           </div>
         ),
       },
+      // --- [NEW] Payment type column ---
+      {
+        accessorKey: "invoice_type",
+        header: "Payment Type",
+        cell: ({ row }) => (
+          <span
+            className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+              row.original.invoice_type === "online"
+                ? "bg-blue-100 text-blue-800"
+                : "bg-green-100 text-green-800"
+            }`}
+          >
+            <Icon
+              icon={
+                row.original.invoice_type === "online"
+                  ? "mdi:credit-card"
+                  : "mdi:cash"
+              }
+              className="w-3 h-3"
+            />
+            {row.original.invoice_type === "online" ? "Online" : "Cash"}
+          </span>
+        ),
+      },
       {
         accessorKey: "status",
         header: "Status",
@@ -467,18 +532,36 @@ export default function MyInvoicesPage() {
             >
               <Icon icon="mdi:eye-outline" width={18} />
             </button>
-            {row.original.status.toLowerCase() === "pending" &&
-              row.original.pay_url && (
-                <a
-                  href={row.original.pay_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 text-slate-500 rounded-full hover:bg-green-100 hover:text-green-600"
-                  title="Pay Now"
-                >
-                  <Icon icon="mdi:credit-card" width={18} />
-                </a>
-              )}
+            <a
+              href={`/invoices/${row.original.id}`}
+              className="p-2 text-slate-500 rounded-full hover:bg-purple-100 hover:text-purple-600"
+              title="Go to Invoice Page"
+            >
+              <Icon icon="mdi:file-document-outline" width={18} />
+            </a>
+            {row.original.status.toLowerCase() === "pending" && (
+              <>
+                {row.original.invoice_type === "online" &&
+                row.original.pay_url ? (
+                  <a
+                    href={row.original.pay_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 text-slate-500 rounded-full hover:bg-green-100 hover:text-green-600"
+                    title="Pay Online"
+                  >
+                    <Icon icon="mdi:credit-card" width={18} />
+                  </a>
+                ) : row.original.invoice_type === "cash" ? (
+                  <div
+                    className="p-2 text-green-600 rounded-full bg-green-50"
+                    title="Pay at Diving Center"
+                  >
+                    <Icon icon="mdi:cash" width={18} />
+                  </div>
+                ) : null}
+              </>
+            )}
             <button
               onClick={() => handleDownloadPDF(row.original)}
               className="p-2 text-slate-500 rounded-full hover:bg-red-100 hover:text-red-600"

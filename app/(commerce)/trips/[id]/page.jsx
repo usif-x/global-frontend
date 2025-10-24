@@ -93,6 +93,8 @@ const TripPage = ({ params }) => {
   });
   const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentType, setPaymentType] = useState("online");
 
   const getCurrencySymbol = (currencyCode) => {
     const currency = currencies.find((c) => c.value === currencyCode);
@@ -254,10 +256,18 @@ const TripPage = ({ params }) => {
       toast.error("Please correct the errors in the form.");
       return;
     }
+
+    // Show payment modal instead of directly creating invoice
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentConfirm = async (selectedPaymentType) => {
     if (isSubmitting) return;
 
     try {
       setIsSubmitting(true);
+      setShowPaymentModal(false);
+
       // --- Use the final price from our new calculation ---
       const { final: finalPrice } = calculateTotalPrice();
 
@@ -301,6 +311,7 @@ const TripPage = ({ params }) => {
         picked_up: false,
         amount: finalPrice, // Use the final calculated price
         currency: formData.currency,
+        invoice_type: selectedPaymentType, // Add the payment type
       };
 
       const invoiceResponse = await postData(
@@ -308,12 +319,18 @@ const TripPage = ({ params }) => {
         invoicePayload,
         true
       );
-      toast.success("Invoice created! Opening payment page...");
-      if (invoiceResponse.pay_url) {
-        window.open(invoiceResponse.pay_url, "_blank");
-        router.push(`/invoices/${invoiceResponse.id}`);
+
+      if (selectedPaymentType === "online") {
+        toast.success("Invoice created! Opening payment page...");
+        if (invoiceResponse.pay_url) {
+          window.open(invoiceResponse.pay_url, "_blank");
+          router.push(`/invoices/${invoiceResponse.id}`);
+        } else {
+          throw new Error("Payment URL not received from server.");
+        }
       } else {
-        throw new Error("Payment URL not received from server.");
+        toast.success("Booking confirmed! Please pay at the diving center.");
+        router.push(`/invoices/${invoiceResponse.id}`);
       }
     } catch (error) {
       const errorMessage =
@@ -914,7 +931,7 @@ const TripPage = ({ params }) => {
                     </div>
                   )}
 
-                  {/* --- CHANGE: Book Now button now always shows EGP --- */}
+                  {/* --- CHANGE: Book Now button now shows payment options --- */}
                   <button
                     type="submit"
                     disabled={isSubmitting || currentPricing.adult <= 0}
@@ -922,7 +939,7 @@ const TripPage = ({ params }) => {
                   >
                     {isSubmitting
                       ? "Processing..."
-                      : `Book Now - EGP ${formatPrice(finalTotalPrice)}`}
+                      : `Continue - EGP ${formatPrice(finalTotalPrice)}`}
                   </button>
                 </form>
 
@@ -955,6 +972,155 @@ const TripPage = ({ params }) => {
           </div>
         </div>
       </div>
+
+      {/* Payment Method Selection Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            onClick={() => setShowPaymentModal(false)}
+          />
+
+          {/* Modal */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative w-full max-w-lg transform rounded-2xl bg-white shadow-2xl transition-all">
+              {/* Header */}
+              <div className="relative p-6 border-b border-gray-200">
+                <button
+                  onClick={() => setShowPaymentModal(false)}
+                  className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <Icon icon="lucide:x" className="w-5 h-5" />
+                </button>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                  Choose Payment Method
+                </h3>
+                <p className="text-gray-600">
+                  Select how you'd like to pay for your trip
+                </p>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                {/* Trip Summary */}
+                <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                  <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
+                    <Icon icon="lucide:map-pin" className="w-4 h-4 mr-2" />
+                    Booking Summary
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Trip:</span>
+                      <span className="font-medium">{tripData.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Date:</span>
+                      <span className="font-medium">
+                        {formatDate(formData.preferredDate)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Guests:</span>
+                      <span className="font-medium">
+                        {formData.adults} Adult{formData.adults > 1 ? "s" : ""}
+                        {formData.children > 0 &&
+                          `, ${formData.children} Child${
+                            formData.children > 1 ? "ren" : ""
+                          }`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Hotel:</span>
+                      <span className="font-medium">
+                        {formData.hotelName} - Room {formData.roomNumber}
+                      </span>
+                    </div>
+                    <div className="flex justify-between border-t pt-2 mt-2">
+                      <span className="text-gray-600">Total Amount:</span>
+                      <span className="font-bold text-lg text-blue-600">
+                        EGP {formatPrice(calculateTotalPrice().final)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Options */}
+                <div className="space-y-4">
+                  <button
+                    onClick={() => handlePaymentConfirm("online")}
+                    disabled={isSubmitting}
+                    className="w-full p-4 border-2 border-blue-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4 group-hover:bg-blue-200 transition-colors">
+                        <Icon
+                          icon="lucide:credit-card"
+                          className="w-6 h-6 text-blue-600"
+                        />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <h5 className="font-semibold text-gray-900 mb-1">
+                          Pay Online
+                        </h5>
+                        <p className="text-sm text-gray-600">
+                          Secure payment with credit card or digital wallet
+                        </p>
+                      </div>
+                      <Icon
+                        icon="lucide:arrow-right"
+                        className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors"
+                      />
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => handlePaymentConfirm("cash")}
+                    disabled={isSubmitting}
+                    className="w-full p-4 border-2 border-green-200 rounded-xl hover:border-green-400 hover:bg-green-50 transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4 group-hover:bg-green-200 transition-colors">
+                        <Icon
+                          icon="lucide:banknote"
+                          className="w-6 h-6 text-green-600"
+                        />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <h5 className="font-semibold text-gray-900 mb-1">
+                          Pay at Diving Center
+                        </h5>
+                        <p className="text-sm text-gray-600">
+                          Pay in cash when you arrive at the diving center
+                        </p>
+                      </div>
+                      <Icon
+                        icon="lucide:arrow-right"
+                        className="w-5 h-5 text-gray-400 group-hover:text-green-600 transition-colors"
+                      />
+                    </div>
+                  </button>
+                </div>
+
+                {/* Note */}
+                <div className="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                  <div className="flex items-start">
+                    <Icon
+                      icon="lucide:info"
+                      className="w-5 h-5 text-amber-600 mr-2 mt-0.5 flex-shrink-0"
+                    />
+                    <div className="text-sm text-amber-800">
+                      <strong>Please note:</strong> If you choose to pay at the
+                      diving center, please ensure you arrive 30 minutes before
+                      your scheduled trip time.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

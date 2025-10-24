@@ -153,32 +153,78 @@ export default function InvoiceDetailPage() {
   const renderCallToAction = () => {
     if (!invoice) return null;
     const status = invoice.status.toLowerCase();
+    const isOnlinePayment = invoice.invoice_type === "online";
 
     if (status === "pending" || (status === "new" && invoice.pay_url)) {
-      return (
-        <a
-          href={invoice.pay_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 text-lg hover:scale-105 transition-transform"
-        >
-          <Icon icon="mdi:credit-card-check" className="w-6 h-6" />
-          <span>Proceed to Secure Payment</span>
-        </a>
-      );
+      if (isOnlinePayment) {
+        return (
+          <a
+            href={invoice.pay_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 text-lg hover:scale-105 transition-transform"
+          >
+            <Icon icon="mdi:credit-card-check" className="w-6 h-6" />
+            <span>Proceed to Secure Payment</span>
+          </a>
+        );
+      } else {
+        return (
+          <div className="text-center bg-green-50 border border-green-200 p-6 rounded-xl space-y-3">
+            <div className="flex items-center justify-center gap-3 text-green-700">
+              <Icon icon="mdi:cash" className="w-8 h-8" />
+              <h3 className="text-xl font-bold">Cash Payment Required</h3>
+            </div>
+            <p className="text-green-800 font-medium">
+              Please pay the amount of <strong>EGP {invoice.amount}</strong>{" "}
+              when you arrive at the diving center.
+            </p>
+            <div className="bg-green-100 p-4 rounded-lg text-sm text-green-700">
+              <div className="flex items-start gap-2">
+                <Icon
+                  icon="mdi:information-outline"
+                  className="w-5 h-5 mt-0.5 flex-shrink-0"
+                />
+                <div>
+                  <p className="font-medium mb-1">Important Reminders:</p>
+                  <ul className="space-y-1 text-left">
+                    <li>• Arrive 30 minutes before your scheduled trip time</li>
+                    <li>• Bring the exact amount in cash</li>
+                    <li>
+                      • Show this invoice reference:{" "}
+                      <strong>{invoice.customer_reference}</strong>
+                    </li>
+                    <li>• Contact us if you need to reschedule or cancel</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
     }
+
     if (status === "paid") {
       return (
         <div className="text-center text-lg font-semibold text-green-600 bg-green-50 p-4 rounded-lg">
-          This invoice has been successfully paid. Thank you!
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Icon icon="mdi:check-circle" className="w-6 h-6" />
+            <span>Payment Completed Successfully!</span>
+          </div>
+          {!isOnlinePayment && (
+            <p className="text-sm text-green-700 mt-2">
+              Cash payment received at diving center. Thank you!
+            </p>
+          )}
         </div>
       );
     }
-    if (status === "failed" && invoice.pay_url) {
+
+    if (status === "failed" && invoice.pay_url && isOnlinePayment) {
       return (
         <div className="text-center bg-red-50 p-6 rounded-xl border border-red-200 space-y-4">
           <p className="text-lg font-semibold text-red-700">
-            There was an issue with this payment.
+            There was an issue with this online payment.
           </p>
           <a
             href={invoice.pay_url}
@@ -187,15 +233,36 @@ export default function InvoiceDetailPage() {
             className="inline-flex items-center justify-center gap-3 bg-red-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-red-600 transition-colors transform hover:scale-105"
           >
             <Icon icon="mdi:reload" className="w-5 h-5" />
-            <span>Try Again</span>
+            <span>Try Payment Again</span>
           </a>
         </div>
       );
     }
+
+    if (status === "failed" && !isOnlinePayment) {
+      return (
+        <div className="text-center bg-orange-50 p-6 rounded-xl border border-orange-200 space-y-4">
+          <div className="flex items-center justify-center gap-2 text-orange-700">
+            <Icon icon="mdi:alert-circle" className="w-6 h-6" />
+            <p className="text-lg font-semibold">Cash Payment Issue</p>
+          </div>
+          <p className="text-orange-800">
+            There was an issue with your cash payment. Please contact the diving
+            center for assistance.
+          </p>
+          <div className="bg-orange-100 p-4 rounded-lg text-sm text-orange-700">
+            <p className="font-medium">
+              Reference: {invoice.customer_reference}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="text-center text-lg font-semibold text-slate-600 bg-slate-100 p-4 rounded-lg">
-        This invoice cannot be paid at this time. Please contact support for
-        assistance.
+        This invoice cannot be processed at this time. Please contact support
+        for assistance.
       </div>
     );
   };
@@ -227,7 +294,7 @@ export default function InvoiceDetailPage() {
                 </div>
 
                 {/* Invoice Summary Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50 p-6 rounded-xl border">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 bg-slate-50 p-6 rounded-xl border">
                   <div>
                     <p className="text-sm font-medium text-slate-500">
                       Invoice Reference
@@ -242,6 +309,32 @@ export default function InvoiceDetailPage() {
                       <StatusBadge status={invoice.status} />
                     </div>
                   </div>
+                  <div className="text-left md:text-center">
+                    <p className="text-sm font-medium text-slate-500">
+                      Payment Type
+                    </p>
+                    <div className="mt-1">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${
+                          invoice.invoice_type === "online"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
+                        <Icon
+                          icon={
+                            invoice.invoice_type === "online"
+                              ? "mdi:credit-card"
+                              : "mdi:cash"
+                          }
+                          className="w-4 h-4"
+                        />
+                        {invoice.invoice_type === "online"
+                          ? "Online Payment"
+                          : "Cash at Center"}
+                      </span>
+                    </div>
+                  </div>
                   <div className="text-left md:text-right">
                     <p className="text-sm font-medium text-slate-500">
                       Total Amount
@@ -252,7 +345,7 @@ export default function InvoiceDetailPage() {
                     <p className="text-sm font-medium text-slate-500">
                       Pay Currency
                     </p>
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-lg font-bold text-slate-900">
                       {invoice.currency}
                     </p>
                   </div>
