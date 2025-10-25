@@ -2,7 +2,6 @@
 
 import Alert from "@/components/ui/Alert";
 import CoursesTab from "@/components/user/profile/Courses";
-import InvoicesTab from "@/components/user/profile/Invoices";
 import NotificationsTab from "@/components/user/profile/Notifications";
 import ProfileDetails from "@/components/user/profile/ProfileDetails";
 import SecuritySettings from "@/components/user/profile/SecuritySettings";
@@ -128,7 +127,6 @@ const UserProfileSidebar = ({ user, activeTab, onTabChange }) => {
         />
 
         <TabButton tabName="courses" icon="mdi:school" label="My Courses" />
-        <TabButton tabName="invoices" icon="mdi:receipt" label="Invoices" />
 
         <TabButton
           tabName="notifications"
@@ -230,7 +228,6 @@ export default function ProfilePage() {
         />
       ),
       courses: <CoursesTab />,
-      invoices: <InvoicesTab />,
       notifications: <NotificationsTab />,
       testimonials: <TestimonialTab />,
     }),
