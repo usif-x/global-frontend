@@ -66,15 +66,6 @@ export default function Home() {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <Icon
-                      icon="mdi:phone"
-                      width={16}
-                      height={16}
-                      className="text-white/60"
-                    />
-                    <span className="text-white/80">+1 (555) 123-DIVE</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Icon
                       icon="mdi:email"
                       width={16}
                       height={16}
