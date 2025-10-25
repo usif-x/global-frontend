@@ -500,6 +500,40 @@ const TripPage = ({ params }) => {
         <div className="grid lg:grid-cols-3 gap-12">
           {/* ... Left Column (no changes needed here) ... */}
           <div className="lg:col-span-2 space-y-8">
+            {tripData.images && tripData.images.length > 1 && (
+              <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 flex items-center">
+                  <Icon
+                    icon="lucide:camera"
+                    className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-blue-600"
+                  />
+                  Photo Gallery
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+                  {tripData.images.map((image, index) => (
+                    <div
+                      key={index}
+                      onClick={() => openLightbox(index)}
+                      className="relative h-32 sm:h-48 rounded-lg sm:rounded-xl overflow-hidden group cursor-pointer"
+                    >
+                      <Image
+                        src={image}
+                        alt={`${tripData.name} - Photo ${index + 1}`}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                        <Icon
+                          icon="lucide:maximize-2"
+                          className="w-6 h-6 sm:w-8 sm:h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="bg-white rounded-2xl shadow-xl p-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
                 <Icon
@@ -512,39 +546,7 @@ const TripPage = ({ params }) => {
                 <MarkdownRenderer content={tripData.description} />
               </div>
             </div>
-            {tripData.images && tripData.images.length > 1 && (
-              <div className="bg-white rounded-2xl shadow-xl p-8">
-                <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
-                  <Icon
-                    icon="lucide:camera"
-                    className="w-8 h-8 mr-3 text-blue-600"
-                  />
-                  Photo Gallery
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {tripData.images.map((image, index) => (
-                    <div
-                      key={index}
-                      onClick={() => openLightbox(index)}
-                      className="relative h-48 rounded-xl overflow-hidden group cursor-pointer"
-                    >
-                      <Image
-                        src={image}
-                        alt={`${tripData.name} - Photo ${index + 1}`}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                        <Icon
-                          icon="lucide:maximize-2"
-                          className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+
             {(tripData?.included || tripData?.not_included) && (
               <div className="grid md:grid-cols-2 gap-8">
                 {tripData?.included &&
@@ -1162,14 +1164,17 @@ const TripPage = ({ params }) => {
           {/* Close Button */}
           <button
             onClick={closeLightbox}
-            className="absolute top-4 right-4 z-10 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-sm"
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-sm"
           >
-            <Icon icon="lucide:x" className="w-6 h-6 text-white" />
+            <Icon
+              icon="lucide:x"
+              className="w-5 h-5 sm:w-6 sm:h-6 text-white"
+            />
           </button>
 
           {/* Image Counter */}
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
-            <span className="text-white font-medium">
+          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 sm:top-4 z-10 bg-white/10 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full">
+            <span className="text-white font-medium text-sm sm:text-base">
               {currentImageIndex + 1} / {tripData.images.length}
             </span>
           </div>
@@ -1178,9 +1183,12 @@ const TripPage = ({ params }) => {
           {tripData.images.length > 1 && (
             <button
               onClick={goToPrevImage}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-sm"
+              className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-10 p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-sm"
             >
-              <Icon icon="lucide:chevron-left" className="w-8 h-8 text-white" />
+              <Icon
+                icon="lucide:chevron-left"
+                className="w-6 h-6 sm:w-8 sm:h-8 text-white"
+              />
             </button>
           )}
 
@@ -1188,18 +1196,18 @@ const TripPage = ({ params }) => {
           {tripData.images.length > 1 && (
             <button
               onClick={goToNextImage}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-sm"
+              className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-10 p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-sm"
             >
               <Icon
                 icon="lucide:chevron-right"
-                className="w-8 h-8 text-white"
+                className="w-6 h-6 sm:w-8 sm:h-8 text-white"
               />
             </button>
           )}
 
           {/* Main Image */}
           <div
-            className="flex items-center justify-center h-full p-4 cursor-pointer"
+            className="flex items-center justify-center h-full p-2 sm:p-4 cursor-pointer"
             onClick={closeLightbox}
           >
             <div
@@ -1219,16 +1227,16 @@ const TripPage = ({ params }) => {
 
           {/* Thumbnail Navigation */}
           {tripData.images.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 max-w-4xl w-full px-4">
-              <div className="flex gap-2 overflow-x-auto py-2 justify-center">
+            <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 z-10 max-w-full sm:max-w-4xl w-full px-2 sm:px-4">
+              <div className="flex gap-1.5 sm:gap-2 overflow-x-auto py-2 justify-start sm:justify-center scrollbar-hide">
                 {tripData.images.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden transition-all ${
+                    className={`relative flex-shrink-0 w-14 h-14 sm:w-20 sm:h-20 rounded-md sm:rounded-lg overflow-hidden transition-all ${
                       index === currentImageIndex
-                        ? "ring-4 ring-white scale-110"
-                        : "ring-2 ring-white/30 hover:ring-white/60"
+                        ? "ring-2 sm:ring-4 ring-white scale-105 sm:scale-110"
+                        : "ring-1 sm:ring-2 ring-white/30 hover:ring-white/60"
                     }`}
                   >
                     <Image
@@ -1243,8 +1251,8 @@ const TripPage = ({ params }) => {
             </div>
           )}
 
-          {/* Keyboard Hint */}
-          <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
+          {/* Keyboard Hint - Hidden on mobile */}
+          <div className="hidden sm:block absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
             <span className="text-white/70 text-sm">
               Use arrow keys to navigate • ESC to close
             </span>
