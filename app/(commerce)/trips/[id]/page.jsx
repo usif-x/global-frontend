@@ -1207,7 +1207,7 @@ const TripPage = ({ params }) => {
 
           {/* Main Image */}
           <div
-            className="flex items-center justify-center h-full p-2 sm:p-4 cursor-pointer"
+            className="flex items-center justify-center h-full p-2 sm:p-4"
             onClick={closeLightbox}
           >
             <div
