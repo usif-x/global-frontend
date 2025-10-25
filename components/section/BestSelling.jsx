@@ -10,7 +10,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-
+import MarkdownRenderer from "../ui/MarkdownRender";
 // --- Reusable Normalization Function ---
 const normalizeApiItem = (apiItem) => {
   const isCourse = apiItem.item_type === "course";
@@ -84,7 +84,7 @@ const BestSellerHeroCard = ({ item, isActive }) => {
           {item.name}
         </h3>
         <p className="text-gray-600 text-sm mt-2 line-clamp-3">
-          {item.description.replace(/#|\n/g, " ")}
+          <MarkdownRenderer content={item.description} />
         </p>
 
         {/* Price and Duration */}
