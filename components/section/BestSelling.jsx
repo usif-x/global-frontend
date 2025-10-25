@@ -28,7 +28,8 @@ const normalizeApiItem = (apiItem) => {
     href: isCourse ? `/courses/${itemData.id}` : `/trips/${itemData.id}`,
     rank: apiItem.ranking_position,
     included: itemData.included || [],
-    duration: itemData.duration || (isCourse ? itemData.course_duration : null),
+    duration: itemData.duration,
+    durationUnit: itemData.duration_unit || (isCourse ? "days" : "hour/s"),
     hasDiscount: !isCourse ? itemData.has_discount : false,
     discountPercentage: !isCourse ? itemData.discount_percentage : null,
   };
@@ -100,7 +101,7 @@ const BestSellerHeroCard = ({ item, isActive }) => {
             </p>
             {item.duration && (
               <p className="text-sm text-gray-500">
-                Duration: {item.duration} {item.duration > 1 ? "days" : "day"}
+                Duration: {item.duration} {item.durationUnit}
               </p>
             )}
           </div>
