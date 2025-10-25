@@ -8,6 +8,9 @@ import { Suspense } from "react";
 import { ToastContainer } from "react-toastify";
 import "./globals.css";
 
+// add crisp chat script
+import Script from "next/script";
+
 const IBM = IBM_Plex_Sans_Arabic({
   subsets: ["latin", "arabic"],
   weight: ["100", "200", "300", "400", "500", "600", "700"],
