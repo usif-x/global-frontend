@@ -95,6 +95,8 @@ const TripPage = ({ params }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentType, setPaymentType] = useState("online");
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const getCurrencySymbol = (currencyCode) => {
     const currency = currencies.find((c) => c.value === currencyCode);
@@ -244,6 +246,39 @@ const TripPage = ({ params }) => {
     if (formErrors[name])
       setFormErrors((prev) => ({ ...prev, [name]: undefined }));
   };
+
+  const openLightbox = (index) => {
+    setCurrentImageIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+  };
+
+  const goToNextImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === tripData.images.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const goToPrevImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? tripData.images.length - 1 : prev - 1
+    );
+  };
+
+  const handleKeyDown = (e) => {
+    if (!lightboxOpen) return;
+    if (e.key === "ArrowRight") goToNextImage();
+    if (e.key === "ArrowLeft") goToPrevImage();
+    if (e.key === "Escape") closeLightbox();
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxOpen, currentImageIndex]);
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -490,6 +525,7 @@ const TripPage = ({ params }) => {
                   {tripData.images.map((image, index) => (
                     <div
                       key={index}
+                      onClick={() => openLightbox(index)}
                       className="relative h-48 rounded-xl overflow-hidden group cursor-pointer"
                     >
                       <Image
@@ -498,7 +534,12 @@ const TripPage = ({ params }) => {
                         fill
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
                       />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                        <Icon
+                          icon="lucide:maximize-2"
+                          className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1118,6 +1159,102 @@ const TripPage = ({ params }) => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Lightbox Modal */}
+      {lightboxOpen && tripData.images && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-95">
+          {/* Close Button */}
+          <button
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 z-10 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-sm"
+          >
+            <Icon icon="lucide:x" className="w-6 h-6 text-white" />
+          </button>
+
+          {/* Image Counter */}
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
+            <span className="text-white font-medium">
+              {currentImageIndex + 1} / {tripData.images.length}
+            </span>
+          </div>
+
+          {/* Previous Button */}
+          {tripData.images.length > 1 && (
+            <button
+              onClick={goToPrevImage}
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-sm"
+            >
+              <Icon icon="lucide:chevron-left" className="w-8 h-8 text-white" />
+            </button>
+          )}
+
+          {/* Next Button */}
+          {tripData.images.length > 1 && (
+            <button
+              onClick={goToNextImage}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-sm"
+            >
+              <Icon
+                icon="lucide:chevron-right"
+                className="w-8 h-8 text-white"
+              />
+            </button>
+          )}
+
+          {/* Main Image */}
+          <div
+            className="flex items-center justify-center h-full p-4 cursor-pointer"
+            onClick={closeLightbox}
+          >
+            <div
+              className="relative w-full h-full max-w-6xl max-h-[90vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={tripData.images[currentImageIndex]}
+                alt={`${tripData.name} - Photo ${currentImageIndex + 1}`}
+                fill
+                className="object-contain"
+                quality={100}
+                priority
+              />
+            </div>
+          </div>
+
+          {/* Thumbnail Navigation */}
+          {tripData.images.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 max-w-4xl w-full px-4">
+              <div className="flex gap-2 overflow-x-auto py-2 justify-center">
+                {tripData.images.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden transition-all ${
+                      index === currentImageIndex
+                        ? "ring-4 ring-white scale-110"
+                        : "ring-2 ring-white/30 hover:ring-white/60"
+                    }`}
+                  >
+                    <Image
+                      src={image}
+                      alt={`Thumbnail ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Keyboard Hint */}
+          <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
+            <span className="text-white/70 text-sm">
+              Use arrow keys to navigate • ESC to close
+            </span>
           </div>
         </div>
       )}
