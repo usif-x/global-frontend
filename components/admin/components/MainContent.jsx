@@ -61,6 +61,11 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
 
   useEffect(() => {
     fetchDashboardData();
+
+    // Set up polling for real-time updates (every 3 minutes)
+    const interval = setInterval(fetchDashboardData, 180000);
+
+    return () => clearInterval(interval);
   }, []);
 
   /**

@@ -151,8 +151,8 @@ const AdminDashboard = () => {
     // Load notifications on component mount
     loadNotifications();
 
-    // Set up polling for real-time updates (every 30 seconds)
-    const interval = setInterval(loadNotifications, 30000);
+    // Set up polling for real-time updates (every 3 minutes)
+    const interval = setInterval(loadNotifications, 180000);
 
     return () => clearInterval(interval);
   }, [isAdmin, router]);
