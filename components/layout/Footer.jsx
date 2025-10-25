@@ -72,7 +72,7 @@ export default function Home() {
                       className="text-white/60"
                     />
                     <span className="text-white/80">
-                      support@topdivers.online
+                      contact@topdivers.online
                     </span>
                   </div>
                   <div className="flex items-start space-x-3">

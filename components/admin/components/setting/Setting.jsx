@@ -352,7 +352,7 @@ export default function AdminSettingsPage() {
             <Input
               icon="mdi:email-outline"
               name="contact_email"
-              placeholder="support@example.com"
+              placeholder="contact@example.com"
               label="Support Email"
               type="email"
               value={settings.contact_email}

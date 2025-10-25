@@ -488,7 +488,7 @@ const PrivacyPolicy = () => {
             </p>
             <div className="bg-white p-3 rounded border">
               <p className="font-mono text-sm text-gray-800">
-                support@topdivers.online
+                contact@topdivers.online
               </p>
             </div>
             <p className="text-gray-600 text-xs mt-2">
@@ -695,7 +695,7 @@ const PrivacyPolicy = () => {
               </p>
               <div className="bg-white p-3 rounded border space-y-1">
                 <p>
-                  <strong>Email:</strong> support@topdivers.online
+                  <strong>Email:</strong> contact@topdivers.online
                 </p>
                 <p>
                   <strong>Subject Line:</strong> Privacy Policy Inquiry
@@ -836,11 +836,11 @@ const PrivacyPolicy = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <a
-                href="mailto:support@topdivers.online"
+                href="mailto:contact@topdivers.online"
                 className="inline-flex items-center gap-2 bg-white text-purple-900 px-6 py-2 rounded-lg hover:bg-purple-50 transition-colors font-medium"
               >
                 <Icon icon="solar:letter-bold" className="w-4 h-4" />
-                support@topdivers.online
+                contact@topdivers.online
               </a>
               <Link
                 href="/terms-and-conditions"
