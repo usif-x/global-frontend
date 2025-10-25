@@ -61,6 +61,24 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${IBM.className}`}>
+        {/* Crisp Chat */}
+        <Script
+          id="crisp-chat"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.$crisp=[];
+              window.CRISP_WEBSITE_ID="9310f094-a5b3-4690-b191-622288632438";
+              (function(){
+                d=document;
+                s=d.createElement("script");
+                s.src="https://client.crisp.chat/l.js";
+                s.async=1;
+                d.getElementsByTagName("head")[0].appendChild(s);
+              })();
+            `,
+          }}
+        />
         <Suspense>
           <LoadingProvider>
             <ToastContainer
