@@ -308,7 +308,7 @@ const TermsAndConditions = () => {
                 to:
               </p>
               <p className="font-mono bg-white px-2 py-1 rounded border">
-                info@topdivers.online
+                support@topdivers.online
               </p>
               <p>3. We'll respond within 7 working days via email</p>
             </div>
@@ -419,11 +419,11 @@ const TermsAndConditions = () => {
               Contact us for clarification on any of these terms and conditions.
             </p>
             <a
-              href="mailto:info@topdivers.online"
+              href="mailto:support@topdivers.online"
               className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               <Icon icon="solar:letter-bold" className="w-4 h-4" />
-              info@topdivers.online
+              support@topdivers.online
             </a>
           </div>
         </div>

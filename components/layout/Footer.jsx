@@ -80,7 +80,9 @@ export default function Home() {
                       height={16}
                       className="text-white/60"
                     />
-                    <span className="text-white/80">info@topdivers.online</span>
+                    <span className="text-white/80">
+                      support@topdivers.online
+                    </span>
                   </div>
                   <div className="flex items-start space-x-3">
                     <Icon
