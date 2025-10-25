@@ -95,6 +95,7 @@ const OrderManagement = () => {
     picked_up: null,
     user_id: "",
     buyer_email: "",
+    invoice_type: "",
   });
   const [orders, setOrders] = useState([]);
   const [summary, setSummary] = useState({ count: 0, total_amount: 0 });
@@ -148,6 +149,7 @@ const OrderManagement = () => {
       picked_up: null,
       user_id: "",
       buyer_email: "",
+      invoice_type: "",
     });
     // Refetch with empty filters after clearing
     setTimeout(handleSearch, 0);
@@ -200,6 +202,32 @@ const OrderManagement = () => {
         accessorKey: "status",
         header: "Status",
         cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      },
+      {
+        accessorKey: "invoice_type",
+        header: "Payment Type",
+        cell: ({ row }) => {
+          const invoiceType = row.original.invoice_type || "online";
+          return (
+            <span
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+                invoiceType === "online"
+                  ? "bg-blue-100 text-blue-800"
+                  : "bg-green-100 text-green-800"
+              }`}
+            >
+              <Icon
+                icon={
+                  invoiceType === "online"
+                    ? "mdi:credit-card-outline"
+                    : "mdi:cash"
+                }
+                className="w-3 h-3"
+              />
+              {invoiceType === "online" ? "Online" : "Cash"}
+            </span>
+          );
+        },
       },
       {
         accessorKey: "created_at",
@@ -307,6 +335,21 @@ const OrderManagement = () => {
                 <option value="PAID">Paid</option>
                 <option value="PENDING">Pending</option>
                 <option value="FAILED">Failed</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-600 mb-1">
+                Payment Type
+              </label>
+              <select
+                name="invoice_type"
+                value={filters.invoice_type}
+                onChange={handleFilterChange}
+                className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+              >
+                <option value="">All</option>
+                <option value="online">Online</option>
+                <option value="cash">Cash</option>
               </select>
             </div>
             <Input

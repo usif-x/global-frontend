@@ -150,17 +150,40 @@ const InvoiceDetailsModal = ({ invoice, onClose }) => {
     <ModalWrapper visible={!!invoice} onClose={onClose}>
       <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full animate-in fade-in-0 zoom-in-95">
         <div className="relative bg-gradient-to-r from-cyan-500 to-blue-600 text-white p-6">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-              <Icon icon="mdi:file-document" className="w-8 h-8" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                <Icon icon="mdi:file-document" className="w-8 h-8" />
+              </div>
+              <div>
+                <h2 id="modal-title" className="text-2xl font-bold">
+                  Invoice Ref: {invoice.customer_reference}
+                </h2>
+                <p className="text-cyan-100 mt-1">
+                  Issued on {formatDate(invoice.created_at)}
+                </p>
+              </div>
             </div>
             <div>
-              <h2 id="modal-title" className="text-2xl font-bold">
-                Invoice Ref: {invoice.customer_reference}
-              </h2>
-              <p className="text-cyan-100 mt-1">
-                Issued on {formatDate(invoice.created_at)}
-              </p>
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${
+                  invoice.invoice_type === "online"
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-green-100 text-green-800"
+                }`}
+              >
+                <Icon
+                  icon={
+                    invoice.invoice_type === "online"
+                      ? "mdi:credit-card"
+                      : "mdi:cash"
+                  }
+                  className="w-4 h-4"
+                />
+                {invoice.invoice_type === "online"
+                  ? "Online Payment"
+                  : "Cash Payment"}
+              </span>
             </div>
           </div>
           <button
@@ -170,10 +193,92 @@ const InvoiceDetailsModal = ({ invoice, onClose }) => {
             <Icon icon="mdi:close" className="w-6 h-6" />
           </button>
         </div>
-        <div className="p-8 max-h-[70vh] overflow-y-auto">
-          <pre className="bg-slate-50 p-4 rounded-lg text-sm text-slate-700 whitespace-pre-wrap font-sans">
-            {invoice.invoice_description}
-          </pre>
+        <div className="p-8 max-h-[70vh] overflow-y-auto space-y-6">
+          {/* Activity Details */}
+          {invoice.activity_details && invoice.activity_details.length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                <Icon
+                  icon="mdi:calendar-check"
+                  className="w-5 h-5 text-cyan-600"
+                />
+                Activity Details
+              </h3>
+              <div className="space-y-3">
+                {invoice.activity_details.map((activity, index) => (
+                  <div
+                    key={index}
+                    className="bg-slate-50 p-4 rounded-lg border border-slate-200"
+                  >
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <span className="text-slate-500 font-medium">
+                          Activity:
+                        </span>
+                        <p className="text-slate-800">{activity.name}</p>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 font-medium">
+                          Date:
+                        </span>
+                        <p className="text-slate-800">
+                          {formatDate(activity.activity_date)}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 font-medium">
+                          Hotel:
+                        </span>
+                        <p className="text-slate-800">{activity.hotel_name}</p>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 font-medium">
+                          Room:
+                        </span>
+                        <p className="text-slate-800">{activity.room_number}</p>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 font-medium">
+                          Adults:
+                        </span>
+                        <p className="text-slate-800">{activity.adults}</p>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 font-medium">
+                          Children:
+                        </span>
+                        <p className="text-slate-800">{activity.children}</p>
+                      </div>
+                      {activity.special_requests && (
+                        <div className="col-span-2">
+                          <span className="text-slate-500 font-medium">
+                            Special Requests:
+                          </span>
+                          <p className="text-slate-800">
+                            {activity.special_requests}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Full Description */}
+          <div>
+            <h3 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
+              <Icon
+                icon="mdi:text-box-outline"
+                className="w-5 h-5 text-cyan-600"
+              />
+              Full Description
+            </h3>
+            <pre className="bg-slate-50 p-4 rounded-lg text-sm text-slate-700 whitespace-pre-wrap font-sans border border-slate-200">
+              {invoice.invoice_description}
+            </pre>
+          </div>
         </div>
       </div>
     </ModalWrapper>
@@ -401,6 +506,29 @@ export default function InvoiceManagementPage() {
         accessorKey: "status",
         header: "Status",
         cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      },
+      {
+        accessorKey: "invoice_type",
+        header: "Payment Type",
+        cell: ({ row }) => (
+          <span
+            className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+              row.original.invoice_type === "online"
+                ? "bg-blue-100 text-blue-800"
+                : "bg-green-100 text-green-800"
+            }`}
+          >
+            <Icon
+              icon={
+                row.original.invoice_type === "online"
+                  ? "mdi:credit-card"
+                  : "mdi:cash"
+              }
+              className="w-3 h-3"
+            />
+            {row.original.invoice_type === "online" ? "Online" : "Cash"}
+          </span>
+        ),
       },
       {
         accessorKey: "picked_up",
