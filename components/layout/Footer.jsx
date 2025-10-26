@@ -92,8 +92,52 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Payment Methods */}
+            <div className="py-6 border-y border-white/20">
+              <h4 className="text-lg font-semibold mb-4 text-white text-center">
+                We Accept
+              </h4>
+              <div className="flex flex-wrap justify-center items-center gap-4">
+                <div className="bg-white rounded-lg p-2 w-16 h-10 flex items-center justify-center">
+                  <img
+                    src="/image/visa-svgrepo-com.svg"
+                    alt="Visa"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="bg-white rounded-lg p-2 w-16 h-10 flex items-center justify-center">
+                  <img
+                    src="/image/mastercard-svgrepo-com.svg"
+                    alt="Mastercard"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="bg-white rounded-lg p-2 w-16 h-10 flex items-center justify-center">
+                  <img
+                    src="/image/applepay-svgrepo-com.svg"
+                    alt="Apple Pay"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="bg-white rounded-lg p-2 w-16 h-10 flex items-center justify-center">
+                  <img
+                    src="/image/Meeza.svg"
+                    alt="Meeza"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="bg-white rounded-lg p-2 w-16 h-10 flex items-center justify-center">
+                  <img
+                    src="/image/mobile-wallet.jpg"
+                    alt="Mobile Wallet"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Bottom Bar */}
-            <div className="border-t border-white/20 pt-6 flex flex-col md:flex-row justify-between items-center">
+            <div className="pt-6 flex flex-col md:flex-row justify-between items-center">
               <p className="text-white/60 text-sm mb-2 md:mb-0">
                 © {new Date().getFullYear()} Top Divers. All rights reserved.
               </p>
