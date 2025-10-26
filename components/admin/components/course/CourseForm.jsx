@@ -26,6 +26,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
     is_image_list: false,
     course_level: "Beginner",
     course_duration: "",
+    course_duration_unit: "days",
     provider: "",
     has_discount: false,
     discount_requires_min_people: false,
@@ -51,6 +52,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
         is_image_list: course.is_image_list || false,
         course_level: course.course_level || "Beginner",
         course_duration: course.course_duration?.toString() || "",
+        course_duration_unit: course.course_duration_unit || "days",
         provider: course.provider || "",
         has_discount: course.has_discount || false,
         discount_requires_min_people:
@@ -198,6 +200,7 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
         is_image_list: formData.is_image_list,
         course_level: formData.course_level,
         course_duration: parseInt(formData.course_duration, 10),
+        course_duration_unit: formData.course_duration_unit,
         provider: formData.provider,
         has_discount: formData.has_discount,
         discount_requires_min_people: formData.discount_requires_min_people,
@@ -268,6 +271,13 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
     { value: "Standard", label: "Standard Certificate" },
     { value: "Premium", label: "Premium Certificate" },
     { value: "Digital", label: "Digital Certificate" },
+  ];
+
+  const durationUnitOptions = [
+    { value: "hours", label: "Hours" },
+    { value: "days", label: "Days" },
+    { value: "weeks", label: "Weeks" },
+    { value: "months", label: "Months" },
   ];
 
   const contentTypeOptions = [
@@ -415,19 +425,36 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
                 disabled={isLoading}
               />
 
-              <Input
-                dir="ltr"
-                icon="mdi:clock-outline"
-                name="course_duration"
-                type="number"
-                placeholder="Duration (in days)"
-                value={formData.course_duration}
-                onChange={handleInputChange}
-                error={errors.course_duration}
-                color="green"
-                required
-                disabled={isLoading}
-              />
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  dir="ltr"
+                  icon="mdi:clock-outline"
+                  name="course_duration"
+                  type="number"
+                  placeholder="Duration"
+                  value={formData.course_duration}
+                  onChange={handleInputChange}
+                  error={errors.course_duration}
+                  color="green"
+                  required
+                  disabled={isLoading}
+                />
+
+                <Select
+                  icon="mdi:calendar-clock"
+                  name="course_duration_unit"
+                  dir="ltr"
+                  options={durationUnitOptions}
+                  placeholder="Unit"
+                  value={durationUnitOptions.find(
+                    (opt) => opt.value === formData.course_duration_unit
+                  )}
+                  onChange={(opt) =>
+                    handleSelectChange("course_duration_unit", opt)
+                  }
+                  disabled={isLoading}
+                />
+              </div>
 
               <Select
                 icon="mdi:tag"

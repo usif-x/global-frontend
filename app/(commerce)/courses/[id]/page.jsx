@@ -1,12 +1,11 @@
 // app/courses/[id]/page.js
 
-import Input from "@/components/ui/Input"; // Assuming your components are here
 import MarkdownRenderer from "@/components/ui/MarkdownRender";
-import { getData, postData } from "@/lib/server-axios";
+import { getData } from "@/lib/server-axios";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 const formatPrice = (courseData) => {
   if (!courseData.price_available) return "Inquire for Price";
@@ -50,9 +49,9 @@ const formatPrice = (courseData) => {
   return `EGP${Math.round(basePrice)}`;
 };
 
-const formatDuration = (duration) => {
+const formatDuration = (duration, unit = "hours") => {
   if (!duration) return "Duration TBD";
-  return `${duration} hour${duration !== 1 ? "s" : ""} total`;
+  return `${duration} ${unit}`;
 };
 
 const getCourseTypeIcon = (courseType) => {
@@ -90,8 +89,6 @@ const CourseDetailPage = async ({ params, searchParams }) => {
   // STEP 1: FETCH DATA ON THE SERVER
   let courseData;
 
-  const resolvedSearchParams = await searchParams;
-
   try {
     courseData = await getData(`/courses/${id}`);
   } catch (error) {
@@ -100,58 +97,7 @@ const CourseDetailPage = async ({ params, searchParams }) => {
     notFound(); // Renders the not-found.js page
   }
 
-  // STEP 2: DEFINE SERVER ACTION FOR INQUIRY FORM
-  async function handleInquiry(formData) {
-    "use server";
-
-    // Extract and validate form data
-    const inquiryData = {
-      fullName: formData.get("fullName")?.toString().trim(),
-      email: formData.get("email")?.toString().trim().toLowerCase(),
-      phone: formData.get("phone")?.toString().trim(),
-      message: formData.get("message")?.toString().trim() || "",
-    };
-
-    const errors = [];
-    if (!inquiryData.fullName) errors.push("Full name is required");
-    if (
-      !inquiryData.email ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inquiryData.email)
-    ) {
-      errors.push("A valid email is required");
-    }
-    if (!inquiryData.phone) errors.push("A valid phone number is required");
-
-    if (errors.length > 0) {
-      return redirect(
-        `/courses/${id}?error=${encodeURIComponent(errors.join(". "))}`
-      );
-    }
-
-    // Prepare payload for your backend (e.g., an '/inquiries' endpoint)
-    try {
-      const inquiryPayload = {
-        course_id: parseInt(id),
-        course_name: courseData.name,
-        ...inquiryData,
-        status: "new",
-      };
-
-      await postData("/inquiries", inquiryPayload);
-
-      // Redirect to a success page
-      redirect(`/inquiry-sent?course=${encodeURIComponent(courseData.name)}`);
-    } catch (error) {
-      console.error("Inquiry submission failed:", error.message);
-      const errorMessage =
-        "Submission failed. Please try again or contact us directly.";
-      return redirect(
-        `/courses/${id}?error=${encodeURIComponent(errorMessage)}`
-      );
-    }
-  }
-
-  // STEP 3: PREPARE DATA AND RENDER THE PAGE
+  // STEP 2: PREPARE DATA AND RENDER THE PAGE
   const priceDisplay = formatPrice(courseData);
 
   return (
@@ -200,7 +146,12 @@ const CourseDetailPage = async ({ params, searchParams }) => {
             </div>
             <div className="flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
               <Icon icon="lucide:clock" className="w-5 h-5 mr-2" />
-              <span>{formatDuration(courseData.course_duration)}</span>
+              <span>
+                {formatDuration(
+                  courseData.course_duration,
+                  courseData.course_duration_unit
+                )}
+              </span>
             </div>
             {courseData.course_type && (
               <div className="flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full capitalize">
@@ -252,6 +203,35 @@ const CourseDetailPage = async ({ params, searchParams }) => {
         <div className="grid lg:grid-cols-3 gap-12">
           {/* Left Column - Course Details */}
           <div className="lg:col-span-2 space-y-8">
+            {/* Image Gallery */}
+            {courseData.images && courseData.images.length > 1 && (
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
+                  <Icon
+                    icon="lucide:images"
+                    className="w-8 h-8 mr-3 text-blue-600"
+                  />
+                  Gallery
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {courseData.images.map((image, index) => (
+                    <div
+                      key={index}
+                      className="relative aspect-video rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300"
+                    >
+                      <Image
+                        src={image}
+                        alt={`${courseData.name} - Image ${index + 1}`}
+                        fill
+                        className="object-cover hover:scale-110 transition-transform duration-300"
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="bg-white rounded-2xl shadow-xl p-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
                 <Icon
@@ -428,77 +408,66 @@ const CourseDetailPage = async ({ params, searchParams }) => {
                     icon="lucide:send"
                     className="w-6 h-6 mr-2 text-blue-600"
                   />
-                  {courseData.price_available
-                    ? "Enroll Now"
-                    : "Request Information"}
+                  Course Information
                 </h3>
 
-                {resolvedSearchParams.error && (
-                  <div
-                    className="bg-red-50 border-l-4 border-red-400 text-red-700 p-4 rounded-lg mb-6"
-                    role="alert"
-                  >
-                    <p className="font-bold">Error</p>
-                    <p>{decodeURIComponent(resolvedSearchParams.error)}</p>
+                <div className="space-y-4">
+                  <div className="flex items-center p-4 bg-gray-50 rounded-lg">
+                    <Icon
+                      icon="lucide:clock"
+                      className="w-6 h-6 mr-3 text-blue-600"
+                    />
+                    <div>
+                      <span className="font-semibold">
+                        {formatDuration(
+                          courseData.course_duration,
+                          courseData.course_duration_unit
+                        )}
+                      </span>
+                      <p className="text-sm text-gray-600">Duration</p>
+                    </div>
                   </div>
-                )}
 
-                <form action={handleInquiry} className="space-y-4">
-                  <Input
-                    name="fullName"
-                    placeholder="Full Name *"
-                    required
-                    icon="mdi:account-outline"
-                  />
-                  <Input
-                    name="email"
-                    type="email"
-                    placeholder="Email Address *"
-                    required
-                    icon="mdi:email-outline"
-                  />
-                  <Input
-                    name="phone"
-                    type="tel"
-                    placeholder="Phone Number *"
-                    required
-                    icon="mdi:phone-outline"
-                  />
-                  <Input
-                    name="message"
-                    textarea
-                    placeholder={
-                      courseData.price_available
-                        ? "Any questions or special requirements? (Optional)"
-                        : "Tell us about your interest in this course (Optional)"
-                    }
-                    icon="mdi:message-text-outline"
-                    rows="4"
-                  />
+                  <div className="flex items-center p-4 bg-gray-50 rounded-lg">
+                    <Icon
+                      icon="lucide:bar-chart-3"
+                      className="w-6 h-6 mr-3 text-blue-600"
+                    />
+                    <div>
+                      <span className="font-semibold capitalize">
+                        {courseData.course_level}
+                      </span>
+                      <p className="text-sm text-gray-600">Difficulty Level</p>
+                    </div>
+                  </div>
 
-                  <button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-3 px-6 rounded-xl font-bold text-lg transition-transform duration-300 hover:scale-105 shadow-lg flex items-center justify-center gap-2"
-                  >
-                    {courseData.price_available ? (
-                      <>
-                        <Icon icon="lucide:credit-card" className="w-5 h-5" />
-                        Enroll Now
-                      </>
-                    ) : (
-                      <>
-                        <Icon icon="lucide:send" className="w-5 h-5" />
-                        Send Inquiry
-                      </>
-                    )}
-                  </button>
-                </form>
+                  {courseData.provider && (
+                    <div className="flex items-center p-4 bg-gray-50 rounded-lg">
+                      <Icon
+                        icon="lucide:building"
+                        className="w-6 h-6 mr-3 text-blue-600"
+                      />
+                      <div>
+                        <span className="font-semibold">
+                          {courseData.provider}
+                        </span>
+                        <p className="text-sm text-gray-600">Provider</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <Link
+                  href={`/courses/${id}/inquire`}
+                  className="mt-6 w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-3 px-6 rounded-xl font-bold text-lg transition-transform duration-300 hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+                >
+                  <Icon icon="lucide:send" className="w-5 h-5" />
+                  Contact Us / Inquire
+                </Link>
 
                 <div className="mt-6 pt-6 border-t border-gray-200 text-center">
                   <p className="text-gray-600 text-sm">
-                    {courseData.price_available
-                      ? "We'll confirm your enrollment within 24 hours."
-                      : "We'll get back to you within 24 hours with pricing and availability."}
+                    We'll get back to you within 24 hours with all the details.
                   </p>
                 </div>
               </div>
