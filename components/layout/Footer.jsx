@@ -164,7 +164,7 @@ export default function Home() {
                 </div>
                 <span className="text-white/40">|</span>
                 <a
-                  href="https://yousseif.xyz"
+                  href="https://api.whatsapp.com/send?phone=201070440861&text=Hello!"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors"
