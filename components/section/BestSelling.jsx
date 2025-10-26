@@ -234,6 +234,7 @@ const BestSellersHero = () => {
                   modules={[Autoplay, Navigation, Pagination]}
                   spaceBetween={20}
                   slidesPerView={1}
+                  loop={true}
                   breakpoints={{
                     640: { slidesPerView: 1, spaceBetween: 20 },
                     768: { slidesPerView: 2, spaceBetween: 30 },
