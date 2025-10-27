@@ -133,6 +133,13 @@ export default function Home() {
                     className="w-full h-full object-contain"
                   />
                 </div>
+                <div className="bg-white rounded-lg p-2 w-16 h-10 flex items-center justify-center">
+                  <img
+                    src="/image/cash-money.jpg"
+                    alt="Cash"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
               </div>
             </div>
 

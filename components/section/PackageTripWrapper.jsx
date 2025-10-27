@@ -225,7 +225,7 @@ const PackageCard = ({ pkg, trips }) => {
 };
 
 // --- Enhanced View All Trips Section Component ---
-const EnhancedViewAllTrips = ({ tripsCount }) => (
+const EnhancedViewAllTrips = ({ tripsCount, displayedCount }) => (
   <div className="mt-16">
     <div className="relative bg-gradient-to-r from-sky-50 via-cyan-50 to-blue-50 rounded-3xl p-6 sm:p-8 md:p-12 border border-sky-100 shadow-lg overflow-hidden">
       {/* Decorative elements - hidden on mobile, visible on larger screens */}
@@ -272,7 +272,7 @@ const EnhancedViewAllTrips = ({ tripsCount }) => (
             Discover More Adventures
           </h3>
           <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-            You've seen just a preview of our incredible diving trips. Explore
+            You've seen {displayedCount} of our incredible diving trips. Explore
             our complete collection of {tripsCount}+ adventures, from day trips
             to multi-day expeditions across the Red Sea's most spectacular dive
             sites.
@@ -314,10 +314,112 @@ const EnhancedViewAllTrips = ({ tripsCount }) => (
   </div>
 );
 
+// --- Enhanced View All Packages Section Component ---
+const EnhancedViewAllPackages = ({ packagesCount, displayedCount }) => (
+  <div className="mt-16">
+    <div className="relative bg-gradient-to-r from-purple-50 via-pink-50 to-blue-50 rounded-3xl p-6 sm:p-8 md:p-12 border border-purple-100 shadow-lg overflow-hidden">
+      {/* Decorative elements - hidden on mobile, visible on larger screens */}
+      <div className="hidden md:block absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-200/30 to-pink-200/30 rounded-full -translate-y-16 translate-x-16"></div>
+      <div className="hidden md:block absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-200/30 to-purple-200/30 rounded-full translate-y-12 -translate-x-12"></div>
+
+      <div className="relative text-center">
+        {/* Icon and stats */}
+        <div className="mb-6">
+          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mb-4 shadow-lg">
+            <Icon
+              icon="lucide:package"
+              className="w-7 h-7 sm:w-8 sm:h-8 text-white"
+            />
+          </div>
+          <div className="flex items-center justify-center space-x-3 sm:space-x-6 text-xs sm:text-sm text-gray-600 flex-wrap gap-y-2 px-2">
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <Icon
+                icon="lucide:gift"
+                className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500 flex-shrink-0"
+              />
+              <span>Special Offers</span>
+            </div>
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <Icon
+                icon="lucide:sparkles"
+                className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500 flex-shrink-0"
+              />
+              <span>Curated Experiences</span>
+            </div>
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <Icon
+                icon="lucide:check-circle"
+                className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500 flex-shrink-0"
+              />
+              <span>Best Value</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="max-w-2xl mx-auto mb-6 sm:mb-8 px-2">
+          <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">
+            Explore More Packages
+          </h3>
+          <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+            You've seen {displayedCount} of our {packagesCount} curated
+            packages. Discover more bundled adventures designed to give you the
+            best diving experience at incredible value.
+          </p>
+        </div>
+
+        {/* Enhanced CTA Button */}
+        <Link
+          href="/packages"
+          className="group relative inline-flex items-center justify-center px-6 sm:px-10 py-3 sm:py-4 text-base sm:text-lg font-bold text-white bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 overflow-hidden"
+        >
+          {/* Button shine effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+
+          {/* Button content */}
+          <div className="relative flex items-center space-x-2 sm:space-x-3">
+            <Icon
+              icon="lucide:package"
+              className="w-5 h-5 sm:w-6 sm:h-6 group-hover:rotate-12 transition-transform duration-300"
+            />
+            <span>View All Packages</span>
+            <div className="flex items-center">
+              <Icon
+                icon="lucide:arrow-right"
+                className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-300"
+              />
+            </div>
+          </div>
+        </Link>
+
+        {/* Additional info */}
+        <div className="mt-4 sm:mt-6 text-xs sm:text-sm text-gray-500 px-2">
+          <span className="block sm:inline">
+            🎁 Bundled savings • Complete experiences • Everything included
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 // --- Main Component ---
 const PackageTripClientWrapper = ({ initialPackages, initialTrips }) => {
   const packages = initialPackages || [];
   const trips = initialTrips || [];
+
+  // Show only 4 trips
+  const displayedTrips = trips.slice(0, 4);
+
+  // Get unique package IDs from displayed trips
+  const displayedTripPackageIds = [
+    ...new Set(displayedTrips.map((trip) => trip.package_id).filter(Boolean)),
+  ];
+
+  // Show only 2 packages that are associated with the displayed trips
+  const displayedPackages = packages
+    .filter((pkg) => displayedTripPackageIds.includes(pkg.id))
+    .slice(0, 2);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -325,30 +427,43 @@ const PackageTripClientWrapper = ({ initialPackages, initialTrips }) => {
       {trips.length > 0 && (
         <div className="mb-16">
           <h2 className="text-4xl font-bold text-center mb-12 text-sky-600">
-            Our Trips
+            Featured Trips
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {trips.map((trip) => (
+            {displayedTrips.map((trip) => (
               <TripCard key={trip.id} trip={trip} packages={packages} />
             ))}
           </div>
 
-          {/* Enhanced View All Trips */}
-          <EnhancedViewAllTrips tripsCount={trips.length} />
+          {/* Enhanced View All Trips - Only show if there are more than 4 trips */}
+          {trips.length > 4 && (
+            <EnhancedViewAllTrips
+              tripsCount={trips.length}
+              displayedCount={displayedTrips.length}
+            />
+          )}
         </div>
       )}
 
       {/* PACKAGES SECTION */}
-      {packages.length > 0 && (
+      {displayedPackages.length > 0 && (
         <div className="mt-20">
           <h2 className="text-4xl font-bold text-center mb-12 text-sky-600">
-            Our Packages
+            Featured Packages
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {packages.map((pkg) => (
+            {displayedPackages.map((pkg) => (
               <PackageCard key={pkg.id} pkg={pkg} trips={trips} />
             ))}
           </div>
+
+          {/* Enhanced View All Packages - Only show if there are more packages */}
+          {packages.length > displayedPackages.length && (
+            <EnhancedViewAllPackages
+              packagesCount={packages.length}
+              displayedCount={displayedPackages.length}
+            />
+          )}
         </div>
       )}
     </div>
