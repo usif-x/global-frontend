@@ -128,7 +128,7 @@ export default function Home() {
                 </div>
                 <div className="bg-white rounded-lg p-2 w-16 h-10 flex items-center justify-center">
                   <img
-                    src="/image/mobile-wallet.jpg"
+                    src="/image/mobile-wallet.png"
                     alt="Mobile Wallet"
                     className="w-full h-full object-contain"
                   />
