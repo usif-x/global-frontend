@@ -550,86 +550,174 @@ const TripPage = ({ params }) => {
             {(tripData?.included || tripData?.not_included) && (
               <div className="grid md:grid-cols-2 gap-8">
                 {tripData?.included &&
-                  Array.isArray(tripData.included) &&
-                  tripData.included.length > 0 && (
-                    <div className="bg-green-50 rounded-2xl shadow-xl p-8">
-                      <h3 className="text-2xl font-bold text-green-800 mb-4 flex items-center">
-                        <Icon
-                          icon="lucide:check-circle"
-                          className="w-6 h-6 mr-2"
-                        />
-                        What's Included
-                      </h3>
-                      <ul className="space-y-2">
-                        {tripData.included.map((item, index) => (
-                          <li
-                            key={index}
-                            className="flex items-start text-green-700"
-                          >
-                            <Icon
-                              icon="lucide:check"
-                              className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0"
-                            />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  (() => {
+                    // Parse included field if it's a JSON string
+                    let includedItems = [];
+                    if (Array.isArray(tripData.included)) {
+                      includedItems = tripData.included.filter(
+                        (item) => item && item.trim()
+                      );
+                    } else if (typeof tripData.included === "string") {
+                      try {
+                        const parsed = JSON.parse(tripData.included);
+                        includedItems = Array.isArray(parsed)
+                          ? parsed.filter((item) => item && item.trim())
+                          : [];
+                      } catch {
+                        includedItems = tripData.included
+                          .split(",")
+                          .map((item) => item.trim())
+                          .filter((item) => item);
+                      }
+                    }
+
+                    return includedItems.length > 0 ? (
+                      <div
+                        className={`bg-green-50 rounded-2xl shadow-xl p-8 ${
+                          !tripData?.not_included ||
+                          (Array.isArray(tripData.not_included) &&
+                            tripData.not_included.length === 0) ||
+                          (typeof tripData.not_included === "string" &&
+                            (!tripData.not_included.trim() ||
+                              tripData.not_included.trim() === "[]"))
+                            ? "md:col-span-2"
+                            : ""
+                        }`}
+                      >
+                        <h3 className="text-2xl font-bold text-green-800 mb-4 flex items-center">
+                          <Icon
+                            icon="lucide:check-circle"
+                            className="w-6 h-6 mr-2"
+                          />
+                          What's Included
+                        </h3>
+                        <ul className="space-y-2">
+                          {includedItems.map((item, index) => (
+                            <li
+                              key={index}
+                              className="flex items-start text-green-700"
+                            >
+                              <Icon
+                                icon="lucide:check"
+                                className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0"
+                              />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null;
+                  })()}
 
                 {tripData?.not_included &&
-                  Array.isArray(tripData.not_included) &&
-                  tripData.not_included.length > 0 && (
-                    <div className="bg-red-50 rounded-2xl shadow-xl p-8">
-                      <h3 className="text-2xl font-bold text-red-800 mb-4 flex items-center">
-                        <Icon icon="lucide:x-circle" className="w-6 h-6 mr-2" />
-                        Not Included
-                      </h3>
-                      <ul className="space-y-2">
-                        {tripData.not_included.map((item, index) => (
-                          <li
-                            key={index}
-                            className="flex items-start text-red-700"
-                          >
-                            <Icon
-                              icon="lucide:x"
-                              className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0"
-                            />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  (() => {
+                    // Parse not_included field if it's a JSON string
+                    let notIncludedItems = [];
+                    if (Array.isArray(tripData.not_included)) {
+                      notIncludedItems = tripData.not_included.filter(
+                        (item) => item && item.trim()
+                      );
+                    } else if (typeof tripData.not_included === "string") {
+                      try {
+                        const parsed = JSON.parse(tripData.not_included);
+                        notIncludedItems = Array.isArray(parsed)
+                          ? parsed.filter((item) => item && item.trim())
+                          : [];
+                      } catch {
+                        notIncludedItems = tripData.not_included
+                          .split(",")
+                          .map((item) => item.trim())
+                          .filter((item) => item);
+                      }
+                    }
+
+                    return notIncludedItems.length > 0 ? (
+                      <div
+                        className={`bg-red-50 rounded-2xl shadow-xl p-8 ${
+                          !tripData?.included ||
+                          (Array.isArray(tripData.included) &&
+                            tripData.included.length === 0) ||
+                          (typeof tripData.included === "string" &&
+                            (!tripData.included.trim() ||
+                              tripData.included.trim() === "[]"))
+                            ? "md:col-span-2"
+                            : ""
+                        }`}
+                      >
+                        <h3 className="text-2xl font-bold text-red-800 mb-4 flex items-center">
+                          <Icon
+                            icon="lucide:x-circle"
+                            className="w-6 h-6 mr-2"
+                          />
+                          Not Included
+                        </h3>
+                        <ul className="space-y-2">
+                          {notIncludedItems.map((item, index) => (
+                            <li
+                              key={index}
+                              className="flex items-start text-red-700"
+                            >
+                              <Icon
+                                icon="lucide:x"
+                                className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0"
+                              />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null;
+                  })()}
               </div>
             )}
             {tripData?.terms_and_conditions &&
-              Array.isArray(tripData.terms_and_conditions) &&
-              tripData.terms_and_conditions.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-xl p-8">
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
-                    <Icon
-                      icon="lucide:file-text"
-                      className="w-8 h-8 mr-3 text-blue-600"
-                    />
-                    Terms & Conditions - Notes
-                  </h2>
-                  <ul className="space-y-3">
-                    {tripData.terms_and_conditions.map((term, index) => (
-                      <li
-                        key={index}
-                        className="flex items-start text-gray-700"
-                      >
-                        <Icon
-                          icon="lucide:dot"
-                          className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0 text-blue-600"
-                        />
-                        <span>{term}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              (() => {
+                // Parse terms_and_conditions field if it's a JSON string
+                let termsItems = [];
+                if (Array.isArray(tripData.terms_and_conditions)) {
+                  termsItems = tripData.terms_and_conditions.filter(
+                    (item) => item && item.trim()
+                  );
+                } else if (typeof tripData.terms_and_conditions === "string") {
+                  try {
+                    const parsed = JSON.parse(tripData.terms_and_conditions);
+                    termsItems = Array.isArray(parsed)
+                      ? parsed.filter((item) => item && item.trim())
+                      : [];
+                  } catch {
+                    termsItems = tripData.terms_and_conditions
+                      .split(",")
+                      .map((item) => item.trim())
+                      .filter((item) => item);
+                  }
+                }
+
+                return termsItems.length > 0 ? (
+                  <div className="bg-white rounded-2xl shadow-xl p-8">
+                    <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
+                      <Icon
+                        icon="lucide:file-text"
+                        className="w-8 h-8 mr-3 text-blue-600"
+                      />
+                      Terms & Conditions - Notes
+                    </h2>
+                    <ul className="space-y-3">
+                      {termsItems.map((term, index) => (
+                        <li
+                          key={index}
+                          className="flex items-start text-gray-700"
+                        >
+                          <Icon
+                            icon="lucide:dot"
+                            className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0 text-blue-600"
+                          />
+                          <span>{term}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null;
+              })()}
 
             {/* --- NEW SECTION: YOU MIGHT ALSO PREFER --- */}
             {relatedTrips.length > 0 && (
