@@ -178,19 +178,6 @@ export default function Home() {
                 >
                   Built by <strong>Yousseif</strong>
                 </a>
-                <span className="text-white/40">|</span>
-                <a
-                  href="https://www.digitalocean.com/?refcode=3218df16c4a6&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:opacity-80 transition-opacity"
-                >
-                  <img
-                    src="https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%203.svg"
-                    alt="DigitalOcean Referral Badge"
-                    className="h-6 w-auto"
-                  />
-                </a>
               </div>
             </div>
           </div>
