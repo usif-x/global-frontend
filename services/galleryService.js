@@ -34,7 +34,7 @@ class GalleryService {
 
   // Delete all images
   async deleteAllImages() {
-    return await deleteData("/gallery", true);
+    return await deleteData("/gallery/", true);
   }
 }
 
