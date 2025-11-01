@@ -17,6 +17,41 @@ const normalizeApiItem = (apiItem) => {
   const itemData = isCourse ? apiItem.course : apiItem.trip;
   if (!itemData) return null;
 
+  // Helper function to parse field data (same as trips page)
+  const parseFieldData = (fieldData) => {
+    let items = [];
+    if (Array.isArray(fieldData)) {
+      if (fieldData.length > 0 && typeof fieldData[0] === "string") {
+        try {
+          const parsed = JSON.parse(fieldData[0]);
+          items = Array.isArray(parsed)
+            ? parsed.filter((item) => item && item.trim())
+            : [];
+        } catch {
+          items = fieldData.filter((item) => item && item.trim());
+        }
+      } else {
+        items = fieldData.filter((item) => item && item.trim());
+      }
+    } else if (typeof fieldData === "string") {
+      try {
+        const parsed = JSON.parse(fieldData);
+        items = Array.isArray(parsed)
+          ? parsed.filter((item) => item && item.trim())
+          : [];
+      } catch {
+        items = fieldData
+          .split(",")
+          .map((item) => item.trim())
+          .filter((item) => item);
+      }
+    }
+    return items;
+  };
+
+  // Parse the included items properly
+  const includedItems = parseFieldData(itemData.included);
+
   return {
     id: itemData.id,
     type: apiItem.item_type,
@@ -27,7 +62,7 @@ const normalizeApiItem = (apiItem) => {
     childPrice: !isCourse ? itemData.child_price : null,
     href: isCourse ? `/courses/${itemData.id}` : `/trips/${itemData.id}`,
     rank: apiItem.ranking_position,
-    included: itemData.included || [],
+    included: includedItems,
     duration: itemData.duration,
     durationUnit: itemData.duration_unit || (isCourse ? "days" : "hour/s"),
     hasDiscount: !isCourse ? itemData.has_discount : false,
