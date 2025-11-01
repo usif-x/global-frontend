@@ -1,5 +1,6 @@
 // components/best-selling/BestSellingItemCard.jsx
 
+import { getImageUrl } from "@/utils/imageUtils";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -44,7 +45,7 @@ const BestSellingItemCard = ({ item }) => {
       {/* Image Section */}
       <div className="relative h-52">
         <Image
-          src={item.image || "/placeholder-image.jpg"}
+          src={getImageUrl(item.image) || "/placeholder-image.png"}
           alt={item.name}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -74,6 +75,16 @@ const BestSellingItemCard = ({ item }) => {
         <p className="mt-2 text-sm text-slate-600 flex-grow">
           {createSummary(item.description)}
         </p>
+
+        {/* Duration Info */}
+        {item.duration && (
+          <div className="mt-3 flex items-center text-xs text-slate-500">
+            <Icon icon="mdi:clock-outline" className="w-4 h-4 mr-1" />
+            <span>
+              Duration: {item.duration} {item.durationUnit}
+            </span>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">

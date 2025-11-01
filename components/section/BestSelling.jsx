@@ -1,6 +1,7 @@
 "use client";
 
 import BestSellingService from "@/services/bestsellingService";
+import { getImageUrl } from "@/utils/imageUtils";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -57,7 +58,7 @@ const normalizeApiItem = (apiItem) => {
     type: apiItem.item_type,
     name: itemData.name,
     description: itemData.description,
-    image: itemData.images?.[0],
+    image: getImageUrl(itemData.images?.[0]),
     price: isCourse ? itemData.price : itemData.adult_price,
     childPrice: !isCourse ? itemData.child_price : null,
     href: isCourse ? `/courses/${itemData.id}` : `/trips/${itemData.id}`,

@@ -746,7 +746,7 @@ const TripPage = ({ params }) => {
                       <div className="relative h-40">
                         <Image
                           src={
-                            otherTrip.images?.[0] || "/placeholder-image.jpg"
+                            otherTrip.images?.[0] || "/placeholder-image.png"
                           }
                           alt={otherTrip.name}
                           fill
