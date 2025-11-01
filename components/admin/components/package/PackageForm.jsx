@@ -16,7 +16,8 @@ const PackageForm = ({ package: packageData = null, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    images: [],
+    images: [], // Will store File objects for new uploads
+    existing_images: [], // Will store existing image URLs
     is_image_list: false,
   });
 
@@ -26,7 +27,8 @@ const PackageForm = ({ package: packageData = null, onSuccess, onCancel }) => {
       setFormData({
         name: packageData.name || "",
         description: packageData.description || "",
-        images: packageData.images || [],
+        images: [], // Reset for new uploads
+        existing_images: packageData.images || [], // Store existing image URLs
         is_image_list: packageData.is_image_list || false,
       });
       setImagePreview(packageData.images || []);
@@ -53,22 +55,24 @@ const PackageForm = ({ package: packageData = null, onSuccess, onCancel }) => {
       setErrors((prev) => ({ ...prev, description: "" }));
     }
   };
-  const handleImageChange = (index, value) => {
+  const handleImageChange = (index, file) => {
     setFormData((prev) => ({
       ...prev,
-      images: prev.images.map((img, i) => (i === index ? value : img)),
+      images: prev.images.map((img, i) => (i === index ? file : img)),
     }));
 
     // Update preview
-    setImagePreview((prev) =>
-      prev.map((img, i) => (i === index ? value : img))
-    );
+    if (file instanceof File) {
+      setImagePreview((prev) =>
+        prev.map((img, i) => (i === index ? URL.createObjectURL(file) : img))
+      );
+    }
   };
 
   const addImage = () => {
     setFormData((prev) => ({
       ...prev,
-      images: [...prev.images, ""],
+      images: [...prev.images, null],
     }));
     setImagePreview((prev) => [...prev, ""]);
   };
@@ -79,6 +83,13 @@ const PackageForm = ({ package: packageData = null, onSuccess, onCancel }) => {
       images: prev.images.filter((_, i) => i !== index),
     }));
     setImagePreview((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingImage = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      existing_images: prev.existing_images.filter((_, i) => i !== index),
+    }));
   };
 
   const validateForm = () => {
@@ -107,18 +118,35 @@ const PackageForm = ({ package: packageData = null, onSuccess, onCancel }) => {
     setIsLoading(true);
 
     try {
-      // Prepare data for submission
-      const submitData = {
-        ...formData,
-        images: formData.images.filter((img) => img && img.trim()),
-      };
+      // Create FormData for multipart upload
+      const submitFormData = new FormData();
+
+      // Add basic fields
+      submitFormData.append("name", formData.name);
+      submitFormData.append("description", formData.description);
+      submitFormData.append("is_image_list", formData.is_image_list);
+
+      // Add existing images (for updates)
+      if (packageData && formData.existing_images.length > 0) {
+        submitFormData.append(
+          "existing_images",
+          JSON.stringify(formData.existing_images)
+        );
+      }
+
+      // Add new image files
+      formData.images.forEach((file) => {
+        if (file instanceof File) {
+          submitFormData.append("images", file);
+        }
+      });
 
       let result;
       if (packageData) {
-        result = await PackageService.update(packageData.id, submitData);
+        result = await PackageService.update(packageData.id, submitFormData);
         toast.success("🎉 Package updated successfully!");
       } else {
-        result = await PackageService.create(submitData);
+        result = await PackageService.create(submitFormData);
         toast.success("🎉 Package created successfully!");
       }
 
@@ -388,24 +416,66 @@ const PackageForm = ({ package: packageData = null, onSuccess, onCancel }) => {
                   </button>
                 </div>
 
-                <div className="space-y-4">
-                  {formData.images.map((image, index) => (
-                    <div
-                      key={index}
-                      className="group bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-all duration-200"
-                    >
-                      <div className="flex items-start space-x-4">
-                        {/* Image Preview */}
-                        <div className="flex-shrink-0">
-                          {image && image.trim() ? (
+                {/* Existing Images */}
+                {formData.existing_images.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-sm font-medium text-slate-700 mb-3">
+                      Current Images
+                    </h4>
+                    <div className="space-y-3">
+                      {formData.existing_images.map((imageUrl, index) => (
+                        <div
+                          key={`existing-${index}`}
+                          className="group bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-all duration-200 flex items-start space-x-4"
+                        >
+                          <div className="flex-shrink-0">
                             <img
-                              src={image}
-                              alt={`Preview ${index + 1}`}
+                              src={imageUrl}
+                              alt={`Existing ${index + 1}`}
                               className="w-20 h-20 object-cover rounded-lg border-2 border-slate-200"
                               onError={(e) => {
                                 e.target.src =
                                   'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24"><path fill="%23ccc" d="M21,17H7V3A1,1 0 0,1 8,2H20A1,1 0 0,1 21,3V17M19,4H9V15H19V4M16,10.5L13.5,13.5L11.5,11L9,14H19M4,6H2V20A2,2 0 0,0 4,22H18V20H4V6Z"/></svg>';
                               }}
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-slate-700">
+                              Existing Image {index + 1}
+                            </p>
+                            <p className="text-xs text-slate-500 break-all">
+                              {imageUrl}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeExistingImage(index)}
+                            className="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+                            disabled={isLoading}
+                          >
+                            <Icon icon="mdi:delete" className="w-5 h-5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* New Image Uploads */}
+                <div className="space-y-4">
+                  {formData.images.map((image, index) => (
+                    <div
+                      key={`new-${index}`}
+                      className="group bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-all duration-200"
+                    >
+                      <div className="flex items-start space-x-4">
+                        {/* Image Preview */}
+                        <div className="flex-shrink-0">
+                          {image instanceof File ? (
+                            <img
+                              src={URL.createObjectURL(image)}
+                              alt={`Preview ${index + 1}`}
+                              className="w-20 h-20 object-cover rounded-lg border-2 border-slate-200"
                             />
                           ) : (
                             <div className="w-20 h-20 bg-slate-100 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center">
@@ -417,25 +487,36 @@ const PackageForm = ({ package: packageData = null, onSuccess, onCancel }) => {
                           )}
                         </div>
 
-                        {/* Input Field */}
+                        {/* File Input */}
                         <div className="flex-1">
-                          <Input
-                            dir="ltr"
-                            icon="mdi:link"
-                            name={`image_${index}`}
-                            type="url"
-                            placeholder="Paste image URL here..."
-                            value={image}
-                            onChange={(e) =>
-                              handleImageChange(index, e.target.value)
-                            }
-                            color="purple"
-                            className="w-full"
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            onChange={(e) => {
+                              const file = e.target.files[0];
+                              if (file) {
+                                // Validate file size (5MB limit)
+                                if (file.size > 5 * 1024 * 1024) {
+                                  toast.error(
+                                    "Image size must be less than 5MB"
+                                  );
+                                  return;
+                                }
+                                handleImageChange(index, file);
+                              }
+                            }}
+                            className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 file:cursor-pointer cursor-pointer"
                             disabled={isLoading}
                           />
                           <p className="text-xs text-slate-500 mt-1">
-                            Image {index + 1} • Supports JPG, PNG, WebP formats
+                            New Image {index + 1} • Max 5MB • JPEG, PNG, WebP
                           </p>
+                          {image instanceof File && (
+                            <p className="text-xs text-green-600 mt-1">
+                              Selected: {image.name} (
+                              {(image.size / 1024 / 1024).toFixed(2)} MB)
+                            </p>
+                          )}
                         </div>
 
                         {/* Remove Button */}
@@ -451,28 +532,29 @@ const PackageForm = ({ package: packageData = null, onSuccess, onCancel }) => {
                     </div>
                   ))}
 
-                  {formData.images.length === 0 && (
-                    <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center">
-                      <Icon
-                        icon="mdi:image-plus"
-                        className="w-12 h-12 text-slate-400 mx-auto mb-4"
-                      />
-                      <h4 className="text-lg font-medium text-slate-600 mb-2">
-                        No images yet
-                      </h4>
-                      <p className="text-slate-500 mb-4">
-                        Add some beautiful images to showcase your package
-                      </p>
-                      <button
-                        type="button"
-                        onClick={addImage}
-                        className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-                        disabled={isLoading}
-                      >
-                        Add Your First Image
-                      </button>
-                    </div>
-                  )}
+                  {formData.images.length === 0 &&
+                    formData.existing_images.length === 0 && (
+                      <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center">
+                        <Icon
+                          icon="mdi:image-plus"
+                          className="w-12 h-12 text-slate-400 mx-auto mb-4"
+                        />
+                        <h4 className="text-lg font-medium text-slate-600 mb-2">
+                          No images yet
+                        </h4>
+                        <p className="text-slate-500 mb-4">
+                          Upload beautiful images to showcase your package
+                        </p>
+                        <button
+                          type="button"
+                          onClick={addImage}
+                          className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                          disabled={isLoading}
+                        >
+                          Upload Your First Image
+                        </button>
+                      </div>
+                    )}
                 </div>
               </div>
             </div>

@@ -130,7 +130,8 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     included: [""],
     not_included: [""],
     terms_and_conditions: [""],
-    images: [],
+    images: [], // Will store File objects for new uploads
+    existing_images: [], // Will store existing image URLs
     is_image_list: false,
   });
 
@@ -155,7 +156,8 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
       setFormData({
         name: trip.name || "",
         description: trip.description || "",
-        images: trip.images || [],
+        images: [], // Reset for new uploads
+        existing_images: trip.images || [], // Store existing image URLs
         is_image_list: trip.is_image_list || false,
         // Simplified pricing
         adult_price: trip.adult_price?.toString() || "",
@@ -205,20 +207,26 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const handleImageChange = (index, value) => {
+  const handleImageChange = (index, file) => {
     setFormData((prev) => ({
       ...prev,
-      images: prev.images.map((img, i) => (i === index ? value : img)),
+      images: prev.images.map((img, i) => (i === index ? file : img)),
     }));
   };
 
   const addImage = () =>
-    setFormData((prev) => ({ ...prev, images: [...prev.images, ""] }));
+    setFormData((prev) => ({ ...prev, images: [...prev.images, null] }));
 
   const removeImage = (index) =>
     setFormData((prev) => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index),
+    }));
+
+  const removeExistingImage = (index) =>
+    setFormData((prev) => ({
+      ...prev,
+      existing_images: prev.existing_images.filter((_, i) => i !== index),
     }));
 
   const validateStep1 = () => {
@@ -281,46 +289,85 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     }
     setIsLoading(true);
     try {
-      const submitData = {
-        ...formData,
-        // Simplified pricing conversion
-        adult_price: parseFloat(formData.adult_price),
-        child_price: formData.child_allowed
-          ? parseFloat(formData.child_price || 0)
-          : 0,
-        child_allowed: formData.child_allowed,
-        maxim_person: parseInt(formData.maxim_person, 10),
-        duration: parseInt(formData.duration, 10),
-        duration_unit: formData.duration_unit,
-        package_id: parseInt(formData.package_id, 10),
-        discount_percentage: formData.has_discount
-          ? parseFloat(formData.discount_percentage)
-          : 0,
-        discount_requires_min_people: formData.has_discount
-          ? formData.discount_requires_min_people
-          : false,
-        discount_always_available: formData.has_discount
-          ? formData.discount_always_available
-          : false,
-        discount_min_people:
-          formData.has_discount && formData.discount_requires_min_people
-            ? parseInt(formData.discount_min_people, 10)
-            : 0,
-        included: formData.included.filter((item) => item && item.trim()),
-        not_included: formData.not_included.filter(
-          (item) => item && item.trim()
-        ),
-        terms_and_conditions: formData.terms_and_conditions.filter(
-          (item) => item && item.trim()
-        ),
-        images: formData.images.filter((img) => img && img.trim()),
-      };
+      // Create FormData for multipart upload
+      const submitFormData = new FormData();
+
+      // Add basic fields
+      submitFormData.append("name", formData.name);
+      submitFormData.append("description", formData.description);
+      submitFormData.append("package_id", parseInt(formData.package_id, 10));
+      submitFormData.append("duration", parseInt(formData.duration, 10));
+      submitFormData.append("duration_unit", formData.duration_unit);
+      submitFormData.append("adult_price", parseFloat(formData.adult_price));
+      submitFormData.append(
+        "child_price",
+        formData.child_allowed ? parseFloat(formData.child_price || 0) : 0
+      );
+      submitFormData.append("child_allowed", formData.child_allowed);
+      submitFormData.append(
+        "maxim_person",
+        parseInt(formData.maxim_person, 10)
+      );
+      submitFormData.append("has_discount", formData.has_discount);
+      submitFormData.append(
+        "discount_percentage",
+        formData.has_discount ? parseFloat(formData.discount_percentage) : 0
+      );
+      submitFormData.append(
+        "discount_requires_min_people",
+        formData.has_discount ? formData.discount_requires_min_people : false
+      );
+      submitFormData.append(
+        "discount_always_available",
+        formData.has_discount ? formData.discount_always_available : false
+      );
+      submitFormData.append(
+        "discount_min_people",
+        formData.has_discount && formData.discount_requires_min_people
+          ? parseInt(formData.discount_min_people, 10)
+          : 0
+      );
+      submitFormData.append("is_image_list", formData.is_image_list);
+
+      // Add arrays as JSON strings
+      submitFormData.append(
+        "included",
+        JSON.stringify(formData.included.filter((item) => item && item.trim()))
+      );
+      submitFormData.append(
+        "not_included",
+        JSON.stringify(
+          formData.not_included.filter((item) => item && item.trim())
+        )
+      );
+      submitFormData.append(
+        "terms_and_conditions",
+        JSON.stringify(
+          formData.terms_and_conditions.filter((item) => item && item.trim())
+        )
+      );
+
+      // Add existing images (for updates)
+      if (trip && formData.existing_images.length > 0) {
+        submitFormData.append(
+          "existing_images",
+          JSON.stringify(formData.existing_images)
+        );
+      }
+
+      // Add new image files
+      formData.images.forEach((file) => {
+        if (file instanceof File) {
+          submitFormData.append("images", file);
+        }
+      });
+
       let result;
       if (trip) {
-        result = await tripService.update(trip.id, submitData);
+        result = await tripService.update(trip.id, submitFormData);
         toast.success("🎉 Trip updated successfully!");
       } else {
-        result = await tripService.create(submitData);
+        result = await tripService.create(submitFormData);
         toast.success("🎉 Trip created successfully!");
       }
       onSuccess && onSuccess(result);
@@ -834,22 +881,87 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
                 <span>Add Image</span>
               </button>
             </div>
+
+            {/* Display Options */}
+            <div className="bg-white rounded-xl p-4 border border-purple-200 mb-6">
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="is_image_list"
+                  checked={formData.is_image_list}
+                  onChange={handleInputChange}
+                  className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
+                  disabled={isLoading}
+                />
+                <div>
+                  <span className="text-sm font-medium text-slate-700">
+                    Display as List
+                  </span>
+                  <p className="text-xs text-slate-500">
+                    Show images in a vertical list instead of a grid
+                  </p>
+                </div>
+              </label>
+            </div>
+
+            {/* Existing Images */}
+            {formData.existing_images.length > 0 && (
+              <div className="mb-6">
+                <h4 className="text-sm font-medium text-slate-700 mb-3">
+                  Current Images
+                </h4>
+                <div className="space-y-3">
+                  {formData.existing_images.map((imageUrl, index) => (
+                    <div
+                      key={`existing-${index}`}
+                      className="group bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-all duration-200 flex items-start space-x-4"
+                    >
+                      <div className="flex-shrink-0">
+                        <img
+                          src={imageUrl}
+                          alt={`Existing ${index + 1}`}
+                          className="w-20 h-20 object-cover rounded-lg border-2 border-slate-200"
+                          onError={(e) => {
+                            e.target.src =
+                              'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24"><path fill="%23ccc" d="M21,17H7V3A1,1 0 0,1 8,2H20A1,1 0 0,1 21,3V17M19,4H9V15H19V4M16,10.5L13.5,13.5L11.5,11L9,14H19M4,6H2V20A2,2 0 0,0 4,22H18V20H4V6Z"/></svg>';
+                          }}
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-700">
+                          Existing Image {index + 1}
+                        </p>
+                        <p className="text-xs text-slate-500 break-all">
+                          {imageUrl}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeExistingImage(index)}
+                        className="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+                        disabled={isLoading}
+                      >
+                        <Icon icon="mdi:delete" className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* New Image Uploads */}
             <div className="space-y-4">
               {formData.images.map((image, index) => (
                 <div
-                  key={index}
+                  key={`new-${index}`}
                   className="group bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-all duration-200 flex items-start space-x-4"
                 >
                   <div className="flex-shrink-0">
-                    {image && image.trim() ? (
+                    {image instanceof File ? (
                       <img
-                        src={image}
+                        src={URL.createObjectURL(image)}
                         alt={`Preview ${index + 1}`}
                         className="w-20 h-20 object-cover rounded-lg border-2 border-slate-200"
-                        onError={(e) => {
-                          e.target.src =
-                            'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24"><path fill="%23ccc" d="M21,17H7V3A1,1 0 0,1 8,2H20A1,1 0 0,1 21,3V17M19,4H9V15H19V4M16,10.5L13.5,13.5L11.5,11L9,14H19M4,6H2V20A2,2 0 0,0 4,22H18V20H4V6Z"/></svg>';
-                        }}
                       />
                     ) : (
                       <div className="w-20 h-20 bg-slate-100 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center">
@@ -861,21 +973,32 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
                     )}
                   </div>
                   <div className="flex-1">
-                    <Input
-                      dir="ltr"
-                      icon="mdi:link"
-                      name={`image_${index}`}
-                      type="url"
-                      placeholder="Paste image URL here..."
-                      value={image}
-                      onChange={(e) => handleImageChange(index, e.target.value)}
-                      color="purple"
-                      className="w-full"
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          // Validate file size (5MB limit)
+                          if (file.size > 5 * 1024 * 1024) {
+                            toast.error("Image size must be less than 5MB");
+                            return;
+                          }
+                          handleImageChange(index, file);
+                        }
+                      }}
+                      className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 file:cursor-pointer cursor-pointer"
                       disabled={isLoading}
                     />
                     <p className="text-xs text-slate-500 mt-1">
-                      Image {index + 1}
+                      New Image {index + 1} • Max 5MB • JPEG, PNG, WebP
                     </p>
+                    {image instanceof File && (
+                      <p className="text-xs text-green-600 mt-1">
+                        Selected: {image.name} (
+                        {(image.size / 1024 / 1024).toFixed(2)} MB)
+                      </p>
+                    )}
                   </div>
                   <button
                     type="button"
@@ -887,25 +1010,29 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
                   </button>
                 </div>
               ))}
-              {formData.images.length === 0 && (
-                <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center">
-                  <Icon
-                    icon="mdi:image-plus"
-                    className="w-12 h-12 text-slate-400 mx-auto mb-4"
-                  />
-                  <h4 className="text-lg font-medium text-slate-600 mb-2">
-                    No images yet
-                  </h4>
-                  <button
-                    type="button"
-                    onClick={addImage}
-                    className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-                    disabled={isLoading}
-                  >
-                    Add First Image
-                  </button>
-                </div>
-              )}
+              {formData.images.length === 0 &&
+                formData.existing_images.length === 0 && (
+                  <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center">
+                    <Icon
+                      icon="mdi:image-plus"
+                      className="w-12 h-12 text-slate-400 mx-auto mb-4"
+                    />
+                    <h4 className="text-lg font-medium text-slate-600 mb-2">
+                      No images yet
+                    </h4>
+                    <p className="text-sm text-slate-500 mb-4">
+                      Upload high-quality images to showcase your trip
+                    </p>
+                    <button
+                      type="button"
+                      onClick={addImage}
+                      className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                      disabled={isLoading}
+                    >
+                      Upload First Image
+                    </button>
+                  </div>
+                )}
             </div>
           </div>
 

@@ -15,6 +15,11 @@ const nextConfig = {
         pathname: "/storage/**",
       },
       {
+        protocol: "http",
+        hostname: "localhost:8000",
+        pathname: "/storage/**",
+      },
+      {
         protocol: "https",
         hostname: "timeforkids.com",
         pathname: "/wp-content/**",
