@@ -554,9 +554,28 @@ const TripPage = ({ params }) => {
                     // Parse included field if it's a JSON string
                     let includedItems = [];
                     if (Array.isArray(tripData.included)) {
-                      includedItems = tripData.included.filter(
-                        (item) => item && item.trim()
-                      );
+                      // Check if array contains a JSON string as first element
+                      if (
+                        tripData.included.length > 0 &&
+                        typeof tripData.included[0] === "string"
+                      ) {
+                        try {
+                          // Try to parse the first element as JSON
+                          const parsed = JSON.parse(tripData.included[0]);
+                          includedItems = Array.isArray(parsed)
+                            ? parsed.filter((item) => item && item.trim())
+                            : [];
+                        } catch {
+                          // If parsing fails, treat as regular array
+                          includedItems = tripData.included.filter(
+                            (item) => item && item.trim()
+                          );
+                        }
+                      } else {
+                        includedItems = tripData.included.filter(
+                          (item) => item && item.trim()
+                        );
+                      }
                     } else if (typeof tripData.included === "string") {
                       try {
                         const parsed = JSON.parse(tripData.included);
@@ -614,9 +633,28 @@ const TripPage = ({ params }) => {
                     // Parse not_included field if it's a JSON string
                     let notIncludedItems = [];
                     if (Array.isArray(tripData.not_included)) {
-                      notIncludedItems = tripData.not_included.filter(
-                        (item) => item && item.trim()
-                      );
+                      // Check if array contains a JSON string as first element
+                      if (
+                        tripData.not_included.length > 0 &&
+                        typeof tripData.not_included[0] === "string"
+                      ) {
+                        try {
+                          // Try to parse the first element as JSON
+                          const parsed = JSON.parse(tripData.not_included[0]);
+                          notIncludedItems = Array.isArray(parsed)
+                            ? parsed.filter((item) => item && item.trim())
+                            : [];
+                        } catch {
+                          // If parsing fails, treat as regular array
+                          notIncludedItems = tripData.not_included.filter(
+                            (item) => item && item.trim()
+                          );
+                        }
+                      } else {
+                        notIncludedItems = tripData.not_included.filter(
+                          (item) => item && item.trim()
+                        );
+                      }
                     } else if (typeof tripData.not_included === "string") {
                       try {
                         const parsed = JSON.parse(tripData.not_included);
@@ -675,9 +713,30 @@ const TripPage = ({ params }) => {
                 // Parse terms_and_conditions field if it's a JSON string
                 let termsItems = [];
                 if (Array.isArray(tripData.terms_and_conditions)) {
-                  termsItems = tripData.terms_and_conditions.filter(
-                    (item) => item && item.trim()
-                  );
+                  // Check if array contains a JSON string as first element
+                  if (
+                    tripData.terms_and_conditions.length > 0 &&
+                    typeof tripData.terms_and_conditions[0] === "string"
+                  ) {
+                    try {
+                      // Try to parse the first element as JSON
+                      const parsed = JSON.parse(
+                        tripData.terms_and_conditions[0]
+                      );
+                      termsItems = Array.isArray(parsed)
+                        ? parsed.filter((item) => item && item.trim())
+                        : [];
+                    } catch {
+                      // If parsing fails, treat as regular array
+                      termsItems = tripData.terms_and_conditions.filter(
+                        (item) => item && item.trim()
+                      );
+                    }
+                  } else {
+                    termsItems = tripData.terms_and_conditions.filter(
+                      (item) => item && item.trim()
+                    );
+                  }
                 } else if (typeof tripData.terms_and_conditions === "string") {
                   try {
                     const parsed = JSON.parse(tripData.terms_and_conditions);
