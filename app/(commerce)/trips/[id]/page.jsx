@@ -547,60 +547,56 @@ const TripPage = ({ params }) => {
               </div>
             </div>
 
-            {(tripData?.included || tripData?.not_included) && (
-              <div className="grid md:grid-cols-2 gap-8">
-                {tripData?.included &&
-                  (() => {
-                    // Parse included field if it's a JSON string
-                    let includedItems = [];
-                    if (Array.isArray(tripData.included)) {
-                      // Check if array contains a JSON string as first element
-                      if (
-                        tripData.included.length > 0 &&
-                        typeof tripData.included[0] === "string"
-                      ) {
-                        try {
-                          // Try to parse the first element as JSON
-                          const parsed = JSON.parse(tripData.included[0]);
-                          includedItems = Array.isArray(parsed)
-                            ? parsed.filter((item) => item && item.trim())
-                            : [];
-                        } catch {
-                          // If parsing fails, treat as regular array
-                          includedItems = tripData.included.filter(
-                            (item) => item && item.trim()
-                          );
-                        }
-                      } else {
-                        includedItems = tripData.included.filter(
-                          (item) => item && item.trim()
-                        );
-                      }
-                    } else if (typeof tripData.included === "string") {
+            {(tripData?.included || tripData?.not_included) &&
+              (() => {
+                // Helper function to parse field data
+                const parseFieldData = (fieldData) => {
+                  let items = [];
+                  if (Array.isArray(fieldData)) {
+                    if (
+                      fieldData.length > 0 &&
+                      typeof fieldData[0] === "string"
+                    ) {
                       try {
-                        const parsed = JSON.parse(tripData.included);
-                        includedItems = Array.isArray(parsed)
+                        const parsed = JSON.parse(fieldData[0]);
+                        items = Array.isArray(parsed)
                           ? parsed.filter((item) => item && item.trim())
                           : [];
                       } catch {
-                        includedItems = tripData.included
-                          .split(",")
-                          .map((item) => item.trim())
-                          .filter((item) => item);
+                        items = fieldData.filter((item) => item && item.trim());
                       }
+                    } else {
+                      items = fieldData.filter((item) => item && item.trim());
                     }
+                  } else if (typeof fieldData === "string") {
+                    try {
+                      const parsed = JSON.parse(fieldData);
+                      items = Array.isArray(parsed)
+                        ? parsed.filter((item) => item && item.trim())
+                        : [];
+                    } catch {
+                      items = fieldData
+                        .split(",")
+                        .map((item) => item.trim())
+                        .filter((item) => item);
+                    }
+                  }
+                  return items;
+                };
 
-                    return includedItems.length > 0 ? (
+                // Parse both sections to check if they have content
+                const includedItems = parseFieldData(tripData?.included);
+                const notIncludedItems = parseFieldData(tripData?.not_included);
+
+                const hasIncluded = includedItems.length > 0;
+                const hasNotIncluded = notIncludedItems.length > 0;
+
+                return (
+                  <div className="grid md:grid-cols-2 gap-8">
+                    {hasIncluded && (
                       <div
                         className={`bg-green-50 rounded-2xl shadow-xl p-8 ${
-                          !tripData?.not_included ||
-                          (Array.isArray(tripData.not_included) &&
-                            tripData.not_included.length === 0) ||
-                          (typeof tripData.not_included === "string" &&
-                            (!tripData.not_included.trim() ||
-                              tripData.not_included.trim() === "[]"))
-                            ? "md:col-span-2"
-                            : ""
+                          !hasNotIncluded ? "md:col-span-2" : ""
                         }`}
                       >
                         <h3 className="text-2xl font-bold text-green-800 mb-4 flex items-center">
@@ -625,61 +621,12 @@ const TripPage = ({ params }) => {
                           ))}
                         </ul>
                       </div>
-                    ) : null;
-                  })()}
+                    )}
 
-                {tripData?.not_included &&
-                  (() => {
-                    // Parse not_included field if it's a JSON string
-                    let notIncludedItems = [];
-                    if (Array.isArray(tripData.not_included)) {
-                      // Check if array contains a JSON string as first element
-                      if (
-                        tripData.not_included.length > 0 &&
-                        typeof tripData.not_included[0] === "string"
-                      ) {
-                        try {
-                          // Try to parse the first element as JSON
-                          const parsed = JSON.parse(tripData.not_included[0]);
-                          notIncludedItems = Array.isArray(parsed)
-                            ? parsed.filter((item) => item && item.trim())
-                            : [];
-                        } catch {
-                          // If parsing fails, treat as regular array
-                          notIncludedItems = tripData.not_included.filter(
-                            (item) => item && item.trim()
-                          );
-                        }
-                      } else {
-                        notIncludedItems = tripData.not_included.filter(
-                          (item) => item && item.trim()
-                        );
-                      }
-                    } else if (typeof tripData.not_included === "string") {
-                      try {
-                        const parsed = JSON.parse(tripData.not_included);
-                        notIncludedItems = Array.isArray(parsed)
-                          ? parsed.filter((item) => item && item.trim())
-                          : [];
-                      } catch {
-                        notIncludedItems = tripData.not_included
-                          .split(",")
-                          .map((item) => item.trim())
-                          .filter((item) => item);
-                      }
-                    }
-
-                    return notIncludedItems.length > 0 ? (
+                    {hasNotIncluded && (
                       <div
                         className={`bg-red-50 rounded-2xl shadow-xl p-8 ${
-                          !tripData?.included ||
-                          (Array.isArray(tripData.included) &&
-                            tripData.included.length === 0) ||
-                          (typeof tripData.included === "string" &&
-                            (!tripData.included.trim() ||
-                              tripData.included.trim() === "[]"))
-                            ? "md:col-span-2"
-                            : ""
+                          !hasIncluded ? "md:col-span-2" : ""
                         }`}
                       >
                         <h3 className="text-2xl font-bold text-red-800 mb-4 flex items-center">
@@ -704,10 +651,11 @@ const TripPage = ({ params }) => {
                           ))}
                         </ul>
                       </div>
-                    ) : null;
-                  })()}
-              </div>
-            )}
+                    )}
+                  </div>
+                );
+              })()}
+
             {tripData?.terms_and_conditions &&
               (() => {
                 // Parse terms_and_conditions field if it's a JSON string
