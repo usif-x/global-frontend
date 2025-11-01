@@ -1,11 +1,13 @@
 // app/courses/[id]/page.js
 
+"use client";
+
 import MarkdownRenderer from "@/components/ui/MarkdownRender";
-import { getData } from "@/lib/server-axios";
+import { getData } from "@/lib/axios";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const formatPrice = (courseData) => {
   if (!courseData.price_available) return "Inquire for Price";
@@ -81,20 +83,99 @@ const getCertificateIcon = (certificateType) => {
   }
 };
 
-// --- Main Server Component ---
+// --- Main Client Component ---
 
-const CourseDetailPage = async ({ params, searchParams }) => {
-  const { id } = await params;
+const CourseDetailPage = ({ params, searchParams }) => {
+  const [courseData, setCourseData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // STEP 1: FETCH DATA ON THE SERVER
-  let courseData;
+  // Lightbox functions
+  const openLightbox = (index) => {
+    setCurrentImageIndex(index);
+    setLightboxOpen(true);
+  };
 
-  try {
-    courseData = await getData(`/courses/${id}`);
-  } catch (error) {
-    // If the API returns a 404 or other error, this will be caught.
-    console.error(`Failed to fetch course ${id}:`, error.message);
-    notFound(); // Renders the not-found.js page
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+  };
+
+  const goToNextImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === courseData.images.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const goToPrevImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? courseData.images.length - 1 : prev - 1
+    );
+  };
+
+  useEffect(() => {
+    const loadCourseData = async () => {
+      try {
+        setLoading(true);
+        const { id } = await params;
+        const course = await getData(`/courses/${id}`);
+        setCourseData(course);
+      } catch (error) {
+        console.error(`Failed to fetch course:`, error.message);
+        setError("Course not found");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadCourseData();
+  }, [params]);
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!lightboxOpen) return;
+
+      if (e.key === "Escape") {
+        closeLightbox();
+      } else if (e.key === "ArrowLeft") {
+        goToPrevImage();
+      } else if (e.key === "ArrowRight") {
+        goToNextImage();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxOpen, courseData?.images?.length]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Icon
+          icon="lucide:loader-2"
+          className="w-8 h-8 animate-spin text-blue-600"
+        />
+      </div>
+    );
+  }
+
+  if (error || !courseData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 text-center">
+        <div>
+          <Icon
+            icon="lucide:alert-circle"
+            className="w-12 h-12 text-red-500 mx-auto mb-4"
+          />
+          <h1 className="text-2xl font-bold mb-2">Course Not Found</h1>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Link href="/courses" className="text-blue-600 font-semibold">
+            ← Back to Courses
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   // STEP 2: PREPARE DATA AND RENDER THE PAGE
@@ -204,7 +285,7 @@ const CourseDetailPage = async ({ params, searchParams }) => {
           {/* Left Column - Course Details */}
           <div className="lg:col-span-2 space-y-8">
             {/* Image Gallery */}
-            {courseData.images && courseData.images.length > 1 && (
+            {courseData.images && courseData.images.length > 0 && (
               <div className="bg-white rounded-2xl shadow-xl p-8">
                 <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
                   <Icon
@@ -217,15 +298,22 @@ const CourseDetailPage = async ({ params, searchParams }) => {
                   {courseData.images.map((image, index) => (
                     <div
                       key={index}
-                      className="relative aspect-video rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300"
+                      onClick={() => openLightbox(index)}
+                      className="relative aspect-video rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer"
                     >
                       <Image
                         src={image}
                         alt={`${courseData.name} - Image ${index + 1}`}
                         fill
-                        className="object-cover hover:scale-110 transition-transform duration-300"
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
                         sizes="(max-width: 768px) 50vw, 33vw"
                       />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                        <Icon
+                          icon="lucide:maximize-2"
+                          className="w-6 h-6 sm:w-8 sm:h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -475,6 +563,114 @@ const CourseDetailPage = async ({ params, searchParams }) => {
           </div>
         </div>
       </div>
+
+      {/* Image Lightbox Modal */}
+      {lightboxOpen && courseData.images && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-95">
+          {/* Close Button */}
+          <button
+            onClick={closeLightbox}
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-sm"
+          >
+            <Icon
+              icon="lucide:x"
+              className="w-5 h-5 sm:w-6 sm:h-6 text-white"
+            />
+          </button>
+
+          {/* Image Counter */}
+          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 sm:top-4 z-10 bg-white/10 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full">
+            <span className="text-white font-medium text-sm sm:text-base">
+              {currentImageIndex + 1} / {courseData.images.length}
+            </span>
+          </div>
+
+          {/* Previous Button */}
+          {courseData.images.length > 1 && (
+            <button
+              onClick={goToPrevImage}
+              className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-10 p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-sm"
+            >
+              <Icon
+                icon="lucide:chevron-left"
+                className="w-6 h-6 sm:w-8 sm:h-8 text-white"
+              />
+            </button>
+          )}
+
+          {/* Next Button */}
+          {courseData.images.length > 1 && (
+            <button
+              onClick={goToNextImage}
+              className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-10 p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-sm"
+            >
+              <Icon
+                icon="lucide:chevron-right"
+                className="w-6 h-6 sm:w-8 sm:h-8 text-white"
+              />
+            </button>
+          )}
+
+          {/* Main Image */}
+          <div
+            className="flex items-center justify-center h-full p-2 sm:p-4"
+            onClick={closeLightbox}
+          >
+            <div
+              className="relative w-full h-full max-w-6xl max-h-[90vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={courseData.images[currentImageIndex]}
+                alt={`${courseData.name} - Photo ${currentImageIndex + 1}`}
+                fill
+                className="object-contain"
+                quality={100}
+                priority
+              />
+            </div>
+          </div>
+
+          {/* Thumbnail Navigation */}
+          {courseData.images.length > 1 && (
+            <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 z-10 max-w-full sm:max-w-4xl w-full px-2 sm:px-4">
+              <div
+                className="flex gap-1.5 sm:gap-2 overflow-x-auto py-2 justify-start sm:justify-center"
+                style={{
+                  scrollbarWidth: "thin",
+                  scrollbarColor: "rgba(255,255,255,0.3) transparent",
+                }}
+              >
+                {courseData.images.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`relative flex-shrink-0 w-14 h-14 sm:w-20 sm:h-20 rounded-md sm:rounded-lg overflow-hidden transition-all ${
+                      index === currentImageIndex
+                        ? "ring-2 sm:ring-4 ring-white scale-105 sm:scale-110"
+                        : "ring-1 sm:ring-2 ring-white/30 hover:ring-white/60"
+                    }`}
+                  >
+                    <Image
+                      src={image}
+                      alt={`Thumbnail ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Keyboard Hint - Hidden on mobile */}
+          <div className="hidden sm:block absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
+            <span className="text-white/70 text-sm">
+              Use ← → keys or click thumbnails to navigate
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
