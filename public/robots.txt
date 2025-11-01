@@ -21,7 +21,7 @@ Allow: /image/
 Allow: /video/
 
 # Sitemap location
-Sitemap: https://www.topdivers.online/sitemap.xml
+Sitemap: https://topdivers.online/sitemap.xml
 
 # Crawl-delay (optional - prevents aggressive crawling)
 # Crawl-delay: 1
