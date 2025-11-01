@@ -378,10 +378,11 @@ const TripList = ({ onEdit, onAdd }) => {
       // Show all trips
       setFilteredTrips(trips);
     } else {
-      // Filter trips by selected package
+      // Filter trips by selected package using package_id field
       const filtered = trips.filter(
         (trip) =>
-          trip.package_ids && trip.package_ids.includes(selectedPackageId)
+          trip.package_id &&
+          trip.package_id.toString() === selectedPackageId.toString()
       );
       setFilteredTrips(filtered);
     }
@@ -483,49 +484,95 @@ const TripList = ({ onEdit, onAdd }) => {
 
           {/* Package Filter Tabs */}
           {packages.length > 0 && (
-            <div className="px-8 py-4 border-b border-slate-200/60 bg-slate-50/50">
-              <div className="flex items-center space-x-2 overflow-x-auto">
-                <span className="text-sm font-medium text-slate-600 whitespace-nowrap mr-4">
+            <div className="px-4 sm:px-8 py-4 border-b border-slate-200/60 bg-slate-50/50">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-slate-600 whitespace-nowrap mr-4 hidden sm:block">
                   Filter by Package:
                 </span>
 
-                {/* All Trips Tab */}
-                <button
-                  onClick={() => setSelectedPackageId(null)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex items-center space-x-2 ${
-                    selectedPackageId === null
-                      ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg"
-                      : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
-                  }`}
-                >
-                  <Icon icon="mdi:view-grid" className="w-4 h-4" />
-                  <span>All Trips ({trips.length})</span>
-                </button>
-
-                {/* Package Tabs */}
-                {packages.map((pkg) => {
-                  const tripCount = trips.filter(
-                    (trip) =>
-                      trip.package_ids && trip.package_ids.includes(pkg.id)
-                  ).length;
-
-                  return (
+                {/* Scrollable tabs container */}
+                <div className="flex-1 overflow-x-auto">
+                  <div className="flex items-center space-x-2 pb-2 min-w-max">
+                    {/* All Trips Tab */}
                     <button
-                      key={pkg.id}
-                      onClick={() => setSelectedPackageId(pkg.id)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex items-center space-x-2 ${
-                        selectedPackageId === pkg.id
-                          ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg"
-                          : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSelectedPackageId(null);
+                      }}
+                      className={`relative z-10 cursor-pointer px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap flex items-center space-x-1 sm:space-x-2 ${
+                        selectedPackageId === null
+                          ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg"
+                          : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 hover:shadow-md"
                       }`}
                     >
-                      <Icon icon="mdi:package-variant" className="w-4 h-4" />
-                      <span>
-                        {pkg.name} ({tripCount})
+                      <Icon
+                        icon="mdi:view-grid"
+                        className="w-3 h-3 sm:w-4 sm:h-4 pointer-events-none"
+                      />
+                      <span className="pointer-events-none">
+                        All ({trips.length})
                       </span>
                     </button>
-                  );
-                })}
+
+                    {/* Package Tabs */}
+                    {packages.map((pkg) => {
+                      const tripCount = trips.filter(
+                        (trip) =>
+                          trip.package_id &&
+                          trip.package_id.toString() === pkg.id.toString()
+                      ).length;
+
+                      return (
+                        <button
+                          key={pkg.id}
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setSelectedPackageId(pkg.id);
+                          }}
+                          className={`relative z-10 cursor-pointer px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap flex items-center space-x-1 sm:space-x-2 ${
+                            selectedPackageId &&
+                            selectedPackageId.toString() === pkg.id.toString()
+                              ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg"
+                              : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 hover:shadow-md"
+                          }`}
+                        >
+                          <Icon
+                            icon="mdi:package-variant"
+                            className="w-3 h-3 sm:w-4 sm:h-4 pointer-events-none"
+                          />
+                          <span className="hidden sm:inline pointer-events-none">
+                            {pkg.name}
+                          </span>
+                          <span className="sm:hidden pointer-events-none">
+                            {pkg.name.length > 8
+                              ? pkg.name.substring(0, 8) + "..."
+                              : pkg.name}
+                          </span>
+                          <span className="pointer-events-none">
+                            ({tripCount})
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Scroll indicator for mobile */}
+              <div className="flex justify-center mt-2 sm:hidden">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-slate-300 rounded-full"></div>
+                  <div className="w-2 h-2 bg-slate-300 rounded-full"></div>
+                  <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
+                  <div className="w-2 h-2 bg-slate-300 rounded-full"></div>
+                </div>
+                <span className="text-xs text-slate-500 ml-2">
+                  Swipe to see more
+                </span>
               </div>
             </div>
           )}
