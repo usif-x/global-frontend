@@ -1,4 +1,5 @@
 "use client";
+import PackageService from "@/services/packageService";
 import tripService from "@/services/tripService";
 import { Icon } from "@iconify/react";
 import { useEffect, useState } from "react";
@@ -336,26 +337,53 @@ const DeleteModal = ({ trip, onConfirm, onCancel, isLoading }) => {
 
 const TripList = ({ onEdit, onAdd }) => {
   const [trips, setTrips] = useState([]);
+  const [packages, setPackages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTrip, setSelectedTrip] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [selectedPackageId, setSelectedPackageId] = useState(null); // null means "All Trips"
+  const [filteredTrips, setFilteredTrips] = useState([]);
 
   useEffect(() => {
-    loadTrips();
+    loadTripsAndPackages();
   }, []);
 
-  const loadTrips = async () => {
+  // Filter trips when selectedPackageId or trips change
+  useEffect(() => {
+    filterTrips();
+  }, [selectedPackageId, trips]);
+
+  const loadTripsAndPackages = async () => {
     try {
       setIsLoading(true);
-      const data = await tripService.getAll();
-      setTrips(Array.isArray(data) ? data : []);
+      const [tripsData, packagesData] = await Promise.all([
+        tripService.getAll(),
+        PackageService.getAll(),
+      ]);
+      setTrips(Array.isArray(tripsData) ? tripsData : []);
+      setPackages(Array.isArray(packagesData) ? packagesData : []);
     } catch (error) {
-      console.error("Error loading trips:", error);
-      toast.error("Failed to load trips");
+      console.error("Error loading data:", error);
+      toast.error("Failed to load trips and packages");
       setTrips([]);
+      setPackages([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const filterTrips = () => {
+    if (!selectedPackageId) {
+      // Show all trips
+      setFilteredTrips(trips);
+    } else {
+      // Filter trips by selected package
+      const filtered = trips.filter(
+        (trip) =>
+          trip.package_ids && trip.package_ids.includes(selectedPackageId)
+      );
+      setFilteredTrips(filtered);
     }
   };
 
@@ -365,7 +393,8 @@ const TripList = ({ onEdit, onAdd }) => {
       setDeleteLoading(true);
       await tripService.delete(selectedTrip.id);
       toast.success("Trip deleted successfully!");
-      setTrips(trips.filter((trip) => trip.id !== selectedTrip.id));
+      const updatedTrips = trips.filter((trip) => trip.id !== selectedTrip.id);
+      setTrips(updatedTrips);
       setShowDeleteModal(false);
       setSelectedTrip(null);
     } catch (error) {
@@ -426,11 +455,19 @@ const TripList = ({ onEdit, onAdd }) => {
                   <div className="flex items-center space-x-1 text-sm text-slate-500">
                     <Icon icon="mdi:map-marker-multiple" className="w-4 h-4" />
                     <span>
-                      {trips.length} Trip{trips.length !== 1 ? "s" : ""}
+                      {filteredTrips.length} Trip
+                      {filteredTrips.length !== 1 ? "s" : ""}
+                      {selectedPackageId &&
+                        ` in ${
+                          packages.find((p) => p.id === selectedPackageId)
+                            ?.name || "Package"
+                        }`}
                     </span>
                   </div>
                   <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
-                  <span className="text-sm text-slate-500">Trip Managment</span>
+                  <span className="text-sm text-slate-500">
+                    Trip Management
+                  </span>
                 </div>
               </div>
             </div>
@@ -443,6 +480,55 @@ const TripList = ({ onEdit, onAdd }) => {
               <span className="relative z-10">Create New Trip</span>
             </button>
           </div>
+
+          {/* Package Filter Tabs */}
+          {packages.length > 0 && (
+            <div className="px-8 py-4 border-b border-slate-200/60 bg-slate-50/50">
+              <div className="flex items-center space-x-2 overflow-x-auto">
+                <span className="text-sm font-medium text-slate-600 whitespace-nowrap mr-4">
+                  Filter by Package:
+                </span>
+
+                {/* All Trips Tab */}
+                <button
+                  onClick={() => setSelectedPackageId(null)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex items-center space-x-2 ${
+                    selectedPackageId === null
+                      ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg"
+                      : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                  }`}
+                >
+                  <Icon icon="mdi:view-grid" className="w-4 h-4" />
+                  <span>All Trips ({trips.length})</span>
+                </button>
+
+                {/* Package Tabs */}
+                {packages.map((pkg) => {
+                  const tripCount = trips.filter(
+                    (trip) =>
+                      trip.package_ids && trip.package_ids.includes(pkg.id)
+                  ).length;
+
+                  return (
+                    <button
+                      key={pkg.id}
+                      onClick={() => setSelectedPackageId(pkg.id)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap flex items-center space-x-2 ${
+                        selectedPackageId === pkg.id
+                          ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg"
+                          : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                      }`}
+                    >
+                      <Icon icon="mdi:package-variant" className="w-4 h-4" />
+                      <span>
+                        {pkg.name} ({tripCount})
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="p-6">
@@ -473,9 +559,36 @@ const TripList = ({ onEdit, onAdd }) => {
                 <span>Plan Your First Trip</span>
               </button>
             </div>
+          ) : filteredTrips.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-slate-500">
+              <div className="relative mb-6">
+                <div className="w-24 h-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center">
+                  <Icon
+                    icon="mdi:package-variant-closed"
+                    className="w-12 h-12 text-slate-400"
+                  />
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-slate-700 mb-2">
+                No trips in this package
+              </h3>
+              <p className="text-slate-500 mb-6 text-center max-w-sm">
+                The selected package "
+                {packages.find((p) => p.id === selectedPackageId)?.name ||
+                  "Unknown"}
+                " doesn't contain any trips yet.
+              </p>
+              <button
+                onClick={() => setSelectedPackageId(null)}
+                className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+              >
+                <Icon icon="mdi:view-grid" className="w-5 h-5" />
+                <span>View All Trips</span>
+              </button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {trips.map((trip) => (
+              {filteredTrips.map((trip) => (
                 <TripCard
                   key={trip.id}
                   trip={trip}
