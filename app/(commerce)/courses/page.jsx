@@ -343,7 +343,10 @@ const CoursesPage = async () => {
                             icon="lucide:clock"
                             className="w-4 h-4 text-gray-400"
                           />
-                          <span>{formatDuration(course.course_duration)}</span>
+                          <span>
+                            {course.course_duration}{" "}
+                            {course.course_duration_unit}
+                          </span>
                         </div>
 
                         <div className="text-right">

@@ -290,7 +290,7 @@ const CourseCard = ({ course }) => {
             <div className="flex flex-col items-center space-y-1">
               <Icon icon="lucide:clock" className="w-5 h-5 text-gray-400" />
               <span className="font-medium">
-                {formatDuration(course.course_duration)}
+                {course.course_duration} {course.course_duration_unit}
               </span>
             </div>
             <div className="flex flex-col items-center space-y-1">
