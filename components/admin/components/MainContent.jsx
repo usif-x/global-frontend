@@ -66,51 +66,62 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
     const interval = setInterval(fetchDashboardData, 180000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [admin]);
 
   /**
    * Fetches and processes all data required for the dashboard.
    * Enhanced with better error handling and data processing.
+   * Filters data based on admin level.
    */
   const fetchDashboardData = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      // Fetch all required data in parallel for better performance
-      const [analyticsRes, usersRes, invoiceSummaryRes] =
-        await Promise.allSettled([
-          AnalyticsService.getAll(),
-          AdminService.getRecentUsers(),
-          InvoiceService.getInvoiceSummaryAdmin(),
-        ]);
+      // Determine what data to fetch based on admin level
+      const isLevel2Admin = admin?.admin_level === 2;
+
+      // Fetch analytics and users for all admin levels
+      const promises = [
+        AnalyticsService.getAll(),
+        AdminService.getRecentUsers(),
+      ];
+
+      // Only fetch invoice data for level 2 admins
+      if (isLevel2Admin) {
+        promises.push(InvoiceService.getInvoiceSummaryAdmin());
+      }
+
+      const results = await Promise.allSettled(promises);
 
       let newStats = { ...stats };
 
       // Process analytics data - services return res.data directly
-      if (analyticsRes.status === "fulfilled" && analyticsRes.value) {
-        const analyticsData = analyticsRes.value;
+      if (results[0].status === "fulfilled" && results[0].value) {
+        const analyticsData = results[0].value;
         newStats = { ...newStats, ...analyticsData };
         console.log("Analytics data loaded:", analyticsData);
       } else {
-        console.warn("Failed to load analytics data:", analyticsRes.reason);
+        console.warn("Failed to load analytics data:", results[0].reason);
       }
 
-      // Process invoice summary data - services return res.data directly
-      if (invoiceSummaryRes.status === "fulfilled" && invoiceSummaryRes.value) {
-        const invoiceData = invoiceSummaryRes.value;
-        newStats = { ...newStats, ...invoiceData };
-        console.log("Invoice data loaded:", invoiceData);
-      } else {
-        console.warn("Failed to load invoice data:", invoiceSummaryRes.reason);
+      // Process invoice summary data - only for level 2 admins
+      if (isLevel2Admin && results[2]) {
+        if (results[2].status === "fulfilled" && results[2].value) {
+          const invoiceData = results[2].value;
+          newStats = { ...newStats, ...invoiceData };
+          console.log("Invoice data loaded:", invoiceData);
+        } else {
+          console.warn("Failed to load invoice data:", results[2].reason);
+        }
       }
 
       // Update the main stats state with all new data
       setStats(newStats);
 
       // Process users data for the "Recent Users" list - services return res.data directly
-      if (usersRes.status === "fulfilled" && usersRes.value) {
-        const users = usersRes.value;
+      if (results[1].status === "fulfilled" && results[1].value) {
+        const users = results[1].value;
         // Sort by creation date to ensure we have the newest first
         const sortedUsers = [...users].sort(
           (a, b) => new Date(b.created_at) - new Date(a.created_at)
@@ -118,7 +129,7 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
         setRecentUsers(sortedUsers.slice(0, 6)); // Show only top 6 for better UI
         console.log("Users data loaded:", users.length, "users");
       } else {
-        console.warn("Failed to load users data:", usersRes.reason);
+        console.warn("Failed to load users data:", results[1].reason);
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -132,20 +143,27 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
 
   // Enhanced stats cards with more meaningful data
   const statsCards = [
-    {
-      title: "Total Revenue",
-      value: `$${(stats.total_revenue || 0).toLocaleString()}`,
-      icon: "mdi:cash-multiple",
-      color: "bg-green-500",
-      change: `$${(stats.paid_amount || 0).toLocaleString()} collected`,
-      changeType: "positive",
-      tab: "invoices",
-      tooltip: "Click to view all invoices",
-      subText: `${calculateConversionRate(
-        stats.paid_amount,
-        stats.total_revenue
-      )}% conversion rate`,
-    },
+    // Level 2 Admin: Show revenue card
+    ...(admin?.admin_level === 2
+      ? [
+          {
+            title: "Total Revenue",
+            value: `$${(stats.total_revenue || 0).toLocaleString()}`,
+            icon: "mdi:cash-multiple",
+            color: "bg-green-500",
+            change: `$${(stats.paid_amount || 0).toLocaleString()} collected`,
+            changeType: "positive",
+            tab: "invoices",
+            tooltip: "Click to view all invoices",
+            subText: `${calculateConversionRate(
+              stats.paid_amount,
+              stats.total_revenue
+            )}% conversion rate`,
+          },
+        ]
+      : []),
+
+    // All admin levels: Users card
     {
       title: "Total Users",
       value: (stats.users_count || 0).toLocaleString(),
@@ -160,19 +178,29 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
           ? `${stats.blocked_users_count} blocked`
           : "All users active",
     },
-    {
-      title: "Pending Invoices",
-      value: (stats.pending_count || 0).toLocaleString(),
-      icon: "mdi:clock-outline",
-      color: "bg-orange-500",
-      change: `$${(stats.pending_amount_total || 0).toLocaleString()} pending`,
-      changeType: stats.pending_count > 0 ? "warning" : "neutral",
-      tab: "invoices",
-      tooltip: "Click to review pending payments",
-      subText: `${stats.paid_count || 0} paid, ${
-        stats.failed_count || 0
-      } failed`,
-    },
+
+    // Level 2 Admin: Pending invoices card
+    ...(admin?.admin_level === 2
+      ? [
+          {
+            title: "Pending Invoices",
+            value: (stats.pending_count || 0).toLocaleString(),
+            icon: "mdi:clock-outline",
+            color: "bg-orange-500",
+            change: `$${(
+              stats.pending_amount_total || 0
+            ).toLocaleString()} pending`,
+            changeType: stats.pending_count > 0 ? "warning" : "neutral",
+            tab: "invoices",
+            tooltip: "Click to review pending payments",
+            subText: `${stats.paid_count || 0} paid, ${
+              stats.failed_count || 0
+            } failed`,
+          },
+        ]
+      : []),
+
+    // All admin levels: Content & Reviews card
     {
       title: "Content & Reviews",
       value: `${stats.trips_count || 0}/${stats.testimonials_count || 0}`,
@@ -187,6 +215,23 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
         stats.packages_count || 0
       } packages, ${stats.courses_count || 0} courses`,
     },
+
+    // Level 1 Admin: Additional stats to fill the gap
+    ...(admin?.admin_level === 1
+      ? [
+          {
+            title: "Best Selling Items",
+            value: "Top Picks",
+            icon: "mdi:fire",
+            color: "bg-red-500",
+            change: "Manage bestsellers",
+            changeType: "positive",
+            tab: "best_selling",
+            tooltip: "Click to manage best selling items",
+            subText: "Update rankings and featured items",
+          },
+        ]
+      : []),
   ];
 
   const quickActions = [
@@ -209,13 +254,18 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
       action: () => setActiveTab("users"),
       description: `${stats.users_count || 0} total users`,
     },
-    {
-      title: "Invoice Management",
-      icon: "mdi:receipt",
-      action: () => setActiveTab("invoices"),
-      description: `${stats.pending_invoices || 0} pending payments`,
-      urgent: stats.pending_invoices > 0,
-    },
+    // Only show for Level 2 admins
+    ...(admin?.admin_level === 2
+      ? [
+          {
+            title: "Invoice Management",
+            icon: "mdi:receipt",
+            action: () => setActiveTab("invoices"),
+            description: `${stats.pending_invoices || 0} pending payments`,
+            urgent: stats.pending_invoices > 0,
+          },
+        ]
+      : []),
     {
       title: "Gallery Management",
       icon: "mdi:image-multiple",
@@ -227,6 +277,12 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
       icon: "mdi:school",
       action: () => setActiveTab("courses"),
       description: `${stats.courses_count || 0} active courses`,
+    },
+    {
+      title: "Best Selling Items",
+      icon: "mdi:fire",
+      action: () => setActiveTab("best_selling"),
+      description: "Manage featured items",
     },
   ];
 
@@ -295,12 +351,22 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
                 <Icon icon="mdi:account-multiple" className="w-4 h-4 mr-1" />
                 <span>{stats.active_users_count} active users</span>
               </div>
-              <div className="flex items-center">
-                <Icon icon="mdi:cash" className="w-4 h-4 mr-1" />
-                <span>
-                  ${(stats.paid_amount || 0).toLocaleString()} revenue
-                </span>
-              </div>
+              {/* Only show revenue for Level 2 admins */}
+              {admin?.admin_level === 2 && (
+                <div className="flex items-center">
+                  <Icon icon="mdi:cash" className="w-4 h-4 mr-1" />
+                  <span>
+                    ${(stats.paid_amount || 0).toLocaleString()} revenue
+                  </span>
+                </div>
+              )}
+              {/* Show content stats for Level 1 admins instead */}
+              {admin?.admin_level === 1 && (
+                <div className="flex items-center">
+                  <Icon icon="mdi:airplane" className="w-4 h-4 mr-1" />
+                  <span>{stats.trips_count || 0} trips available</span>
+                </div>
+              )}
               {stats.unaccepted_testimonials_count > 0 && (
                 <div className="flex items-center bg-orange-500 bg-opacity-30 px-2 py-1 rounded">
                   <Icon icon="mdi:bell" className="w-4 h-4 mr-1" />

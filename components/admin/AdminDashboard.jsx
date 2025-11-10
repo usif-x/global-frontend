@@ -159,37 +159,48 @@ const AdminDashboard = () => {
 
   const loadNotifications = async () => {
     try {
-      const [analyticsRes, invoiceRes, usersRes] = await Promise.allSettled([
+      // Determine what data to fetch based on admin level
+      const isLevel2Admin = admin?.admin_level === 2;
+
+      const promises = [
         AnalyticsService.getAll(),
-        InvoiceService.getInvoiceSummaryAdmin(),
         AdminService.getUsers({ page: 1, pageSize: 10 }),
-      ]);
+      ];
+
+      // Only fetch invoice data for level 2 admins
+      if (isLevel2Admin) {
+        promises.push(InvoiceService.getInvoiceSummaryAdmin());
+      }
+
+      const results = await Promise.allSettled(promises);
 
       let stats = {};
       let newNotifications = [];
 
       // Process analytics data
-      if (analyticsRes.status === "fulfilled" && analyticsRes.value) {
-        stats = { ...stats, ...analyticsRes.value };
-      }
-
-      // Process invoice data
-      if (invoiceRes.status === "fulfilled" && invoiceRes.value) {
-        stats = { ...stats, ...invoiceRes.value };
+      if (results[0].status === "fulfilled" && results[0].value) {
+        stats = { ...stats, ...results[0].value };
       }
 
       // Count new users (registered today)
-      if (usersRes.status === "fulfilled" && usersRes.value?.users) {
+      if (results[1].status === "fulfilled" && results[1].value?.users) {
         const today = new Date().toDateString();
-        const newUsersToday = usersRes.value.users.filter(
+        const newUsersToday = results[1].value.users.filter(
           (user) => new Date(user.created_at).toDateString() === today
         ).length;
         stats.new_users_today = newUsersToday;
       }
 
+      // Process invoice data only for level 2 admins
+      if (isLevel2Admin && results[2]) {
+        if (results[2].status === "fulfilled" && results[2].value) {
+          stats = { ...stats, ...results[2].value };
+        }
+      }
+
       setNotificationStats(stats);
 
-      // Generate notifications based on stats
+      // Generate notifications based on stats and admin level
       if (stats.unaccepted_testimonials_count > 0) {
         newNotifications.push({
           id: "testimonials",
@@ -205,34 +216,39 @@ const AdminDashboard = () => {
         });
       }
 
-      if (stats.pending_invoices > 0) {
-        newNotifications.push({
-          id: "invoices",
-          title: "Pending Payments",
-          message: `${stats.pending_invoices} invoice${
-            stats.pending_invoices > 1 ? "s" : ""
-          } pending payment ($${stats.pending_amount?.toLocaleString() || 0})`,
-          icon: "mdi:cash-clock",
-          color: "bg-blue-500",
-          priority: "high",
-          time: "Now",
-          action: "invoices",
-        });
-      }
+      // Only add invoice-related notifications for level 2 admins
+      if (isLevel2Admin) {
+        if (stats.pending_invoices > 0) {
+          newNotifications.push({
+            id: "invoices",
+            title: "Pending Payments",
+            message: `${stats.pending_invoices} invoice${
+              stats.pending_invoices > 1 ? "s" : ""
+            } pending payment ($${
+              stats.pending_amount?.toLocaleString() || 0
+            })`,
+            icon: "mdi:cash-clock",
+            color: "bg-blue-500",
+            priority: "high",
+            time: "Now",
+            action: "invoices",
+          });
+        }
 
-      if (stats.failed_invoices > 0) {
-        newNotifications.push({
-          id: "failed-invoices",
-          title: "Failed Payments",
-          message: `${stats.failed_invoices} payment${
-            stats.failed_invoices > 1 ? "s" : ""
-          } failed ($${stats.failed_amount?.toLocaleString() || 0})`,
-          icon: "mdi:alert-circle",
-          color: "bg-red-500",
-          priority: "high",
-          time: "Now",
-          action: "invoices",
-        });
+        if (stats.failed_invoices > 0) {
+          newNotifications.push({
+            id: "failed-invoices",
+            title: "Failed Payments",
+            message: `${stats.failed_invoices} payment${
+              stats.failed_invoices > 1 ? "s" : ""
+            } failed ($${stats.failed_amount?.toLocaleString() || 0})`,
+            icon: "mdi:alert-circle",
+            color: "bg-red-500",
+            priority: "high",
+            time: "Now",
+            action: "invoices",
+          });
+        }
       }
 
       if (stats.new_users_today > 0) {
@@ -255,13 +271,19 @@ const AdminDashboard = () => {
       const hour = now.getHours();
 
       if (hour === 9 && notifications.length === 0) {
-        // Morning summary
+        // Morning summary - different for each admin level
+        const summaryMessage = isLevel2Admin
+          ? `You have ${stats.users_count || 0} total users and $${
+              stats.paid_amount?.toLocaleString() || 0
+            } in revenue`
+          : `You have ${stats.users_count || 0} total users, ${
+              stats.trips_count || 0
+            } trips, and ${stats.courses_count || 0} courses`;
+
         newNotifications.push({
           id: "morning-summary",
           title: "Good Morning!",
-          message: `You have ${stats.users_count || 0} total users and $${
-            stats.paid_amount?.toLocaleString() || 0
-          } in revenue`,
+          message: summaryMessage,
           icon: "mdi:weather-sunny",
           color: "bg-yellow-500",
           priority: "low",
@@ -307,12 +329,17 @@ const AdminDashboard = () => {
       icon: "mdi:airplane",
       color: "text-green-500",
     },
-    {
-      id: "packages",
-      label: "Packages",
-      icon: "mdi:package-variant",
-      color: "text-purple-500",
-    },
+    // Only show packages for level 2 admins or remove this restriction if level 1 should see packages
+    ...(admin?.admin_level === 2
+      ? [
+          {
+            id: "packages",
+            label: "Packages",
+            icon: "mdi:package-variant",
+            color: "text-purple-500",
+          },
+        ]
+      : []),
     {
       id: "courses",
       label: "Courses",
@@ -337,13 +364,18 @@ const AdminDashboard = () => {
       icon: "mdi:image-multiple",
       color: "text-pink-500",
     },
-    {
-      id: "divecenters",
-      label: "Dive Centers",
-      icon: "mdi:diving",
-      color: "text-teal-500",
-    },
-
+    // Only show dive centers for level 2 admins
+    ...(admin?.admin_level === 2
+      ? [
+          {
+            id: "divecenters",
+            label: "Dive Centers",
+            icon: "mdi:diving",
+            color: "text-teal-500",
+          },
+        ]
+      : []),
+    // Level 2 admin only items
     ...(admin?.admin_level === 2
       ? [
           {
@@ -352,10 +384,6 @@ const AdminDashboard = () => {
             icon: "mdi:receipt-text-check-outline",
             color: "text-lime-500",
           },
-        ]
-      : []),
-    ...(admin?.admin_level === 2
-      ? [
           {
             id: "admins",
             label: "Admins",
@@ -374,6 +402,7 @@ const AdminDashboard = () => {
           ? notificationStats.unaccepted_testimonials_count
           : null,
     },
+    // Level 2 admin only - invoice and payment related
     ...(admin?.admin_level === 2
       ? [
           {
@@ -386,10 +415,6 @@ const AdminDashboard = () => {
                 ? notificationStats.pending_invoices
                 : null,
           },
-        ]
-      : []),
-    ...(admin?.admin_level === 2
-      ? [
           {
             id: "payments",
             label: "Payments",
@@ -404,6 +429,7 @@ const AdminDashboard = () => {
       icon: "mdi:chart-line",
       color: "text-pink-500",
     },
+    // Level 2 admin only - settings
     ...(admin?.admin_level === 2
       ? [
           {
@@ -417,6 +443,43 @@ const AdminDashboard = () => {
   ];
 
   const renderContent = () => {
+    // Prevent level 1 admins from accessing restricted content
+    const isLevel2Admin = admin?.admin_level === 2;
+    const restrictedTabs = [
+      "invoices",
+      "payments",
+      "orders",
+      "admins",
+      "settings",
+      "divecenters",
+      "packages",
+    ];
+
+    if (!isLevel2Admin && restrictedTabs.includes(activeTab)) {
+      return (
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <Icon
+              icon="mdi:shield-lock"
+              className="w-16 h-16 text-red-500 mx-auto mb-4"
+            />
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              Access Restricted
+            </h3>
+            <p className="text-gray-600 mb-4">
+              You don't have permission to access this section.
+            </p>
+            <button
+              onClick={() => setActiveTab("dashboard")}
+              className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+            >
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     switch (activeTab) {
       case "dashboard":
         return <HeroDashboard setActiveTab={setActiveTab} admin={admin} />;
@@ -449,7 +512,7 @@ const AdminDashboard = () => {
       case "settings":
         return <AdminSettingsPage />;
       default:
-        return <HeroDashboard />;
+        return <HeroDashboard setActiveTab={setActiveTab} admin={admin} />;
     }
   };
 
