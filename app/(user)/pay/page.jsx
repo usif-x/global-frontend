@@ -82,6 +82,56 @@ const SuccessDisplay = ({ invoice }) => (
     <p className="text-green-700 mt-2 mb-6">
       Your payment has been confirmed. Thank you for your booking!
     </p>
+
+    {/* Pickup Confirmation Notice */}
+    {invoice.picked_up === false && (
+      <div className="bg-blue-50 border-l-4 border-blue-500 p-6 mb-6 text-left rounded-lg">
+        <div className="flex items-start space-x-3">
+          <Icon
+            icon="lucide:info"
+            className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1"
+          />
+          <div>
+            <h3 className="text-lg font-bold text-blue-800 mb-2">
+              Next Step: Confirm Your Trip
+            </h3>
+            <p className="text-blue-700 mb-3">
+              Your payment was successful! Please contact us to confirm your
+              trip details and provide any additional important information.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href="https://www.facebook.com/profile.php?id=61579625321316"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+              >
+                <Icon icon="mdi:facebook" className="w-5 h-5" />
+                <span>Message on Facebook</span>
+              </a>
+              <a
+                href="https://www.instagram.com/topdivers.hurghada"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors text-sm font-medium"
+              >
+                <Icon icon="mdi:instagram" className="w-5 h-5" />
+                <span>Message on Instagram</span>
+              </a>
+              <a
+                href="https://api.whatsapp.com/send?phone=201070440861&text=Hello! I've completed payment for invoice {invoice.customer_reference}"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+              >
+                <Icon icon="mdi:whatsapp" className="w-5 h-5" />
+                <span>WhatsApp Us</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
     <div className="bg-white p-6 rounded-lg border space-y-3 text-left">
       <div className="flex justify-between items-center">
         <span className="text-slate-500">Invoice Ref:</span>

@@ -590,6 +590,13 @@ export default function MyInvoicesPage() {
   const currencyNote =
     "Please note: All summary totals on this page are shown in Egyptian Pounds (EGP) for consistency. When you proceed to payment for a pending invoice, you will be charged in the currency you originally selected during booking (e.g., USD, EUR). The payment provider will handle the final conversion.";
 
+  // Check for paid but unpicked invoices
+  const unpickedInvoices = useMemo(() => {
+    return allInvoices.filter(
+      (inv) => inv.status.toLowerCase() === "paid" && inv.picked_up === false
+    );
+  }, [allInvoices]);
+
   return (
     <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen pt-20">
       <div className="container mx-auto p-4 sm:p-6 lg:p-8">
@@ -610,6 +617,91 @@ export default function MyInvoicesPage() {
         </div>
 
         <InfoBanner message={currencyNote} />
+
+        {/* Unpicked Invoices Alert */}
+        {unpickedInvoices.length > 0 && (
+          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-l-4 border-blue-500 p-6 rounded-r-xl mb-6 shadow-lg">
+            <div className="flex items-start space-x-4">
+              <Icon
+                icon="mdi:information"
+                className="w-8 h-8 text-blue-600 flex-shrink-0 mt-1"
+              />
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-blue-900 mb-3">
+                  Action Required: Confirm Your Trip
+                  {unpickedInvoices.length > 1 ? "s" : ""}
+                </h3>
+                <p className="text-blue-800 mb-4">
+                  You have {unpickedInvoices.length} paid invoice
+                  {unpickedInvoices.length > 1 ? "s" : ""} that need
+                  {unpickedInvoices.length === 1 ? "s" : ""} confirmation.
+                  Please contact us to finalize your trip details and provide
+                  any additional important information.
+                </p>
+
+                {/* List of unpicked invoices */}
+                <div className="space-y-2 mb-4">
+                  {unpickedInvoices.map((inv) => (
+                    <div
+                      key={inv.id}
+                      className="bg-white/60 rounded-lg p-3 flex items-center justify-between"
+                    >
+                      <div>
+                        <span className="font-semibold text-blue-900">
+                          Invoice:{" "}
+                        </span>
+                        <a
+                          href={`/invoices/${inv.id}`}
+                          className="font-mono text-blue-600 hover:text-blue-800 underline font-medium"
+                        >
+                          {inv.customer_reference}
+                        </a>
+                        <span className="text-slate-600 ml-3">
+                          ({inv.activity})
+                        </span>
+                      </div>
+                      <span className="text-green-600 font-semibold flex items-center gap-1">
+                        <Icon icon="mdi:check-circle" className="w-4 h-4" />
+                        Paid
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Contact options */}
+                <div className="flex flex-wrap gap-3">
+                  <a
+                    href="https://www.facebook.com/profile.php?id=61579625321316"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold shadow-md hover:shadow-lg"
+                  >
+                    <Icon icon="mdi:facebook" className="w-5 h-5" />
+                    <span>Message on Facebook</span>
+                  </a>
+                  <a
+                    href="https://www.instagram.com/topdivers.hurghada"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2.5 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors text-sm font-semibold shadow-md hover:shadow-lg"
+                  >
+                    <Icon icon="mdi:instagram" className="w-5 h-5" />
+                    <span>Message on Instagram</span>
+                  </a>
+                  <a
+                    href="https://api.whatsapp.com/send?phone=201070440861&text=Hello! I need to confirm my trip details"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2.5 rounded-lg hover:bg-green-700 transition-colors text-sm font-semibold shadow-md hover:shadow-lg"
+                  >
+                    <Icon icon="mdi:whatsapp" className="w-5 h-5" />
+                    <span>WhatsApp Us</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {summary && !loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
