@@ -13,6 +13,8 @@ const Navbar = () => {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [isNotificationVisible, setIsNotificationVisible] = useState(false);
 
   const pathname = usePathname();
   const authStore = useAuthStore();
@@ -28,7 +30,27 @@ const Navbar = () => {
 
   useEffect(() => {
     setIsMounted(true);
+    const fetchNotifications = async () => {
+      try {
+        const data = await PublicNotificationService.getAll(0, 10);
+        if (Array.isArray(data) && data.length > 0) {
+          const dismissed = sessionStorage.getItem("notification_dismissed");
+          if (!dismissed) {
+            setNotifications(data);
+            setIsNotificationVisible(true);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch notifications", error);
+      }
+    };
+    fetchNotifications();
   }, []);
+
+  const handleDismissNotification = () => {
+    setIsNotificationVisible(false);
+    sessionStorage.setItem("notification_dismissed", "true");
+  };
 
   const TripsDropdownRef = useRef(null);
   const coursesDropdownRef = useRef(null);
@@ -104,9 +126,19 @@ const Navbar = () => {
 
   return (
     <>
+      {isNotificationVisible && (
+        <div className="fixed top-0 left-0 right-0 z-[1100]">
+          <PublicNotificationDisplay
+            notifications={notifications}
+            onDismiss={handleDismissNotification}
+          />
+        </div>
+      )}
       {/* Main Navbar */}
       <nav
-        className={`fixed top-2 sm:top-4 z-[1000] left-2 right-2 md:left-0 md:right-0 w-[calc(100%-1rem)] md:w-[85%] lg:w-[80%] mx-auto rounded-xl sm:rounded-2xl md:rounded-3xl transition-all duration-500 ease-out ${
+        className={`fixed z-[1000] left-2 right-2 md:left-0 md:right-0 w-[calc(100%-1rem)] md:w-[85%] lg:w-[80%] mx-auto rounded-xl sm:rounded-2xl md:rounded-3xl transition-all duration-500 ease-out ${
+          isNotificationVisible ? "top-14 sm:top-16" : "top-2 sm:top-4"
+        } ${
           hasScrolled || isMobileMenuOpen
             ? "bg-gray-900 backdrop-blur-2xl shadow-2xl border border-white/15"
             : "bg-black/20 backdrop-blur-sm border border-white/5"

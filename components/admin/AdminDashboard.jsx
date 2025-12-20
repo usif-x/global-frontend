@@ -22,6 +22,7 @@ import CourseManagement from "./components/course/Course";
 import InvoiceManagementPage from "./components/invoices/Invoices";
 import HeroDashboard from "./components/MainContent";
 import OrderManagement from "./components/order/Order";
+import PublicNotificationManagement from "./components/public-notifications/PublicNotification";
 import AdminSettingsPage from "./components/setting/Setting";
 
 // Notification Component
@@ -409,6 +410,12 @@ const AdminDashboard = () => {
           ? notificationStats.unaccepted_testimonials_count
           : null,
     },
+    {
+      id: "public_notifications",
+      label: "Notifications",
+      icon: "mdi:bell-ring",
+      color: "text-orange-500",
+    },
     // Level 2 admin only - invoice and payment related
     ...(admin?.admin_level === 2
       ? [
@@ -512,6 +519,8 @@ const AdminDashboard = () => {
         return <AdminManagementPage />;
       case "testimonials":
         return <TestimonialManagementPage />;
+      case "public_notifications":
+        return <PublicNotificationManagement />;
       case "invoices":
         return <InvoiceManagementPage />;
       case "payments":
