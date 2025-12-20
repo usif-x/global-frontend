@@ -27,7 +27,7 @@ class PublicNotificationService {
    * Corresponds to: POST /public-notifications/
    */
   static async create(data) {
-    return await postData("/public-notifications/", data);
+    return await postData("/public-notifications/", data, true);
   }
 
   /**
@@ -38,7 +38,7 @@ class PublicNotificationService {
    * Corresponds to: PUT /public-notifications/{id}
    */
   static async update(id, data) {
-    return await putData(`/public-notifications/${id}`, data);
+    return await putData(`/public-notifications/${id}`, data, true);
   }
 
   /**
@@ -48,7 +48,7 @@ class PublicNotificationService {
    * Corresponds to: DELETE /public-notifications/{id}
    */
   static async delete(id) {
-    return await deleteData(`/public-notifications/${id}`);
+    return await deleteData(`/public-notifications/${id}`, true);
   }
 }
 
