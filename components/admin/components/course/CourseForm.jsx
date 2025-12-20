@@ -15,6 +15,9 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [currentStep, setCurrentStep] = useState(1);
+  const [allCourses, setAllCourses] = useState([]);
+  const [selectedCourseForImport, setSelectedCourseForImport] = useState(null);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(false);
 
   // Updated state to match the new schema
   const [formData, setFormData] = useState({
@@ -71,6 +74,26 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
     }
   }, [course]);
 
+  // Load all courses for import functionality
+  useEffect(() => {
+    const loadCourses = async () => {
+      setIsLoadingCourses(true);
+      try {
+        const coursesData = await CourseService.getAll();
+        // Filter out current course if editing
+        const filteredCourses = course
+          ? coursesData.filter((c) => c.id !== course.id)
+          : coursesData;
+        setAllCourses(filteredCourses);
+      } catch (error) {
+        console.error("Failed to load courses for import:", error);
+      } finally {
+        setIsLoadingCourses(false);
+      }
+    };
+    loadCourses();
+  }, [course]);
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -107,6 +130,46 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
       ...prev,
       existing_images: prev.existing_images.filter((_, i) => i !== index),
     }));
+  };
+
+  const handleImportImages = () => {
+    if (!selectedCourseForImport) {
+      toast.error("Please select a course to import images from");
+      return;
+    }
+
+    const selectedCourse = allCourses.find(
+      (c) => c.id === parseInt(selectedCourseForImport)
+    );
+
+    if (
+      !selectedCourse ||
+      !selectedCourse.images ||
+      selectedCourse.images.length === 0
+    ) {
+      toast.error("Selected course has no images to import");
+      return;
+    }
+
+    // Add images from selected course to existing_images
+    const newImages = selectedCourse.images.filter(
+      (img) => !formData.existing_images.includes(img)
+    );
+
+    if (newImages.length === 0) {
+      toast.info("All images from this course are already added");
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      existing_images: [...prev.existing_images, ...newImages],
+    }));
+
+    toast.success(
+      `Imported ${newImages.length} image(s) from ${selectedCourse.name}`
+    );
+    setSelectedCourseForImport(null);
   };
 
   // Content management functions
@@ -994,6 +1057,131 @@ const CourseForm = ({ course = null, onSuccess, onCancel }) => {
                 <Icon icon="mdi:plus-circle" className="w-4 h-4" />
                 <span>Add Image</span>
               </button>
+            </div>
+
+            {/* Import Images from Another Course */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200 mb-6">
+              <div className="flex items-start space-x-3 mb-4">
+                <Icon
+                  icon="mdi:import"
+                  className="w-6 h-6 text-blue-600 mt-0.5 flex-shrink-0"
+                />
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-slate-800 mb-1">
+                    Import Images from Another Course
+                  </h4>
+                  <p className="text-xs text-slate-600">
+                    Select an existing course to import its images
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {isLoadingCourses ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Icon
+                      icon="mdi:loading"
+                      className="w-6 h-6 text-blue-500 animate-spin"
+                    />
+                    <span className="ml-2 text-sm text-slate-600">
+                      Loading courses...
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    <select
+                      value={selectedCourseForImport || ""}
+                      onChange={(e) =>
+                        setSelectedCourseForImport(e.target.value)
+                      }
+                      className="w-full px-4 py-2.5 bg-white border border-blue-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      disabled={isLoading || allCourses.length === 0}
+                    >
+                      <option value="">
+                        {allCourses.length === 0
+                          ? "No courses available"
+                          : "Select a course to import from..."}
+                      </option>
+                      {allCourses.map((courseItem) => (
+                        <option key={courseItem.id} value={courseItem.id}>
+                          {courseItem.name} ({courseItem.images?.length || 0}{" "}
+                          image
+                          {courseItem.images?.length !== 1 ? "s" : ""})
+                        </option>
+                      ))}
+                    </select>
+
+                    {selectedCourseForImport && (
+                      <div className="bg-white rounded-lg p-4 border border-blue-200">
+                        {(() => {
+                          const selectedCourse = allCourses.find(
+                            (c) => c.id === parseInt(selectedCourseForImport)
+                          );
+                          return selectedCourse ? (
+                            <div className="space-y-3">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-slate-800">
+                                    {selectedCourse.name}
+                                  </p>
+                                  <p className="text-xs text-slate-600 mt-1">
+                                    {selectedCourse.images?.length || 0}{" "}
+                                    image(s) available
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={handleImportImages}
+                                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+                                  disabled={
+                                    isLoading ||
+                                    !selectedCourse.images ||
+                                    selectedCourse.images.length === 0
+                                  }
+                                >
+                                  <Icon icon="mdi:import" className="w-4 h-4" />
+                                  <span>Import Images</span>
+                                </button>
+                              </div>
+
+                              {selectedCourse.images &&
+                                selectedCourse.images.length > 0 && (
+                                  <div className="grid grid-cols-4 gap-2 mt-3">
+                                    {selectedCourse.images
+                                      .slice(0, 4)
+                                      .map((img, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="aspect-square rounded-lg overflow-hidden border-2 border-slate-200"
+                                        >
+                                          <img
+                                            src={img}
+                                            alt={`Preview ${idx + 1}`}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                              e.target.src =
+                                                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24"><path fill="%23ccc" d="M21,17H7V3A1,1 0 0,1 8,2H20A1,1 0 0,1 21,3V17M19,4H9V15H19V4M16,10.5L13.5,13.5L11.5,11L9,14H19M4,6H2V20A2,2 0 0,0 4,22H18V20H4V6Z"/></svg>';
+                                            }}
+                                          />
+                                        </div>
+                                      ))}
+                                    {selectedCourse.images.length > 4 && (
+                                      <div className="aspect-square rounded-lg bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center">
+                                        <span className="text-xs font-medium text-slate-600">
+                                          +{selectedCourse.images.length - 4}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                            </div>
+                          ) : null;
+                        })()}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Existing Images */}

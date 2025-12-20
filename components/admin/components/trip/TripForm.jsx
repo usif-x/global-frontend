@@ -102,6 +102,9 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
   const [packages, setPackages] = useState([]);
   const [errors, setErrors] = useState({});
   const [currentStep, setCurrentStep] = useState(1);
+  const [allTrips, setAllTrips] = useState([]);
+  const [selectedTripForImport, setSelectedTripForImport] = useState(null);
+  const [isLoadingTrips, setIsLoadingTrips] = useState(false);
 
   // Duration unit options
   const durationUnitOptions = [
@@ -183,6 +186,26 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     }
   }, [trip]);
 
+  // Load all trips for import functionality
+  useEffect(() => {
+    const loadTrips = async () => {
+      setIsLoadingTrips(true);
+      try {
+        const tripsData = await tripService.getAll();
+        // Filter out current trip if editing
+        const filteredTrips = trip
+          ? tripsData.filter((t) => t.id !== trip.id)
+          : tripsData;
+        setAllTrips(filteredTrips);
+      } catch (error) {
+        console.error("Failed to load trips for import:", error);
+      } finally {
+        setIsLoadingTrips(false);
+      }
+    };
+    loadTrips();
+  }, [trip]);
+
   // All handler functions from your original TripForm
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -228,6 +251,46 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
       ...prev,
       existing_images: prev.existing_images.filter((_, i) => i !== index),
     }));
+
+  const handleImportImages = () => {
+    if (!selectedTripForImport) {
+      toast.error("Please select a trip to import images from");
+      return;
+    }
+
+    const selectedTrip = allTrips.find(
+      (t) => t.id === parseInt(selectedTripForImport)
+    );
+
+    if (
+      !selectedTrip ||
+      !selectedTrip.images ||
+      selectedTrip.images.length === 0
+    ) {
+      toast.error("Selected trip has no images to import");
+      return;
+    }
+
+    // Add images from selected trip to existing_images
+    const newImages = selectedTrip.images.filter(
+      (img) => !formData.existing_images.includes(img)
+    );
+
+    if (newImages.length === 0) {
+      toast.info("All images from this trip are already added");
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      existing_images: [...prev.existing_images, ...newImages],
+    }));
+
+    toast.success(
+      `Imported ${newImages.length} image(s) from ${selectedTrip.name}`
+    );
+    setSelectedTripForImport(null);
+  };
 
   const validateStep1 = () => {
     const newErrors = {};
@@ -880,6 +943,128 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
                 <Icon icon="mdi:plus-circle" className="w-4 h-4" />
                 <span>Add Image</span>
               </button>
+            </div>
+
+            {/* Import Images from Another Trip */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200 mb-6">
+              <div className="flex items-start space-x-3 mb-4">
+                <Icon
+                  icon="mdi:import"
+                  className="w-6 h-6 text-blue-600 mt-0.5 flex-shrink-0"
+                />
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-slate-800 mb-1">
+                    Import Images from Another Trip
+                  </h4>
+                  <p className="text-xs text-slate-600">
+                    Select an existing trip to import its images
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {isLoadingTrips ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Icon
+                      icon="mdi:loading"
+                      className="w-6 h-6 text-blue-500 animate-spin"
+                    />
+                    <span className="ml-2 text-sm text-slate-600">
+                      Loading trips...
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    <select
+                      value={selectedTripForImport || ""}
+                      onChange={(e) => setSelectedTripForImport(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-white border border-blue-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      disabled={isLoading || allTrips.length === 0}
+                    >
+                      <option value="">
+                        {allTrips.length === 0
+                          ? "No trips available"
+                          : "Select a trip to import from..."}
+                      </option>
+                      {allTrips.map((tripItem) => (
+                        <option key={tripItem.id} value={tripItem.id}>
+                          {tripItem.name} ({tripItem.images?.length || 0} image
+                          {tripItem.images?.length !== 1 ? "s" : ""})
+                        </option>
+                      ))}
+                    </select>
+
+                    {selectedTripForImport && (
+                      <div className="bg-white rounded-lg p-4 border border-blue-200">
+                        {(() => {
+                          const selectedTrip = allTrips.find(
+                            (t) => t.id === parseInt(selectedTripForImport)
+                          );
+                          return selectedTrip ? (
+                            <div className="space-y-3">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-slate-800">
+                                    {selectedTrip.name}
+                                  </p>
+                                  <p className="text-xs text-slate-600 mt-1">
+                                    {selectedTrip.images?.length || 0} image(s)
+                                    available
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={handleImportImages}
+                                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+                                  disabled={
+                                    isLoading ||
+                                    !selectedTrip.images ||
+                                    selectedTrip.images.length === 0
+                                  }
+                                >
+                                  <Icon icon="mdi:import" className="w-4 h-4" />
+                                  <span>Import Images</span>
+                                </button>
+                              </div>
+
+                              {selectedTrip.images &&
+                                selectedTrip.images.length > 0 && (
+                                  <div className="grid grid-cols-4 gap-2 mt-3">
+                                    {selectedTrip.images
+                                      .slice(0, 4)
+                                      .map((img, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="aspect-square rounded-lg overflow-hidden border-2 border-slate-200"
+                                        >
+                                          <img
+                                            src={img}
+                                            alt={`Preview ${idx + 1}`}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                              e.target.src =
+                                                'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24"><path fill="%23ccc" d="M21,17H7V3A1,1 0 0,1 8,2H20A1,1 0 0,1 21,3V17M19,4H9V15H19V4M16,10.5L13.5,13.5L11.5,11L9,14H19M4,6H2V20A2,2 0 0,0 4,22H18V20H4V6Z"/></svg>';
+                                            }}
+                                          />
+                                        </div>
+                                      ))}
+                                    {selectedTrip.images.length > 4 && (
+                                      <div className="aspect-square rounded-lg bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center">
+                                        <span className="text-xs font-medium text-slate-600">
+                                          +{selectedTrip.images.length - 4}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                            </div>
+                          ) : null;
+                        })()}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Display Options */}
