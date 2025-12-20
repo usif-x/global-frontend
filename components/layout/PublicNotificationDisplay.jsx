@@ -143,24 +143,24 @@ const PublicNotificationDisplay = ({ notifications, onDismiss }) => {
         {/* Shimmer overlay */}
         <div className="absolute inset-0 shimmer-effect"></div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-3.5">
-          <div className="flex items-center justify-between gap-3">
+        <div className="relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-1.5 sm:py-2.5 lg:py-3.5">
+          <div className="flex items-center justify-between gap-1.5 sm:gap-3">
             {/* Left: Icon + Message */}
-            <div className="flex-1 flex items-center gap-3 min-w-0">
+            <div className="flex-1 flex items-center gap-1.5 sm:gap-3 min-w-0">
               <div className="flex-shrink-0">
                 <div className="relative">
                   <div className="absolute inset-0 bg-white/40 rounded-full blur-lg animate-pulse"></div>
-                  <div className="relative bg-white/20 backdrop-blur-sm p-2 rounded-full border border-white/40 shadow-lg">
+                  <div className="relative bg-white/20 backdrop-blur-sm p-1 sm:p-1.5 lg:p-2 rounded-full border border-white/40 shadow-lg">
                     <Icon
                       icon={typeStyle.icon}
-                      className="h-5 w-5 sm:h-6 sm:w-6 text-white drop-shadow-lg"
+                      className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white drop-shadow-lg"
                     />
                   </div>
                 </div>
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm sm:text-base drop-shadow-md">
+                <div className="font-semibold text-xs sm:text-sm lg:text-base drop-shadow-md">
                   <span className="md:hidden block truncate">
                     {currentNotification.title}
                   </span>
@@ -174,37 +174,37 @@ const PublicNotificationDisplay = ({ notifications, onDismiss }) => {
                     </span>
                   </span>
                 </div>
-                <p className="md:hidden text-xs sm:text-sm opacity-90 mt-0.5 drop-shadow line-clamp-2">
+                <p className="md:hidden text-[10px] sm:text-xs opacity-90 mt-0.5 drop-shadow line-clamp-1 sm:line-clamp-2">
                   {currentNotification.message}
                 </p>
               </div>
             </div>
 
             {/* Right: Navigation + Close */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 flex-shrink-0">
               {notifications.length > 1 && (
-                <div className="hidden sm:flex items-center gap-1 bg-white/15 backdrop-blur-md rounded-lg px-2 py-1 border border-white/30 shadow-lg">
+                <div className="hidden sm:flex items-center gap-0.5 lg:gap-1 bg-white/15 backdrop-blur-md rounded-lg px-1.5 lg:px-2 py-0.5 lg:py-1 border border-white/30 shadow-lg">
                   <button
                     onClick={handlePrev}
-                    className="p-1 rounded-md hover:bg-white/30 transition-all duration-200 active:scale-95"
+                    className="p-0.5 lg:p-1 rounded-md hover:bg-white/30 transition-all duration-200 active:scale-95"
                     aria-label="Previous notification"
                   >
                     <Icon
                       icon="mdi:chevron-left"
-                      className="h-4 w-4 text-white drop-shadow"
+                      className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-white drop-shadow"
                     />
                   </button>
-                  <span className="text-xs font-bold text-white px-2 min-w-[2.5rem] text-center drop-shadow">
+                  <span className="text-[10px] lg:text-xs font-bold text-white px-1 lg:px-2 min-w-[2rem] lg:min-w-[2.5rem] text-center drop-shadow">
                     {currentIndex + 1} / {notifications.length}
                   </span>
                   <button
                     onClick={handleNext}
-                    className="p-1 rounded-md hover:bg-white/30 transition-all duration-200 active:scale-95"
+                    className="p-0.5 lg:p-1 rounded-md hover:bg-white/30 transition-all duration-200 active:scale-95"
                     aria-label="Next notification"
                   >
                     <Icon
                       icon="mdi:chevron-right"
-                      className="h-4 w-4 text-white drop-shadow"
+                      className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-white drop-shadow"
                     />
                   </button>
                 </div>
@@ -213,12 +213,12 @@ const PublicNotificationDisplay = ({ notifications, onDismiss }) => {
               <button
                 type="button"
                 onClick={handleDismiss}
-                className="group p-1.5 sm:p-2 rounded-lg bg-white/15 backdrop-blur-md hover:bg-white/30 border border-white/30 transition-all duration-200 active:scale-95 shadow-lg"
+                className="group p-1 sm:p-1.5 lg:p-2 rounded-lg bg-white/15 backdrop-blur-md hover:bg-white/30 border border-white/30 transition-all duration-200 active:scale-95 shadow-lg"
                 aria-label="Dismiss notification"
               >
                 <Icon
                   icon="mdi:close"
-                  className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow group-hover:rotate-90 transition-transform duration-200"
+                  className="h-3.5 w-3.5 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-white drop-shadow group-hover:rotate-90 transition-transform duration-200"
                 />
               </button>
             </div>
@@ -226,15 +226,15 @@ const PublicNotificationDisplay = ({ notifications, onDismiss }) => {
 
           {/* Mobile Navigation Dots */}
           {notifications.length > 1 && (
-            <div className="flex sm:hidden items-center justify-center gap-1.5 mt-2">
+            <div className="flex sm:hidden items-center justify-center gap-1 mt-1.5">
               {notifications.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentIndex(index)}
-                  className={`h-1.5 rounded-full transition-all duration-300 shadow ${
+                  className={`h-1 rounded-full transition-all duration-300 shadow ${
                     index === currentIndex
-                      ? "w-6 bg-white"
-                      : "w-1.5 bg-white/50 hover:bg-white/70"
+                      ? "w-4 bg-white"
+                      : "w-1 bg-white/50 hover:bg-white/70"
                   }`}
                   aria-label={`Go to notification ${index + 1}`}
                 />
