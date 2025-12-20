@@ -13,6 +13,7 @@ const CouponForm = ({ coupon, onSuccess, onCancel }) => {
     activity: "all",
     discount_percentage: "",
     can_used_up_to: "",
+    user_limit: 1,
     is_active: true,
     expire_date: "",
   });
@@ -25,6 +26,7 @@ const CouponForm = ({ coupon, onSuccess, onCancel }) => {
         activity: coupon.activity || "all",
         discount_percentage: coupon.discount_percentage || "",
         can_used_up_to: coupon.can_used_up_to || "",
+        user_limit: coupon.user_limit ?? 1,
         is_active: coupon.is_active ?? true,
         expire_date: coupon.expire_date
           ? new Date(coupon.expire_date).toISOString().slice(0, 16)
@@ -73,6 +75,7 @@ const CouponForm = ({ coupon, onSuccess, onCancel }) => {
       const submitData = {
         code: formData.code.trim().toUpperCase(),
         activity: formData.activity,
+        user_limit: parseInt(formData.user_limit),
         discount_percentage: parseFloat(formData.discount_percentage),
         can_used_up_to: parseInt(formData.can_used_up_to),
         is_active: formData.is_active,
@@ -219,6 +222,27 @@ const CouponForm = ({ coupon, onSuccess, onCancel }) => {
               Currently used: {coupon.used_count} times
             </p>
           )}
+
+          {/* User Usage Limit */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Per-User Usage Limit *
+            </label>
+            <Input
+              icon="mdi:account-check"
+              name="user_limit"
+              type="number"
+              min="0"
+              placeholder="e.g., 1 (0 for unlimited)"
+              value={formData.user_limit}
+              onChange={handleChange}
+              disabled={loading}
+              required
+            />
+            <p className="mt-1 text-xs text-slate-500">
+              How many times a single user can use this coupon (0 = unlimited)
+            </p>
+          </div>
         </div>
 
         {/* Expiration Date */}

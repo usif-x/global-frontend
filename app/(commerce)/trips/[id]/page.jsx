@@ -377,7 +377,13 @@ const TripPage = ({ params }) => {
       setShowPaymentModal(false);
 
       // --- Use the final price from our new calculation ---
-      const { final: finalPrice } = calculateTotalPrice();
+      const { final: finalPrice, couponDiscount } = calculateTotalPrice();
+
+      // If a coupon is applied, the backend will calculate the discount.
+      // We should send the amount BEFORE the coupon discount.
+      const amountToSend = appliedCoupon
+        ? finalPrice + couponDiscount
+        : finalPrice;
 
       const peopleCount = formData.adults + formData.children;
       const bookingTime = new Date().toLocaleString("en-US", {
@@ -417,9 +423,10 @@ const TripPage = ({ params }) => {
           },
         ],
         picked_up: false,
-        amount: finalPrice, // Use the final calculated price
+        amount: amountToSend, // Use the amount before coupon
         currency: formData.currency,
         invoice_type: selectedPaymentType, // Add the payment type
+        coupon_code: appliedCoupon ? appliedCoupon.code : null,
       };
 
       const invoiceResponse = await postData(
