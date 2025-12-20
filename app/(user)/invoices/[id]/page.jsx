@@ -170,15 +170,50 @@ export default function InvoiceDetailPage() {
         );
       } else {
         return (
-          <div className="text-center bg-green-50 border border-green-200 p-6 rounded-xl space-y-3">
+          <div className="text-center bg-green-50 border border-green-200 p-6 rounded-xl space-y-4">
             <div className="flex items-center justify-center gap-3 text-green-700">
               <Icon icon="mdi:cash" className="w-8 h-8" />
-              <h3 className="text-xl font-bold">Cash Payment Required</h3>
+              <h3 className="text-xl font-bold">
+                Cash Payment - Two Steps Required
+              </h3>
             </div>
-            <p className="text-green-800 font-medium">
-              Please pay the amount of <strong>EGP {invoice.amount}</strong>{" "}
-              when you arrive at the diving center.
-            </p>
+
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 text-left">
+              <div className="text-blue-700 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center flex-shrink-0 font-bold">
+                    1
+                  </div>
+                  <div>
+                    <p className="font-bold text-blue-800">
+                      FIRST: Confirm Your Activity Details
+                    </p>
+                    <p className="text-sm mt-1">
+                      Please contact us first to confirm your trip details and
+                      provide any additional important information.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center flex-shrink-0 font-bold">
+                    2
+                  </div>
+                  <div>
+                    <p className="font-bold text-blue-800">
+                      SECOND: Pay Using Cash at Center
+                    </p>
+                    <p className="text-sm mt-1">
+                      Pay{" "}
+                      <strong>
+                        {formatCurrency(invoice.amount, invoice.currency)}
+                      </strong>{" "}
+                      in cash when you arrive at the diving center.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-green-100 p-4 rounded-lg text-sm text-green-700">
               <div className="flex items-start gap-2">
                 <Icon
@@ -188,13 +223,13 @@ export default function InvoiceDetailPage() {
                 <div>
                   <p className="font-medium mb-1">Important Reminders:</p>
                   <ul className="space-y-1 text-left">
+                    <li>• Contact us first to confirm your booking details</li>
                     <li>• Arrive 30 minutes before your scheduled trip time</li>
                     <li>• Bring the exact amount in cash</li>
                     <li>
                       • Show this invoice reference:{" "}
                       <strong>{invoice.customer_reference}</strong>
                     </li>
-                    <li>• Contact us if you need to reschedule or cancel</li>
                   </ul>
                 </div>
               </div>
@@ -228,14 +263,58 @@ export default function InvoiceDetailPage() {
                   className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1"
                 />
                 <div>
-                  <h3 className="text-lg font-bold text-blue-800 mb-2">
-                    Next Step: Confirm Your Trip
-                  </h3>
-                  <p className="text-blue-700 mb-3">
-                    Your payment was successful! Please contact us to confirm
-                    your trip details and provide any additional important
-                    information.
-                  </p>
+                  {invoice.invoice_type === "cash" ? (
+                    <>
+                      <h3 className="text-lg font-bold text-blue-800 mb-2">
+                        Two Required Steps to Complete Your Booking
+                      </h3>
+                      <div className="text-blue-700 mb-4">
+                        <div className="flex items-start gap-2 mb-3">
+                          <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 font-bold text-sm">
+                            1
+                          </div>
+                          <div>
+                            <p className="font-bold">
+                              FIRST: Confirm Your Activity Details
+                            </p>
+                            <p className="text-sm mt-1">
+                              Contact us to confirm your trip details and
+                              provide any additional important information.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 font-bold text-sm">
+                            2
+                          </div>
+                          <div>
+                            <p className="font-bold">SECOND: Pay Using Cash</p>
+                            <p className="text-sm mt-1">
+                              Pay{" "}
+                              <strong>
+                                {formatCurrency(
+                                  invoice.amount,
+                                  invoice.currency
+                                )}
+                              </strong>{" "}
+                              in cash when you arrive at the diving center.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="text-lg font-bold text-blue-800 mb-2">
+                        Next Step: Confirm Your Trip
+                      </h3>
+                      <p className="text-blue-700 mb-3">
+                        Your payment was successful! Please contact us to
+                        confirm your trip details and provide any additional
+                        important information.
+                      </p>
+                    </>
+                  )}
                   <div className="flex flex-wrap gap-3">
                     <a
                       href="https://www.facebook.com/profile.php?id=61579625321316"

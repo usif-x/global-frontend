@@ -335,7 +335,7 @@ const ContactPage = () => {
         </div>
 
         {/* Contact Information Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100 text-center">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-4">
               <Icon icon="mdi:phone" className="w-6 h-6 text-white" />
@@ -357,6 +357,24 @@ const ContactPage = () => {
             <p className="text-gray-600">contact@topdivers.online</p>
             <p className="text-sm text-gray-500 mt-1">We reply within 24h</p>
           </div>
+
+          <button
+            onClick={() => {
+              if (window.$crisp) {
+                window.$crisp.push(["do", "chat:open"]);
+              }
+            }}
+            className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100 text-center hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer"
+          >
+            <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <Icon icon="mdi:message-text" className="w-6 h-6 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Live Chat
+            </h3>
+            <p className="text-gray-600">Chat with us now</p>
+            <p className="text-sm text-gray-500 mt-1">Instant support</p>
+          </button>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100 text-center">
             <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-4">

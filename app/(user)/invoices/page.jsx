@@ -631,13 +631,57 @@ export default function MyInvoicesPage() {
                   Action Required: Confirm Your Trip
                   {unpickedInvoices.length > 1 ? "s" : ""}
                 </h3>
-                <p className="text-blue-800 mb-4">
-                  You have {unpickedInvoices.length} paid invoice
-                  {unpickedInvoices.length > 1 ? "s" : ""} that need
-                  {unpickedInvoices.length === 1 ? "s" : ""} confirmation.
-                  Please contact us to finalize your trip details and provide
-                  any additional important information.
-                </p>
+
+                {/* Check if there are any cash invoices */}
+                {unpickedInvoices.some((inv) => inv.invoice_type === "cash") ? (
+                  <div className="text-blue-800 mb-4">
+                    <p className="font-semibold mb-3">
+                      You have {unpickedInvoices.length} invoice
+                      {unpickedInvoices.length > 1 ? "s" : ""} that require
+                      {unpickedInvoices.length === 1 ? "s" : ""} your attention:
+                    </p>
+                    <div className="bg-white/60 rounded-lg p-4 mb-3">
+                      <div className="space-y-2">
+                        <div className="flex items-start gap-2">
+                          <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 font-bold text-sm">
+                            1
+                          </div>
+                          <div>
+                            <p className="font-bold text-blue-900">
+                              FIRST: Confirm Your Activity Details
+                            </p>
+                            <p className="text-sm mt-1">
+                              Contact us to confirm your trip details and
+                              provide any additional important information.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 font-bold text-sm">
+                            2
+                          </div>
+                          <div>
+                            <p className="font-bold text-blue-900">
+                              SECOND: Pay Using Cash
+                            </p>
+                            <p className="text-sm mt-1">
+                              For cash invoices, pay at the diving center when
+                              you arrive.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-blue-800 mb-4">
+                    You have {unpickedInvoices.length} paid invoice
+                    {unpickedInvoices.length > 1 ? "s" : ""} that need
+                    {unpickedInvoices.length === 1 ? "s" : ""} confirmation.
+                    Please contact us to finalize your trip details and provide
+                    any additional important information.
+                  </p>
+                )}
 
                 {/* List of unpicked invoices */}
                 <div className="space-y-2 mb-4">

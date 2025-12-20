@@ -92,13 +92,54 @@ const SuccessDisplay = ({ invoice }) => (
             className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1"
           />
           <div>
-            <h3 className="text-lg font-bold text-blue-800 mb-2">
-              Next Step: Confirm Your Trip
-            </h3>
-            <p className="text-blue-700 mb-3">
-              Your payment was successful! Please contact us to confirm your
-              trip details and provide any additional important information.
-            </p>
+            {invoice.invoice_type === "cash" ? (
+              <>
+                <h3 className="text-lg font-bold text-blue-800 mb-2">
+                  Two Required Steps to Complete Your Booking
+                </h3>
+                <div className="text-blue-700 mb-4">
+                  <div className="flex items-start gap-2 mb-3">
+                    <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 font-bold text-sm">
+                      1
+                    </div>
+                    <div>
+                      <p className="font-bold">
+                        FIRST: Confirm Your Activity Details
+                      </p>
+                      <p className="text-sm mt-1">
+                        Contact us to confirm your trip details and provide any
+                        additional important information.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 font-bold text-sm">
+                      2
+                    </div>
+                    <div>
+                      <p className="font-bold">SECOND: Pay Using Cash</p>
+                      <p className="text-sm mt-1">
+                        Pay{" "}
+                        <strong>
+                          {formatCurrency(invoice.amount, invoice.currency)}
+                        </strong>{" "}
+                        in cash when you arrive at the diving center.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="text-lg font-bold text-blue-800 mb-2">
+                  Next Step: Confirm Your Trip
+                </h3>
+                <p className="text-blue-700 mb-3">
+                  Your payment was successful! Please contact us to confirm your
+                  trip details and provide any additional important information.
+                </p>
+              </>
+            )}
             <div className="flex flex-wrap gap-3">
               <a
                 href="https://www.facebook.com/profile.php?id=61579625321316"
