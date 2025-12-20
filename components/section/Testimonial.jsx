@@ -130,12 +130,16 @@ const TestimonialCardSkeleton = () => (
 );
 
 const RateUsModal = React.memo(({ isOpen, onClose, onSuccess }) => {
-  const [formData, setFormData] = useState({ rating: 0, description: "" });
+  const [formData, setFormData] = useState({
+    rating: 0,
+    description: "",
+    notes: "",
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      setFormData({ rating: 0, description: "" });
+      setFormData({ rating: 0, description: "", notes: "" });
       setIsSubmitting(false);
     }
   }, [isOpen]);
@@ -150,7 +154,14 @@ const RateUsModal = React.memo(({ isOpen, onClose, onSuccess }) => {
     }
     setIsSubmitting(true);
     try {
-      await postData("/testimonials/create", formData, true);
+      await postData(
+        "/testimonials/create",
+        {
+          ...formData,
+          notes: formData.notes.trim() || null,
+        },
+        true
+      );
       onSuccess();
     } catch (error) {
       toast.error(
@@ -198,6 +209,17 @@ const RateUsModal = React.memo(({ isOpen, onClose, onSuccess }) => {
             placeholder="Tell us more..."
             rows={4}
             required
+          />
+          <Input
+            textarea
+            icon={"mdi:note-text-outline"}
+            name="notes"
+            value={formData.notes}
+            onChange={(e) =>
+              setFormData((p) => ({ ...p, notes: e.target.value }))
+            }
+            placeholder="Additional notes (optional)..."
+            rows={3}
           />
           <div className="flex gap-4">
             <Button

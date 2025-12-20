@@ -66,6 +66,7 @@ const TestimonialItem = ({ testimonial }) => (
 const CreateTestimonialModal = ({ isOpen, onClose, onSuccess }) => {
   const [rating, setRating] = useState(0);
   const [description, setDescription] = useState("");
+  const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -78,6 +79,7 @@ const CreateTestimonialModal = ({ isOpen, onClose, onSuccess }) => {
         {
           description: description.trim(),
           rating: rating,
+          notes: notes.trim() || null,
         },
         true
       );
@@ -85,6 +87,7 @@ const CreateTestimonialModal = ({ isOpen, onClose, onSuccess }) => {
       toast.success("Thank you! Your testimonial has been submitted.");
       setRating(0);
       setDescription("");
+      setNotes("");
       onClose();
       onSuccess();
     } catch (error) {
@@ -146,6 +149,19 @@ const CreateTestimonialModal = ({ isOpen, onClose, onSuccess }) => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               placeholder="Share your experience..."
               required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Additional Notes (Optional)
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              placeholder="Any additional comments or context..."
             />
           </div>
 
