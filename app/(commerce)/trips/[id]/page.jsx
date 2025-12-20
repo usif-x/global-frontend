@@ -1107,19 +1107,12 @@ const TripPage = ({ params }) => {
                           </div>
                           <Button
                             type="button"
+                            text="Apply"
                             onClick={handleApplyCoupon}
                             disabled={couponLoading || !couponCode.trim()}
+                            isLoading={couponLoading}
                             className="px-4 py-2"
-                          >
-                            {couponLoading ? (
-                              <Icon
-                                icon="mdi:loading"
-                                className="w-5 h-5 animate-spin"
-                              />
-                            ) : (
-                              <span>Apply</span>
-                            )}
-                          </Button>
+                          />
                         </div>
                       )}
 
