@@ -161,10 +161,10 @@ const PublicNotificationDisplay = ({ notifications, onDismiss }) => {
 
               <div className="flex-1 min-w-0">
                 <div className="font-semibold text-sm sm:text-base drop-shadow-md">
-                  <span className="md:hidden block">
+                  <span className="md:hidden block truncate">
                     {currentNotification.title}
                   </span>
-                  <span className="hidden md:block">
+                  <span className="hidden md:block truncate">
                     <span className="font-bold">
                       {currentNotification.title}
                     </span>
@@ -174,7 +174,7 @@ const PublicNotificationDisplay = ({ notifications, onDismiss }) => {
                     </span>
                   </span>
                 </div>
-                <p className="md:hidden text-xs sm:text-sm opacity-90 mt-0.5 drop-shadow">
+                <p className="md:hidden text-xs sm:text-sm opacity-90 mt-0.5 drop-shadow line-clamp-2">
                   {currentNotification.message}
                 </p>
               </div>
