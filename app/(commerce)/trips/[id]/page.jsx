@@ -982,95 +982,6 @@ const TripPage = ({ params }) => {
                       </div>
                     )}
 
-                    {/* Coupon Section */}
-                    <div className="space-y-3">
-                      {!showCouponInput && !appliedCoupon && (
-                        <button
-                          type="button"
-                          onClick={() => setShowCouponInput(true)}
-                          className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center transition-colors"
-                        >
-                          <Icon
-                            icon="mdi:ticket-percent"
-                            className="w-4 h-4 mr-1.5"
-                          />
-                          Have a coupon?
-                        </button>
-                      )}
-
-                      {showCouponInput && !appliedCoupon && (
-                        <div className="flex gap-2">
-                          <div className="flex-1">
-                            <Input
-                              icon="mdi:ticket-percent"
-                              name="couponCode"
-                              type="text"
-                              placeholder="Enter coupon code"
-                              value={couponCode}
-                              onChange={(e) =>
-                                setCouponCode(e.target.value.toUpperCase())
-                              }
-                              className="text-lg"
-                              onKeyPress={(e) => {
-                                if (e.key === "Enter") {
-                                  e.preventDefault();
-                                  handleApplyCoupon();
-                                }
-                              }}
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={handleApplyCoupon}
-                            disabled={couponLoading || !couponCode.trim()}
-                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
-                          >
-                            {couponLoading ? (
-                              <Icon
-                                icon="mdi:loading"
-                                className="w-5 h-5 animate-spin"
-                              />
-                            ) : (
-                              <span>Apply</span>
-                            )}
-                          </button>
-                        </div>
-                      )}
-
-                      {appliedCoupon && (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              <Icon
-                                icon="mdi:check-circle"
-                                className="w-5 h-5 text-green-600 mr-2"
-                              />
-                              <div>
-                                <p className="font-semibold text-green-800">
-                                  {appliedCoupon.code}
-                                </p>
-                                <p className="text-sm text-green-600">
-                                  {appliedCoupon.discount_percentage}% discount
-                                  applied
-                                </p>
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={handleRemoveCoupon}
-                              className="text-green-600 hover:text-green-700 p-1"
-                              title="Remove coupon"
-                            >
-                              <Icon
-                                icon="mdi:close-circle"
-                                className="w-5 h-5"
-                              />
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
                     <Input
                       name="hotelName"
                       value={formData.hotelName}
@@ -1155,6 +1066,95 @@ const TripPage = ({ params }) => {
                       icon="mdi:message-text-outline"
                       rows="3"
                     />
+
+                    {/* Coupon Section */}
+                    <div className="space-y-3">
+                      {!showCouponInput && !appliedCoupon && (
+                        <button
+                          type="button"
+                          onClick={() => setShowCouponInput(true)}
+                          className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center transition-colors"
+                        >
+                          <Icon
+                            icon="mdi:ticket-percent"
+                            className="w-4 h-4 mr-1.5"
+                          />
+                          Have a coupon?
+                        </button>
+                      )}
+
+                      {showCouponInput && !appliedCoupon && (
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <Input
+                              icon="mdi:ticket-percent"
+                              name="couponCode"
+                              type="text"
+                              placeholder="Enter coupon code"
+                              value={couponCode}
+                              onChange={(e) =>
+                                setCouponCode(e.target.value.toUpperCase())
+                              }
+                              className="text-lg"
+                              onKeyPress={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  handleApplyCoupon();
+                                }
+                              }}
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            onClick={handleApplyCoupon}
+                            disabled={couponLoading || !couponCode.trim()}
+                            className="px-4 py-2"
+                          >
+                            {couponLoading ? (
+                              <Icon
+                                icon="mdi:loading"
+                                className="w-5 h-5 animate-spin"
+                              />
+                            ) : (
+                              <span>Apply</span>
+                            )}
+                          </Button>
+                        </div>
+                      )}
+
+                      {appliedCoupon && (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <Icon
+                                icon="mdi:check-circle"
+                                className="w-5 h-5 text-green-600 mr-2"
+                              />
+                              <div>
+                                <p className="font-semibold text-green-800">
+                                  {appliedCoupon.code}
+                                </p>
+                                <p className="text-sm text-green-600">
+                                  {appliedCoupon.discount_percentage}% discount
+                                  applied
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleRemoveCoupon}
+                              className="text-green-600 hover:text-green-700 p-1"
+                              title="Remove coupon"
+                            >
+                              <Icon
+                                icon="mdi:close-circle"
+                                className="w-5 h-5"
+                              />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* --- CHANGE: Price summary now always shows EGP --- */}
