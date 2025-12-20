@@ -43,31 +43,33 @@ const NotificationModal = ({
       />
 
       {/* Modal */}
-      <div className="fixed top-16 right-4 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-96 overflow-hidden">
+      <div className="fixed top-14 sm:top-16 right-2 sm:right-4 w-80 sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-96 overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-100">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800">
+            Notifications
+          </h3>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-1 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
           >
             <Icon icon="mdi:close" className="w-5 h-5 text-gray-500" />
           </button>
         </div>
 
         {/* Notifications List */}
-        <div className="max-h-80 overflow-y-auto">
+        <div className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           {notifications.length > 0 ? (
             <div className="divide-y divide-gray-100">
               {notifications.map((notification, index) => (
                 <div
                   key={index}
                   onClick={() => onNotificationClick(notification)}
-                  className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="p-3 sm:p-4 hover:bg-gray-50 cursor-pointer transition-colors active:bg-gray-100"
                 >
-                  <div className="flex items-start">
+                  <div className="flex items-start gap-2 sm:gap-3">
                     <div
-                      className={`p-2 rounded-full ${notification.color} mr-3 mt-0.5`}
+                      className={`p-2 rounded-full flex-shrink-0 ${notification.color}`}
                     >
                       <Icon
                         icon={notification.icon}
@@ -75,15 +77,15 @@ const NotificationModal = ({
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 mb-1">
+                      <p className="text-sm font-medium text-gray-800 mb-1 truncate">
                         {notification.title}
                       </p>
-                      <p className="text-sm text-gray-600 mb-2">
+                      <p className="text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2">
                         {notification.message}
                       </p>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
                         <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
                             notification.priority === "high"
                               ? "bg-red-100 text-red-800"
                               : notification.priority === "medium"
@@ -107,10 +109,10 @@ const NotificationModal = ({
               ))}
             </div>
           ) : (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-6 sm:p-8 text-center text-gray-500">
               <Icon
                 icon="mdi:bell-check"
-                className="w-12 h-12 mx-auto mb-3 text-gray-300"
+                className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-3 text-gray-300"
               />
               <p className="text-sm">No new notifications</p>
             </div>
@@ -119,7 +121,7 @@ const NotificationModal = ({
 
         {/* Footer */}
         {notifications.length > 0 && (
-          <div className="p-3 border-t border-gray-100"></div>
+          <div className="p-2 sm:p-3 border-t border-gray-100"></div>
         )}
       </div>
     </>
@@ -540,33 +542,37 @@ const AdminDashboard = () => {
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 bg-white shadow-lg transform transition-all duration-300 ease-in-out 
+        className={`fixed inset-y-0 left-0 z-50 bg-white shadow-xl transform transition-all duration-300 ease-in-out 
                    ${
                      sidebarOpen
-                       ? "translate-x-0 w-64"
-                       : "-translate-x-full w-64"
+                       ? "translate-x-0 w-64 sm:w-72"
+                       : "-translate-x-full w-64 sm:w-72"
                    }
                    lg:relative lg:translate-x-0 ${
-                     isCollapsed ? "lg:w-20" : "lg:w-64"
-                   }`}
+                     isCollapsed ? "lg:w-20" : "lg:w-64 xl:w-72"
+                   } flex flex-col`}
       >
+        {/* Sidebar Header - Fixed */}
         <div
-          className={`flex items-center justify-between h-14 px-6 border-b border-gray-200 ${
-            isCollapsed ? "px-0 justify-center" : ""
+          className={`flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6 border-b border-gray-200 flex-shrink-0 ${
+            isCollapsed ? "px-3 sm:px-4 justify-center" : ""
           }`}
         >
           {!isCollapsed && (
-            <h2 className="text-xl font-bold text-gray-800">Admin Panel</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800 truncate">
+              Admin Panel
+            </h2>
           )}
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+            className="lg:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0"
           >
-            <Icon icon="mdi:close" className="w-5 h-5" />
+            <Icon icon="mdi:close" className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
 
-        <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+        {/* Sidebar Navigation - Scrollable */}
+        <nav className="flex-1 px-2 sm:px-4 py-3 sm:py-4 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           {menuItems.map((item) => (
             <button
               key={item.id}
@@ -574,24 +580,26 @@ const AdminDashboard = () => {
                 setActiveTab(item.id);
                 setSidebarOpen(false);
               }}
-              className={`relative w-full flex items-center px-4 py-2.5 text-left rounded-lg transition-colors duration-200 ${
+              className={`relative w-full flex items-center px-3 sm:px-4 py-2 sm:py-2.5 text-left rounded-lg transition-colors duration-200 text-sm sm:text-base ${
                 activeTab === item.id
-                  ? "bg-cyan-50 text-cyan-700"
+                  ? "bg-cyan-50 text-cyan-700 font-semibold"
                   : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
               } ${isCollapsed ? "justify-center" : ""}`}
               title={isCollapsed ? item.label : ""}
             >
               <Icon
                 icon={item.icon}
-                className={`w-5 h-5 ${isCollapsed ? "mr-0" : "mr-3"} ${
-                  activeTab === item.id ? "text-cyan-500" : item.color
-                }`}
+                className={`w-5 h-5 sm:w-5 sm:h-5 flex-shrink-0 ${
+                  isCollapsed ? "mr-0" : "mr-2 sm:mr-3"
+                } ${activeTab === item.id ? "text-cyan-500" : item.color}`}
               />
               {!isCollapsed && (
-                <span className="font-medium flex-1">{item.label}</span>
+                <span className="font-medium flex-1 truncate">
+                  {item.label}
+                </span>
               )}
               {!isCollapsed && item.badge && (
-                <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                <span className="inline-flex items-center justify-center px-2 py-0.5 ml-2 text-xs font-bold leading-none text-white bg-red-500 rounded-full flex-shrink-0">
                   {item.badge}
                 </span>
               )}
@@ -602,29 +610,32 @@ const AdminDashboard = () => {
           ))}
         </nav>
 
-        {/* User Info, Collapse Button & Logout */}
+        {/* Sidebar Footer - Fixed */}
         <div
-          className={`border-t border-gray-200 p-2 ${
-            isCollapsed ? "p-2" : "p-4"
+          className={`border-t border-gray-200 p-2 sm:p-3 flex-shrink-0 ${
+            isCollapsed ? "p-2 sm:p-3" : "p-3 sm:p-4"
           }`}
         >
           {!isCollapsed && (
-            <div className="flex items-center mb-3">
-              <div className="w-10 h-10 bg-cyan-500 rounded-full flex items-center justify-center">
-                <Icon icon="mdi:account" className="w-6 h-6 text-white" />
+            <div className="flex items-center mb-2 sm:mb-3 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-cyan-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <Icon
+                  icon="mdi:account"
+                  className="w-5 h-5 sm:w-6 sm:h-6 text-white"
+                />
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700">
+              <div className="ml-2 sm:ml-3 min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-700 truncate">
                   {admin.name}
                 </p>
-                <p className="text-xs text-gray-500">{admin.email}</p>
+                <p className="text-xs text-gray-500 truncate">{admin.email}</p>
               </div>
             </div>
           )}
 
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:flex items-center justify-center p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 w-full"
+            className="hidden lg:flex items-center justify-center p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 w-full transition-colors"
             title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
             <Icon
@@ -640,40 +651,46 @@ const AdminDashboard = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
-          <div className="flex items-center justify-between px-4 py-4">
-            <div className="flex items-center">
+        <header className="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
+          <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+            <div className="flex items-center min-w-0 flex-1">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                className="lg:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0"
               >
-                <Icon icon="mdi:menu" className="w-6 h-6" />
+                <Icon icon="mdi:menu" className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
-              <h1 className="ml-2 lg:ml-0 text-2xl font-bold text-gray-900 capitalize">
-                {activeTab === "dashboard" ? "Dashboard Overview" : activeTab}
+              <h1 className="ml-2 lg:ml-0 text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 capitalize truncate">
+                {activeTab === "dashboard"
+                  ? "Dashboard Overview"
+                  : activeTab.replace(/_/g, " ")}
               </h1>
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4 flex-shrink-0">
               {/* Enhanced Notification Bell */}
               <div className="relative">
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
                   className="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  aria-label="Notifications"
                 >
-                  <Icon icon="mdi:bell" className="w-5 h-5" />
+                  <Icon icon="mdi:bell" className="w-5 h-5 sm:w-6 sm:h-6" />
                   {notificationCount > 0 && (
-                    <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full animate-pulse">
+                    <span className="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full animate-pulse min-w-6">
                       {notificationCount > 9 ? "9+" : notificationCount}
                     </span>
                   )}
                 </button>
               </div>
-              <div className="flex items-center gap-4">
+
+              <div className="hidden sm:flex items-center gap-2 lg:gap-3">
                 {/* Welcome message */}
-                <div className="hidden sm:flex items-center space-x-2">
-                  <span className="text-sm text-gray-600">Welcome,</span>
-                  <span className="text-sm font-semibold text-gray-900">
+                <div className="hidden md:flex items-center space-x-2">
+                  <span className="text-xs md:text-sm text-gray-600">
+                    Welcome,
+                  </span>
+                  <span className="text-xs md:text-sm font-semibold text-gray-900 truncate max-w-32">
                     {admin.name}
                   </span>
                 </div>
@@ -681,7 +698,7 @@ const AdminDashboard = () => {
                 {/* Logout button */}
                 <button
                   onClick={handleLogout}
-                  className="flex items-center px-3 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  className="flex items-center px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 whitespace-nowrap"
                 >
                   <Icon
                     icon="mdi:logout"
@@ -691,12 +708,21 @@ const AdminDashboard = () => {
                   <span>Logout</span>
                 </button>
               </div>
+
+              {/* Mobile Logout (icon only) */}
+              <button
+                onClick={handleLogout}
+                className="sm:hidden p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                title="Logout"
+              >
+                <Icon icon="mdi:logout" className="w-5 h-5" />
+              </button>
             </div>
           </div>
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <main className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 lg:py-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           {renderContent()}
         </main>
       </div>
@@ -712,7 +738,7 @@ const AdminDashboard = () => {
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
       )}
