@@ -2,6 +2,7 @@
 
 "use client";
 
+import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import MarkdownRenderer from "@/components/ui/MarkdownRender";
 import Select from "@/components/ui/Select";
