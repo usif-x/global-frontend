@@ -4,6 +4,42 @@ import { Icon } from "@iconify/react";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
+//=================================================================
+//  HELPER & UI COMPONENTS
+//=================================================================
+
+// Enhanced Loading Spinner with Coupon Theme
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center p-8">
+    <div className="relative">
+      <div className="h-16 w-16 rounded-full border-t-4 border-b-4 border-slate-200"></div>
+      <div className="absolute top-0 left-0 h-16 w-16 rounded-full border-t-4 border-b-4 border-purple-500 animate-spin"></div>
+    </div>
+  </div>
+);
+
+// Enhanced Skeleton Loader
+const CouponSkeleton = ({ count = 6 }) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+    {Array.from({ length: count }).map((_, i) => (
+      <div
+        key={i}
+        className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden"
+      >
+        <div className="h-32 bg-gradient-to-r from-purple-200 to-pink-200"></div>
+        <div className="p-6 space-y-4">
+          <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+          <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+          <div className="flex space-x-3">
+            <div className="h-10 bg-slate-200 rounded flex-1"></div>
+            <div className="h-10 bg-slate-200 rounded flex-1"></div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 // Helper function to format dates
 const formatDate = (dateString) => {
   if (!dateString) return "No expiration";
@@ -249,6 +285,9 @@ const StatCard = ({ icon, title, value, subtitle, color }) => {
   );
 };
 
+//=================================================================
+//  MAIN COUPON LIST COMPONENT
+//=================================================================
 const CouponList = ({ onAdd, onEdit }) => {
   const [coupons, setCoupons] = useState([]);
   const [stats, setStats] = useState(null);
@@ -312,167 +351,180 @@ const CouponList = ({ onAdd, onEdit }) => {
   });
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center space-x-3">
-          <div className="bg-gradient-to-br from-purple-500 to-pink-600 p-3 rounded-xl shadow-lg">
-            <Icon icon="mdi:ticket-percent" className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-slate-800">
-              Coupon Management
-            </h2>
-            <p className="text-sm text-slate-500">
-              Manage discount coupons for your users
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={onAdd}
-          className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
-        >
-          <Icon icon="mdi:plus-circle" className="w-6 h-6" />
-          <span>Create Coupon</span>
-        </button>
-      </div>
-
-      {/* Statistics Cards */}
-      {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            icon="mdi:ticket-percent"
-            title="Total Coupons"
-            value={stats.total_coupons}
-            color="text-purple-600"
-          />
-          <StatCard
-            icon="mdi:check-circle"
-            title="Active Coupons"
-            value={stats.active_coupons}
-            color="text-green-600"
-          />
-          <StatCard
-            icon="mdi:counter"
-            title="Total Uses"
-            value={stats.total_usage}
-            color="text-blue-600"
-          />
-          <StatCard
-            icon="mdi:percent"
-            title="Avg Discount"
-            value={
-              stats.coupons && stats.coupons.length > 0
-                ? `${(
-                    stats.coupons.reduce(
-                      (sum, c) => sum + (c.discount_percentage || 0),
-                      0
-                    ) / stats.coupons.length
-                  ).toFixed(1)}%`
-                : "0%"
-            }
-            color="text-orange-600"
-          />
-        </div>
-      )}
-
-      {/* Filter Tabs */}
-      <div className="bg-white rounded-xl shadow-md border border-slate-200 p-2">
-        <div className="flex flex-wrap gap-2">
-          {[
-            { key: "all", label: "All Coupons", icon: "mdi:view-grid" },
-            { key: "active", label: "Active", icon: "mdi:check-circle" },
-            { key: "inactive", label: "Inactive", icon: "mdi:close-circle" },
-            { key: "expired", label: "Expired", icon: "mdi:calendar-remove" },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setFilter(tab.key)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                filter === tab.key
-                  ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-md"
-                  : "text-slate-600 hover:bg-slate-100"
-              }`}
-            >
-              <Icon icon={tab.icon} className="w-5 h-5" />
-              <span>{tab.label}</span>
-              <span
-                className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                  filter === tab.key
-                    ? "bg-white/20 text-white"
-                    : "bg-slate-200 text-slate-700"
-                }`}
-              >
-                {
-                  coupons.filter((c) => {
-                    if (tab.key === "active")
-                      return c.is_active && !isExpired(c.expire_date);
-                    if (tab.key === "inactive") return !c.is_active;
-                    if (tab.key === "expired") return isExpired(c.expire_date);
-                    return true;
-                  }).length
-                }
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Loading State */}
-      {loading && (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <Icon
-              icon="mdi:loading"
-              className="w-12 h-12 text-purple-500 animate-spin mx-auto mb-4"
-            />
-            <p className="text-slate-600 font-medium">Loading coupons...</p>
-          </div>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!loading && filteredCoupons.length === 0 && (
-        <div className="bg-white rounded-xl shadow-md border border-slate-200 p-12 text-center">
-          <div className="bg-slate-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Icon
-              icon="mdi:ticket-percent"
-              className="w-10 h-10 text-slate-400"
-            />
-          </div>
-          <h3 className="text-xl font-bold text-slate-800 mb-2">
-            {filter === "all" ? "No Coupons Yet" : `No ${filter} Coupons`}
-          </h3>
-          <p className="text-slate-600 mb-6">
-            {filter === "all"
-              ? "Create your first coupon to offer discounts to your users"
-              : `There are no ${filter} coupons at the moment`}
-          </p>
-          {filter === "all" && (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Enhanced Header */}
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div className="flex items-start space-x-4">
+              <div className="bg-gradient-to-br from-purple-500 to-pink-600 p-4 rounded-2xl shadow-lg">
+                <Icon
+                  icon="mdi:ticket-percent"
+                  className="w-10 h-10 text-white"
+                />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-slate-800 mb-2">
+                  Coupon Management
+                </h1>
+                <p className="text-slate-600">
+                  Create and manage discount coupons for your trips and courses
+                </p>
+              </div>
+            </div>
             <button
               onClick={onAdd}
-              className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 inline-flex items-center space-x-2"
+              className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-8 py-3.5 rounded-xl font-semibold hover:shadow-2xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2 whitespace-nowrap"
             >
-              <Icon icon="mdi:plus-circle" className="w-5 h-5" />
-              <span>Create First Coupon</span>
+              <Icon icon="mdi:plus-circle" className="w-6 h-6" />
+              <span>Create New Coupon</span>
             </button>
-          )}
+          </div>
         </div>
-      )}
 
-      {/* Coupon Grid */}
-      {!loading && filteredCoupons.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCoupons.map((coupon) => (
-            <CouponCard
-              key={coupon.id}
-              coupon={coupon}
-              onEdit={onEdit}
-              onDelete={handleDelete}
+        {/* Statistics Cards */}
+        {stats && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard
+              icon="mdi:ticket-percent"
+              title="Total Coupons"
+              value={stats.total_coupons}
+              color="text-purple-600"
             />
-          ))}
+            <StatCard
+              icon="mdi:check-circle"
+              title="Active Coupons"
+              value={stats.active_coupons}
+              color="text-green-600"
+            />
+            <StatCard
+              icon="mdi:counter"
+              title="Total Uses"
+              value={stats.total_usage}
+              color="text-blue-600"
+            />
+            <StatCard
+              icon="mdi:percent"
+              title="Avg Discount"
+              value={
+                stats.coupons && stats.coupons.length > 0
+                  ? `${(
+                      stats.coupons.reduce(
+                        (sum, c) => sum + (c.discount_percentage || 0),
+                        0
+                      ) / stats.coupons.length
+                    ).toFixed(1)}%`
+                  : "0%"
+              }
+              color="text-orange-600"
+            />
+          </div>
+        )}
+
+        {/* Filter Tabs */}
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6">
+          <div className="flex items-center space-x-3 mb-4">
+            <Icon
+              icon="mdi:filter-variant"
+              className="w-6 h-6 text-purple-600"
+            />
+            <h2 className="text-lg font-bold text-slate-800">Filter Coupons</h2>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {[
+              { key: "all", label: "All Coupons", icon: "mdi:view-grid" },
+              { key: "active", label: "Active", icon: "mdi:check-circle" },
+              { key: "inactive", label: "Inactive", icon: "mdi:close-circle" },
+              { key: "expired", label: "Expired", icon: "mdi:calendar-remove" },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setFilter(tab.key)}
+                className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
+                  filter === tab.key
+                    ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg transform scale-105"
+                    : "text-slate-600 hover:bg-slate-100 border border-slate-200"
+                }`}
+              >
+                <Icon icon={tab.icon} className="w-5 h-5" />
+                <span>{tab.label}</span>
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                    filter === tab.key
+                      ? "bg-white/30 text-white"
+                      : "bg-purple-100 text-purple-700"
+                  }`}
+                >
+                  {
+                    coupons.filter((c) => {
+                      if (tab.key === "active")
+                        return c.is_active && !isExpired(c.expire_date);
+                      if (tab.key === "inactive") return !c.is_active;
+                      if (tab.key === "expired")
+                        return isExpired(c.expire_date);
+                      return true;
+                    }).length
+                  }
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
-      )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
+            <LoadingSpinner />
+            <p className="text-center text-slate-600 font-medium mt-4">
+              Loading coupons...
+            </p>
+            <CouponSkeleton />
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && filteredCoupons.length === 0 && (
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-16 text-center">
+            <div className="bg-gradient-to-br from-purple-100 to-pink-100 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <Icon
+                icon="mdi:ticket-percent"
+                className="w-14 h-14 text-purple-500"
+              />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-800 mb-3">
+              {filter === "all" ? "No Coupons Yet" : `No ${filter} Coupons`}
+            </h3>
+            <p className="text-slate-600 mb-6">
+              {filter === "all"
+                ? "Create your first coupon to offer discounts to your users"
+                : `There are no ${filter} coupons at the moment`}
+            </p>
+            {filter === "all" && (
+              <button
+                onClick={onAdd}
+                className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-8 py-3.5 rounded-xl font-semibold hover:shadow-2xl transform hover:scale-105 transition-all duration-200 inline-flex items-center space-x-2"
+              >
+                <Icon icon="mdi:plus-circle" className="w-6 h-6" />
+                <span>Create First Coupon</span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Coupon Grid */}
+        {!loading && filteredCoupons.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCoupons.map((coupon) => (
+              <CouponCard
+                key={coupon.id}
+                coupon={coupon}
+                onEdit={onEdit}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
