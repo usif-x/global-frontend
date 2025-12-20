@@ -348,6 +348,11 @@ const TripPage = ({ params }) => {
     toast.info("Coupon removed");
   };
 
+  const handleCloseCouponInput = () => {
+    setShowCouponInput(false);
+    setCouponCode("");
+  };
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!isAuthenticated) {
@@ -1086,6 +1091,19 @@ const TripPage = ({ params }) => {
 
                       {showCouponInput && !appliedCoupon && (
                         <div className="bg-gray-100 rounded-lg p-4 space-y-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium text-gray-700">
+                              Apply Coupon
+                            </span>
+                            <button
+                              type="button"
+                              onClick={handleCloseCouponInput}
+                              className="text-gray-400 hover:text-gray-600 transition-colors"
+                              title="Close"
+                            >
+                              <Icon icon="mdi:close" className="w-5 h-5" />
+                            </button>
+                          </div>
                           <Input
                             icon="mdi:ticket-percent"
                             name="couponCode"
