@@ -1085,33 +1085,31 @@ const TripPage = ({ params }) => {
                       )}
 
                       {showCouponInput && !appliedCoupon && (
-                        <div className="flex gap-2">
-                          <div className="flex-1">
-                            <Input
-                              icon="mdi:ticket-percent"
-                              name="couponCode"
-                              type="text"
-                              placeholder="Enter coupon code"
-                              value={couponCode}
-                              onChange={(e) =>
-                                setCouponCode(e.target.value.toUpperCase())
+                        <div className="bg-gray-100 rounded-lg p-4 space-y-3">
+                          <Input
+                            icon="mdi:ticket-percent"
+                            name="couponCode"
+                            type="text"
+                            placeholder="Enter coupon code"
+                            value={couponCode}
+                            onChange={(e) =>
+                              setCouponCode(e.target.value.toUpperCase())
+                            }
+                            className="text-lg"
+                            onKeyPress={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleApplyCoupon();
                               }
-                              className="text-lg"
-                              onKeyPress={(e) => {
-                                if (e.key === "Enter") {
-                                  e.preventDefault();
-                                  handleApplyCoupon();
-                                }
-                              }}
-                            />
-                          </div>
+                            }}
+                          />
                           <Button
                             type="button"
                             text="Apply"
                             onClick={handleApplyCoupon}
                             disabled={couponLoading || !couponCode.trim()}
                             isLoading={couponLoading}
-                            className="px-4 py-2"
+                            full
                           />
                         </div>
                       )}
