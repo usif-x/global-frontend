@@ -34,53 +34,61 @@ export async function GET() {
       throw new Error("Invalid data structure received from API");
     }
 
-    // Generate URLs for sitemap
+    // Generate URLs for sitemap (with trailing slash)
     const urls = [
-      { url: `${siteBaseUrl}/trips`, priority: "0.9", changefreq: "daily" },
-      { url: `${siteBaseUrl}/packages`, priority: "0.9", changefreq: "daily" },
-      { url: `${siteBaseUrl}/courses`, priority: "0.9", changefreq: "daily" },
+      { url: `${siteBaseUrl}/trips/`, priority: "0.9", changefreq: "daily" },
+      { url: `${siteBaseUrl}/packages/`, priority: "0.9", changefreq: "daily" },
+      { url: `${siteBaseUrl}/courses/`, priority: "0.9", changefreq: "daily" },
       {
-        url: `${siteBaseUrl}/dive-sites`,
+        url: `${siteBaseUrl}/dive-sites/`,
         priority: "0.8",
         changefreq: "weekly",
       },
       {
-        url: `${siteBaseUrl}/destinations`,
+        url: `${siteBaseUrl}/destinations/`,
         priority: "0.8",
         changefreq: "weekly",
       },
       {
-        url: `${siteBaseUrl}/bestsellers`,
+        url: `${siteBaseUrl}/bestsellers/`,
         priority: "0.7",
         changefreq: "daily",
       },
       {
-        url: `${siteBaseUrl}/center-location`,
+        url: `${siteBaseUrl}/center-location/`,
         priority: "0.6",
         changefreq: "monthly",
       },
-      { url: `${siteBaseUrl}/profile`, priority: "0.5", changefreq: "monthly" },
-      { url: `${siteBaseUrl}/login`, priority: "0.4", changefreq: "yearly" },
-      { url: `${siteBaseUrl}/register`, priority: "0.4", changefreq: "yearly" },
+      {
+        url: `${siteBaseUrl}/profile/`,
+        priority: "0.5",
+        changefreq: "monthly",
+      },
+      { url: `${siteBaseUrl}/login/`, priority: "0.4", changefreq: "yearly" },
+      {
+        url: `${siteBaseUrl}/register/`,
+        priority: "0.4",
+        changefreq: "yearly",
+      },
 
       ...trips
         .filter((t) => t.id != null)
         .map((t) => ({
-          url: `${siteBaseUrl}/trips/${t.id}`,
+          url: `${siteBaseUrl}/trips/${t.id}/`,
           priority: "0.8",
           changefreq: "weekly",
         })),
       ...packages
         .filter((p) => p.id != null)
         .map((p) => ({
-          url: `${siteBaseUrl}/packages/${p.id}`,
+          url: `${siteBaseUrl}/packages/${p.id}/`,
           priority: "0.8",
           changefreq: "weekly",
         })),
       ...courses
         .filter((c) => c.id != null)
         .map((c) => ({
-          url: `${siteBaseUrl}/courses/${c.id}`,
+          url: `${siteBaseUrl}/courses/${c.id}/`,
           priority: "0.8",
           changefreq: "weekly",
         })),
@@ -111,17 +119,25 @@ ${urls
     console.error("Error generating sitemap:", error);
 
     const fallbackUrls = [
-      { url: `${siteBaseUrl}/trips`, priority: "0.9", changefreq: "daily" },
-      { url: `${siteBaseUrl}/packages`, priority: "0.9", changefreq: "daily" },
-      { url: `${siteBaseUrl}/courses`, priority: "0.9", changefreq: "daily" },
+      { url: `${siteBaseUrl}/trips/`, priority: "0.9", changefreq: "daily" },
+      { url: `${siteBaseUrl}/packages/`, priority: "0.9", changefreq: "daily" },
+      { url: `${siteBaseUrl}/courses/`, priority: "0.9", changefreq: "daily" },
       {
-        url: `${siteBaseUrl}/bestsellers`,
+        url: `${siteBaseUrl}/bestsellers/`,
         priority: "0.7",
         changefreq: "daily",
       },
-      { url: `${siteBaseUrl}/profile`, priority: "0.5", changefreq: "monthly" },
-      { url: `${siteBaseUrl}/login`, priority: "0.4", changefreq: "yearly" },
-      { url: `${siteBaseUrl}/register`, priority: "0.4", changefreq: "yearly" },
+      {
+        url: `${siteBaseUrl}/profile/`,
+        priority: "0.5",
+        changefreq: "monthly",
+      },
+      { url: `${siteBaseUrl}/login/`, priority: "0.4", changefreq: "yearly" },
+      {
+        url: `${siteBaseUrl}/register/`,
+        priority: "0.4",
+        changefreq: "yearly",
+      },
     ];
 
     const fallbackSitemap = `<?xml version="1.0" encoding="UTF-8"?>
