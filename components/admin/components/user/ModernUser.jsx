@@ -151,113 +151,451 @@ const ModalWrapper = ({ children, onClose, visible }) => {
 };
 
 // --- User Details Modal (Re-styled) ---
-const UserDetailsModal = ({ user, onClose }) => (
-  <ModalWrapper visible={!!user} onClose={onClose}>
-    <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full animate-in fade-in-0 zoom-in-95">
-      <div className="relative bg-gradient-to-r from-cyan-500 to-blue-600 text-white p-6">
-        <div className="flex items-center space-x-4">
-          <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-            <Icon icon="mdi:account-details" className="w-8 h-8" />
-          </div>
-          <div>
-            <h2 id="modal-title" className="text-2xl font-bold">
-              User Profile
-            </h2>
-            <p className="text-cyan-100 mt-1">
-              Detailed information for {user.full_name}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all duration-200"
-        >
-          <Icon icon="mdi:close" className="w-6 h-6" />
-        </button>
-      </div>
-      <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-        <div className="flex items-center space-x-3">
-          <Icon icon="mdi:identifier" className="w-5 h-5 text-slate-400" />
-          <div>
-            <p className="text-sm font-medium text-slate-700">User ID</p>
-            <p className="text-slate-600">{user.id}</p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-3">
-          <Icon icon="mdi:account-circle" className="w-5 h-5 text-slate-400" />
-          <div>
-            <p className="text-sm font-medium text-slate-700">Full Name</p>
-            <p className="text-slate-600">{user.full_name}</p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-3">
-          <Icon icon="mdi:email" className="w-5 h-5 text-slate-400" />
-          <div>
-            <p className="text-sm font-medium text-slate-700">Email</p>
-            <p className="text-slate-600">{user.email}</p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-3">
-          <Icon icon="mdi:shield-account" className="w-5 h-5 text-slate-400" />
-          <div>
-            <p className="text-sm font-medium text-slate-700">Role</p>
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-medium ${
-                user.role === "admin"
-                  ? "bg-purple-100 text-purple-700"
-                  : "bg-blue-100 text-blue-700"
-              }`}
-            >
-              {user.role}
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center space-x-3">
-          <Icon icon="mdi:toggle-switch" className="w-5 h-5 text-slate-400" />
-          <div>
-            <p className="text-sm font-medium text-slate-700">Status</p>
-            <UserStatusBadge
-              isActive={user.is_active}
-              isBlocked={user.is_blocked}
-            />
-          </div>
-        </div>
-        <div className="flex items-center space-x-3">
-          <Icon icon="mdi:calendar-plus" className="w-5 h-5 text-slate-400" />
-          <div>
-            <p className="text-sm font-medium text-slate-700">Joined On</p>
-            <p className="text-slate-600">{formatDate(user.created_at)}</p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-3">
-          <Icon icon="mdi:login" className="w-5 h-5 text-slate-400" />
-          <div>
-            <p className="text-sm font-medium text-slate-700">Last Login</p>
-            <p className="text-slate-600">{formatLastLogin(user.last_login)}</p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-3">
-          <Icon icon="mdi:update" className="w-5 h-5 text-slate-400" />
-          <div>
-            <p className="text-sm font-medium text-slate-700">Last Updated</p>
-            <p className="text-slate-600">{formatDate(user.updated_at)}</p>
-          </div>
-        </div>
-        {user.testimonials && user.testimonials.length > 0 && (
-          <div className="md:col-span-2 flex items-center space-x-3">
-            <Icon icon="mdi:star" className="w-5 h-5 text-slate-400" />
-            <div>
-              <p className="text-sm font-medium text-slate-700">Testimonials</p>
-              <p className="text-slate-600">
-                {user.testimonials.length} testimonial(s)
-              </p>
+const UserDetailsModal = ({ userId, onClose, token }) => {
+  const [userDetails, setUserDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchUserDetails = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admins/user/${userId}/details`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (!response.ok) throw new Error("Failed to fetch user details");
+        const data = await response.json();
+        setUserDetails(data);
+      } catch (error) {
+        toast.error(
+          "Failed to fetch user details. " + (error.message || "Unknown error")
+        );
+        onClose();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserDetails();
+  }, [userId, token, onClose]);
+
+  if (!userId) return null;
+
+  return (
+    <ModalWrapper visible={!!userId} onClose={onClose}>
+      <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full animate-in fade-in-0 zoom-in-95">
+        {loading ? (
+          <LoadingSpinner />
+        ) : userDetails ? (
+          <>
+            <div className="relative bg-gradient-to-r from-cyan-500 to-blue-600 text-white p-6">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                  <Icon icon="mdi:account-details" className="w-8 h-8" />
+                </div>
+                <div>
+                  <h2 id="modal-title" className="text-2xl font-bold">
+                    User Profile
+                  </h2>
+                  <p className="text-cyan-100 mt-1">
+                    Detailed information for {userDetails.user.full_name}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all duration-200"
+              >
+                <Icon icon="mdi:close" className="w-6 h-6" />
+              </button>
             </div>
-          </div>
-        )}
+
+            <div className="p-8 max-h-[80vh] overflow-y-auto space-y-6">
+              {/* Basic User Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                  <Icon
+                    icon="mdi:account-outline"
+                    className="w-5 h-5 text-cyan-600"
+                  />
+                  Basic Information
+                </h3>
+                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    <div className="flex items-center space-x-3">
+                      <Icon
+                        icon="mdi:identifier"
+                        className="w-5 h-5 text-slate-400"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-slate-700">
+                          User ID
+                        </p>
+                        <p className="text-slate-600">{userDetails.user.id}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Icon
+                        icon="mdi:account-circle"
+                        className="w-5 h-5 text-slate-400"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-slate-700">
+                          Full Name
+                        </p>
+                        <p className="text-slate-600">
+                          {userDetails.user.full_name}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Icon
+                        icon="mdi:email"
+                        className="w-5 h-5 text-slate-400"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-slate-700">
+                          Email
+                        </p>
+                        <p className="text-slate-600">
+                          {userDetails.user.email}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Icon
+                        icon="mdi:toggle-switch"
+                        className="w-5 h-5 text-slate-400"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-slate-700">
+                          Status
+                        </p>
+                        <UserStatusBadge
+                          isActive={userDetails.user.is_active}
+                          isBlocked={userDetails.user.is_blocked}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Icon
+                        icon="mdi:calendar-plus"
+                        className="w-5 h-5 text-slate-400"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-slate-700">
+                          Joined On
+                        </p>
+                        <p className="text-slate-600">
+                          {formatDate(userDetails.user.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Icon
+                        icon="mdi:login"
+                        className="w-5 h-5 text-slate-400"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-slate-700">
+                          Last Login
+                        </p>
+                        <p className="text-slate-600">
+                          {formatLastLogin(userDetails.user.last_login)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Icon
+                        icon="mdi:update"
+                        className="w-5 h-5 text-slate-400"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-slate-700">
+                          Last Updated
+                        </p>
+                        <p className="text-slate-600">
+                          {formatDate(userDetails.user.updated_at)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Invoices */}
+              {userDetails.invoices && userDetails.invoices.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                    <Icon
+                      icon="mdi:receipt-text"
+                      className="w-5 h-5 text-cyan-600"
+                    />
+                    Invoices ({userDetails.invoices.length})
+                  </h3>
+                  <div className="space-y-3">
+                    {userDetails.invoices.map((invoice) => (
+                      <div
+                        key={invoice.id}
+                        className="bg-slate-50 p-4 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors"
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <p className="font-semibold text-slate-800">
+                              {invoice.invoice_description}
+                            </p>
+                            <p className="text-sm text-slate-500">
+                              Ref: {invoice.customer_reference}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-lg text-slate-800">
+                              {invoice.amount} {invoice.currency}
+                            </p>
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                                invoice.status === "PAID"
+                                  ? "bg-green-100 text-green-700"
+                                  : invoice.status === "PENDING"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {invoice.status}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <span className="text-slate-500">Activity:</span>
+                            <p className="text-slate-700">{invoice.activity}</p>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Type:</span>
+                            <p className="text-slate-700">
+                              {invoice.invoice_type}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Created:</span>
+                            <p className="text-slate-700">
+                              {formatDate(invoice.created_at)}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Picked Up:</span>
+                            <p className="text-slate-700">
+                              {invoice.picked_up ? "Yes" : "No"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Testimonials */}
+              {userDetails.testimonials &&
+                userDetails.testimonials.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                      <Icon
+                        icon="mdi:star-outline"
+                        className="w-5 h-5 text-cyan-600"
+                      />
+                      Testimonials ({userDetails.testimonials.length})
+                    </h3>
+                    <div className="space-y-3">
+                      {userDetails.testimonials.map((testimonial) => (
+                        <div
+                          key={testimonial.id}
+                          className="bg-slate-50 p-4 rounded-lg border border-slate-200"
+                        >
+                          <div className="flex items-center mb-2">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Icon
+                                key={i}
+                                icon={
+                                  i < testimonial.rating
+                                    ? "mdi:star"
+                                    : "mdi:star-outline"
+                                }
+                                className={`w-4 h-4 ${
+                                  i < testimonial.rating
+                                    ? "text-yellow-400"
+                                    : "text-slate-300"
+                                }`}
+                              />
+                            ))}
+                            <span className="ml-2 text-sm font-medium text-slate-600">
+                              {testimonial.rating}/5
+                            </span>
+                          </div>
+                          <p className="text-slate-700 mb-2">
+                            {testimonial.description}
+                          </p>
+                          {testimonial.notes && (
+                            <p className="text-sm text-slate-500 italic">
+                              Note: {testimonial.notes}
+                            </p>
+                          )}
+                          <p className="text-xs text-slate-400 mt-2">
+                            {formatDate(testimonial.created_at)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              {/* Subscribed Courses */}
+              {userDetails.subscribed_courses &&
+                userDetails.subscribed_courses.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                      <Icon
+                        icon="mdi:school-outline"
+                        className="w-5 h-5 text-cyan-600"
+                      />
+                      Enrolled Courses ({userDetails.subscribed_courses.length})
+                    </h3>
+                    <div className="space-y-3">
+                      {userDetails.subscribed_courses.map((course) => (
+                        <div
+                          key={course.id}
+                          className="bg-slate-50 p-4 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors"
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <p className="font-semibold text-slate-800">
+                                {course.name}
+                              </p>
+                              <p className="text-sm text-slate-600">
+                                {course.description}
+                              </p>
+                            </div>
+                            {course.price_available && (
+                              <p className="font-bold text-lg text-cyan-600">
+                                ${course.price}
+                              </p>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm mt-3">
+                            <div>
+                              <span className="text-slate-500">Level:</span>
+                              <p className="text-slate-700">
+                                {course.course_level}
+                              </p>
+                            </div>
+                            <div>
+                              <span className="text-slate-500">Duration:</span>
+                              <p className="text-slate-700">
+                                {course.course_duration}{" "}
+                                {course.course_duration_unit}
+                              </p>
+                            </div>
+                            <div>
+                              <span className="text-slate-500">Provider:</span>
+                              <p className="text-slate-700">
+                                {course.provider}
+                              </p>
+                            </div>
+                            {course.has_certificate && (
+                              <div className="col-span-2 md:col-span-3">
+                                <span className="text-slate-500">
+                                  Certificate:
+                                </span>
+                                <p className="text-slate-700">
+                                  {course.certificate_type}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          {course.has_discount && (
+                            <div className="mt-2">
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                <Icon icon="mdi:tag" className="w-3 h-3" />
+                                {course.discount_percentage}% Discount
+                                {course.discount_requires_min_people &&
+                                  ` (Min ${course.discount_min_people} people)`}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              {/* Notifications */}
+              {userDetails.notifications &&
+                userDetails.notifications.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                      <Icon
+                        icon="mdi:bell-outline"
+                        className="w-5 h-5 text-cyan-600"
+                      />
+                      Notifications ({userDetails.notifications.length})
+                    </h3>
+                    <div className="space-y-2">
+                      {userDetails.notifications.map((notification) => (
+                        <div
+                          key={notification.id}
+                          className={`p-3 rounded-lg border ${
+                            notification.is_read
+                              ? "bg-white border-slate-200"
+                              : "bg-cyan-50 border-cyan-200"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Icon
+                                  icon={
+                                    notification.type === "payment"
+                                      ? "mdi:cash"
+                                      : notification.type === "enrollment"
+                                      ? "mdi:school"
+                                      : "mdi:bell"
+                                  }
+                                  className="w-4 h-4 text-cyan-600"
+                                />
+                                <p className="font-semibold text-sm text-slate-800">
+                                  {notification.title}
+                                </p>
+                              </div>
+                              <p className="text-sm text-slate-600">
+                                {notification.message}
+                              </p>
+                              <p className="text-xs text-slate-400 mt-1">
+                                {formatDate(notification.created_at)}
+                              </p>
+                            </div>
+                            {!notification.is_read && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-700">
+                                New
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+            </div>
+          </>
+        ) : null}
       </div>
-    </div>
-  </ModalWrapper>
-);
+    </ModalWrapper>
+  );
+};
 
 const EditUserModal = ({ user, onClose, onSave }) => {
   const [formData, setFormData] = useState({
@@ -864,7 +1202,7 @@ export default function UserManagementPage() {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [sorting, setSorting] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUserId, setSelectedUserId] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [changingPasswordUser, setChangingPasswordUser] = useState(null);
   const [viewingTestimonials, setViewingTestimonials] = useState(null);
@@ -1100,7 +1438,7 @@ export default function UserManagementPage() {
         cell: ({ row }) => (
           <div className="flex items-center space-x-1">
             <button
-              onClick={() => setSelectedUser(row.original)}
+              onClick={() => setSelectedUserId(row.original.id)}
               className="p-2 text-slate-500 rounded-full transition-all duration-200 hover:bg-blue-100 hover:text-blue-600"
               title="View Details"
             >
@@ -1582,10 +1920,11 @@ export default function UserManagementPage() {
       </div>
 
       {/* Modals */}
-      {selectedUser && (
+      {selectedUserId && (
         <UserDetailsModal
-          user={selectedUser}
-          onClose={() => setSelectedUser(null)}
+          userId={selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+          token={token}
         />
       )}
       {editingUser && (

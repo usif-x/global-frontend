@@ -144,142 +144,333 @@ const ModalWrapper = ({ children, onClose, visible }) => {
   );
 };
 
-const InvoiceDetailsModal = ({ invoice, onClose }) => {
-  if (!invoice) return null;
+const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
+  const [invoice, setInvoice] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!invoiceId) return;
+
+    const fetchInvoiceDetails = async () => {
+      setLoading(true);
+      try {
+        const data = await InvoiceService.getInvoiceByIdAdmin(invoiceId);
+        setInvoice(data);
+      } catch (error) {
+        toast.error(
+          "Failed to fetch invoice details. " +
+            (error.response?.data?.detail || error.message)
+        );
+        onClose();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInvoiceDetails();
+  }, [invoiceId, onClose]);
+
+  if (!invoiceId) return null;
+
   return (
-    <ModalWrapper visible={!!invoice} onClose={onClose}>
+    <ModalWrapper visible={!!invoiceId} onClose={onClose}>
       <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full animate-in fade-in-0 zoom-in-95">
-        <div className="relative bg-gradient-to-r from-cyan-500 to-blue-600 text-white p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <Icon icon="mdi:file-document" className="w-8 h-8" />
-              </div>
-              <div>
-                <h2 id="modal-title" className="text-2xl font-bold">
-                  Invoice Ref: {invoice.customer_reference}
-                </h2>
-                <p className="text-cyan-100 mt-1">
-                  Issued on {formatDate(invoice.created_at)}
-                </p>
-              </div>
-            </div>
-            <div>
-              <span
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${
-                  invoice.invoice_type === "online"
-                    ? "bg-blue-100 text-blue-800"
-                    : "bg-green-100 text-green-800"
-                }`}
-              >
-                <Icon
-                  icon={
-                    invoice.invoice_type === "online"
-                      ? "mdi:credit-card"
-                      : "mdi:cash"
-                  }
-                  className="w-4 h-4"
-                />
-                {invoice.invoice_type === "online"
-                  ? "Online Payment"
-                  : "Cash Payment"}
-              </span>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all"
-          >
-            <Icon icon="mdi:close" className="w-6 h-6" />
-          </button>
-        </div>
-        <div className="p-8 max-h-[70vh] overflow-y-auto space-y-6">
-          {/* Activity Details */}
-          {invoice.activity_details && invoice.activity_details.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
-                <Icon
-                  icon="mdi:calendar-check"
-                  className="w-5 h-5 text-cyan-600"
-                />
-                Activity Details
-              </h3>
-              <div className="space-y-3">
-                {invoice.activity_details.map((activity, index) => (
-                  <div
-                    key={index}
-                    className="bg-slate-50 p-4 rounded-lg border border-slate-200"
+        {loading ? (
+          <LoadingSpinner />
+        ) : invoice ? (
+          <>
+            <div className="relative bg-gradient-to-r from-cyan-500 to-blue-600 text-white p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                    <Icon icon="mdi:file-document" className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h2 id="modal-title" className="text-2xl font-bold">
+                      Invoice Ref: {invoice.customer_reference}
+                    </h2>
+                    <p className="text-cyan-100 mt-1">
+                      Issued on {formatDate(invoice.created_at)}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <StatusBadge status={invoice.status} />
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${
+                      invoice.invoice_type === "online"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-green-100 text-green-800"
+                    }`}
                   >
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <span className="text-slate-500 font-medium">
-                          Activity:
-                        </span>
-                        <p className="text-slate-800">{activity.name}</p>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 font-medium">
-                          Date:
-                        </span>
-                        <p className="text-slate-800">
-                          {formatDate(activity.activity_date)}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 font-medium">
-                          Hotel:
-                        </span>
-                        <p className="text-slate-800">{activity.hotel_name}</p>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 font-medium">
-                          Room:
-                        </span>
-                        <p className="text-slate-800">{activity.room_number}</p>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 font-medium">
-                          Adults:
-                        </span>
-                        <p className="text-slate-800">{activity.adults}</p>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 font-medium">
-                          Children:
-                        </span>
-                        <p className="text-slate-800">{activity.children}</p>
-                      </div>
-                      {activity.special_requests && (
-                        <div className="col-span-2">
-                          <span className="text-slate-500 font-medium">
-                            Special Requests:
-                          </span>
-                          <p className="text-slate-800">
-                            {activity.special_requests}
-                          </p>
-                        </div>
-                      )}
+                    <Icon
+                      icon={
+                        invoice.invoice_type === "online"
+                          ? "mdi:credit-card"
+                          : "mdi:cash"
+                      }
+                      className="w-4 h-4"
+                    />
+                    {invoice.invoice_type === "online"
+                      ? "Online Payment"
+                      : "Cash Payment"}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all"
+              >
+                <Icon icon="mdi:close" className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-8 max-h-[70vh] overflow-y-auto space-y-6">
+              {/* Customer Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                  <Icon
+                    icon="mdi:account-outline"
+                    className="w-5 h-5 text-cyan-600"
+                  />
+                  Customer Information
+                </h3>
+                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="text-slate-500 font-medium">Name:</span>
+                      <p className="text-slate-800 font-semibold">
+                        {invoice.buyer_name}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 font-medium">Email:</span>
+                      <p className="text-slate-800">{invoice.buyer_email}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 font-medium">Phone:</span>
+                      <p className="text-slate-800">
+                        {invoice.buyer_phone || "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 font-medium">
+                        User ID:
+                      </span>
+                      <p className="text-slate-800">#{invoice.user_id}</p>
                     </div>
                   </div>
-                ))}
+                </div>
+              </div>
+
+              {/* Payment Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                  <Icon
+                    icon="mdi:cash-multiple"
+                    className="w-5 h-5 text-cyan-600"
+                  />
+                  Payment Information
+                </h3>
+                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="text-slate-500 font-medium">
+                        Amount:
+                      </span>
+                      <p className="text-slate-800 font-bold text-lg">
+                        {formatCurrency(invoice.amount, invoice.currency)}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 font-medium">
+                        Currency:
+                      </span>
+                      <p className="text-slate-800">{invoice.currency}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 font-medium">
+                        Invoice ID:
+                      </span>
+                      <p className="text-slate-800">#{invoice.id}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 font-medium">
+                        Picked Up:
+                      </span>
+                      <p className="text-slate-800">
+                        {invoice.picked_up ? (
+                          <span className="inline-flex items-center gap-1 text-green-600">
+                            <Icon icon="mdi:check-circle" className="w-4 h-4" />
+                            Yes
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-orange-600">
+                            <Icon
+                              icon="mdi:clock-outline"
+                              className="w-4 h-4"
+                            />
+                            No
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    {invoice.easykash_reference && (
+                      <div className="col-span-2">
+                        <span className="text-slate-500 font-medium">
+                          EasyKash Reference:
+                        </span>
+                        <p className="text-slate-800 font-mono">
+                          {invoice.easykash_reference}
+                        </p>
+                      </div>
+                    )}
+                    {invoice.pay_url && (
+                      <div className="col-span-2">
+                        <span className="text-slate-500 font-medium">
+                          Payment URL:
+                        </span>
+                        <a
+                          href={invoice.pay_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-cyan-600 hover:text-cyan-700 underline break-all"
+                        >
+                          {invoice.pay_url}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Timestamps */}
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                  <Icon
+                    icon="mdi:clock-outline"
+                    className="w-5 h-5 text-cyan-600"
+                  />
+                  Timeline
+                </h3>
+                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="text-slate-500 font-medium">
+                        Created:
+                      </span>
+                      <p className="text-slate-800">
+                        {formatDate(invoice.created_at)}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 font-medium">
+                        Last Updated:
+                      </span>
+                      <p className="text-slate-800">
+                        {formatDate(invoice.updated_at)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Activity Details */}
+              {invoice.activity_details &&
+                invoice.activity_details.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                      <Icon
+                        icon="mdi:calendar-check"
+                        className="w-5 h-5 text-cyan-600"
+                      />
+                      Activity Details
+                    </h3>
+                    <div className="space-y-3">
+                      {invoice.activity_details.map((activity, index) => (
+                        <div
+                          key={index}
+                          className="bg-slate-50 p-4 rounded-lg border border-slate-200"
+                        >
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                              <span className="text-slate-500 font-medium">
+                                Activity:
+                              </span>
+                              <p className="text-slate-800">{activity.name}</p>
+                            </div>
+                            <div>
+                              <span className="text-slate-500 font-medium">
+                                Date:
+                              </span>
+                              <p className="text-slate-800">
+                                {formatDate(activity.activity_date)}
+                              </p>
+                            </div>
+                            <div>
+                              <span className="text-slate-500 font-medium">
+                                Hotel:
+                              </span>
+                              <p className="text-slate-800">
+                                {activity.hotel_name}
+                              </p>
+                            </div>
+                            <div>
+                              <span className="text-slate-500 font-medium">
+                                Room:
+                              </span>
+                              <p className="text-slate-800">
+                                {activity.room_number}
+                              </p>
+                            </div>
+                            <div>
+                              <span className="text-slate-500 font-medium">
+                                Adults:
+                              </span>
+                              <p className="text-slate-800">
+                                {activity.adults}
+                              </p>
+                            </div>
+                            <div>
+                              <span className="text-slate-500 font-medium">
+                                Children:
+                              </span>
+                              <p className="text-slate-800">
+                                {activity.children}
+                              </p>
+                            </div>
+                            {activity.special_requests && (
+                              <div className="col-span-2">
+                                <span className="text-slate-500 font-medium">
+                                  Special Requests:
+                                </span>
+                                <p className="text-slate-800">
+                                  {activity.special_requests}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              {/* Full Description */}
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                  <Icon
+                    icon="mdi:text-box-outline"
+                    className="w-5 h-5 text-cyan-600"
+                  />
+                  Full Description
+                </h3>
+                <pre className="bg-slate-50 p-4 rounded-lg text-sm text-slate-700 whitespace-pre-wrap font-sans border border-slate-200">
+                  {invoice.invoice_description}
+                </pre>
               </div>
             </div>
-          )}
-
-          {/* Full Description */}
-          <div>
-            <h3 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
-              <Icon
-                icon="mdi:text-box-outline"
-                className="w-5 h-5 text-cyan-600"
-              />
-              Full Description
-            </h3>
-            <pre className="bg-slate-50 p-4 rounded-lg text-sm text-slate-700 whitespace-pre-wrap font-sans border border-slate-200">
-              {invoice.invoice_description}
-            </pre>
-          </div>
-        </div>
+          </>
+        ) : null}
       </div>
     </ModalWrapper>
   );
@@ -294,7 +485,7 @@ export default function InvoiceManagementPage() {
   const [summary, setSummary] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sorting, setSorting] = useState([{ id: "created_at", desc: true }]);
-  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     per_page: 10,
@@ -572,7 +763,7 @@ export default function InvoiceManagementPage() {
         cell: ({ row }) => (
           <div className="flex items-center space-x-1">
             <button
-              onClick={() => setSelectedInvoice(row.original)}
+              onClick={() => setSelectedInvoiceId(row.original.id)}
               className="p-2 text-slate-500 rounded-full hover:bg-blue-100 hover:text-blue-600"
               title="View Details"
             >
@@ -824,10 +1015,10 @@ export default function InvoiceManagementPage() {
         </div>
       </div>
 
-      {selectedInvoice && (
+      {selectedInvoiceId && (
         <InvoiceDetailsModal
-          invoice={selectedInvoice}
-          onClose={() => setSelectedInvoice(null)}
+          invoiceId={selectedInvoiceId}
+          onClose={() => setSelectedInvoiceId(null)}
         />
       )}
     </div>

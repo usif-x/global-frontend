@@ -82,6 +82,13 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
+        {/* Umami Analytics */}
+        <Script
+          defer
+          src="https://umami.usif.space/script.js"
+          data-website-id="987ff080-4a1c-4bec-8ef4-dc0a2ed0b805"
+          strategy="afterInteractive"
+        />
         <Suspense>
           <LoadingProvider>
             <ToastContainer
