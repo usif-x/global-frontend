@@ -127,6 +127,17 @@ const SuccessDisplay = ({ invoice }) => (
                 <Icon icon="mdi:whatsapp" className="w-5 h-5" />
                 <span>WhatsApp Us</span>
               </a>
+              <button
+                onClick={() => {
+                  if (window.$crisp) {
+                    window.$crisp.push(["do", "chat:open"]);
+                  }
+                }}
+                className="inline-flex items-center gap-2 bg-cyan-600 text-white px-4 py-2 rounded-lg hover:bg-cyan-700 transition-colors text-sm font-medium"
+              >
+                <Icon icon="mdi:message-text" className="w-5 h-5" />
+                <span>Live Chat</span>
+              </button>
             </div>
           </div>
         </div>
