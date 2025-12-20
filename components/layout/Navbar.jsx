@@ -1,11 +1,13 @@
 "use client";
 
+import PublicNotificationService from "@/services/publicNotificationService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import PublicNotificationDisplay from "./PublicNotificationDisplay";
 
 const Navbar = () => {
   const [hasScrolled, setHasScrolled] = useState(false);
