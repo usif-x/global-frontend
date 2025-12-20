@@ -341,10 +341,10 @@ const ContactPage = () => {
               <Icon icon="mdi:phone" className="w-6 h-6 text-white" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Call Us
+              WhatsApp Us
             </h3>
-            <p className="text-gray-600">+1 (555) 123-4567</p>
-            <p className="text-sm text-gray-500 mt-1">Mon-Fri 9AM-6PM</p>
+            <p className="text-gray-600">+201070440861</p>
+            <p className="text-sm text-gray-500 mt-1">Mon-Fri 1PM-12PM</p>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100 text-center">
@@ -354,7 +354,7 @@ const ContactPage = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Email Us
             </h3>
-            <p className="text-gray-600">contact@yourcompany.com</p>
+            <p className="text-gray-600">contact@topdivers.online</p>
             <p className="text-sm text-gray-500 mt-1">We reply within 24h</p>
           </div>
 
@@ -365,9 +365,9 @@ const ContactPage = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Visit Us
             </h3>
-            <p className="text-gray-600">123 Travel Street</p>
+            <p className="text-gray-600">Sunrise Aquajoy resort</p>
             <p className="text-sm text-gray-500 mt-1">
-              Adventure City, AC 12345
+              Egypt, Red Sea, Hurghada
             </p>
           </div>
         </div>

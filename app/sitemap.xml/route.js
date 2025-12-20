@@ -55,11 +55,6 @@ export async function GET() {
         changefreq: "daily",
       },
       {
-        url: `${siteBaseUrl}/center-location/`,
-        priority: "0.6",
-        changefreq: "monthly",
-      },
-      {
         url: `${siteBaseUrl}/profile/`,
         priority: "0.5",
         changefreq: "monthly",

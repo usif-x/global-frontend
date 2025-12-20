@@ -14,6 +14,8 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(null);
+  const [isOtherLinksDropdownOpen, setIsOtherLinksDropdownOpen] =
+    useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
@@ -57,6 +59,7 @@ const Navbar = () => {
   const TripsDropdownRef = useRef(null);
   const coursesDropdownRef = useRef(null);
   const profileDropdownRef = useRef(null);
+  const otherLinksDropdownRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -74,10 +77,13 @@ const Navbar = () => {
         coursesDropdownRef.current &&
         !coursesDropdownRef.current.contains(event.target) &&
         profileDropdownRef.current &&
-        !profileDropdownRef.current.contains(event.target)
+        !profileDropdownRef.current.contains(event.target) &&
+        otherLinksDropdownRef.current &&
+        !otherLinksDropdownRef.current.contains(event.target)
       ) {
         setIsDropdownOpen(null);
         setIsProfileDropdownOpen(false);
+        setIsOtherLinksDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -104,10 +110,23 @@ const Navbar = () => {
     e.stopPropagation();
     setIsProfileDropdownOpen((prev) => !prev);
     setIsDropdownOpen(null);
+    setIsOtherLinksDropdownOpen(false);
   };
 
   const handleProfileDropdownClose = () => {
     setIsProfileDropdownOpen(false);
+  };
+
+  const handleOtherLinksClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsOtherLinksDropdownOpen((prev) => !prev);
+    setIsProfileDropdownOpen(false);
+    setIsDropdownOpen(null);
+  };
+
+  const handleOtherLinksDropdownClose = () => {
+    setIsOtherLinksDropdownOpen(false);
   };
 
   const navigationLinks = [
@@ -116,6 +135,12 @@ const Navbar = () => {
     { href: "/trips", label: "Trips" },
     { href: "/courses", label: "Courses" },
     { href: "/bestsellers", label: "Best Sellers" },
+  ];
+
+  const otherLinks = [
+    { href: "/destinations", label: "Destinations" },
+    { href: "/dive-sites", label: "Dive Sites" },
+    { href: "/contact", label: "Contact" },
   ];
 
   // Helper function to check if link is active
@@ -195,6 +220,61 @@ const Navbar = () => {
                 </li>
               );
             })}
+
+            {/* Other Links Dropdown */}
+            <li className="relative" ref={otherLinksDropdownRef}>
+              <button
+                onClick={handleOtherLinksClick}
+                className="relative group py-2 px-1 flex items-center gap-1"
+              >
+                <span
+                  className={`relative z-10 transition-colors duration-300 whitespace-nowrap ${
+                    isOtherLinksDropdownOpen
+                      ? "text-cyan-300"
+                      : "group-hover:text-cyan-300"
+                  }`}
+                >
+                  Other Links
+                </span>
+                <Icon
+                  icon="lucide:chevron-down"
+                  className={`w-4 h-4 transition-all duration-300 ${
+                    isOtherLinksDropdownOpen
+                      ? "rotate-180 text-cyan-300"
+                      : "text-white/70 group-hover:text-cyan-300"
+                  }`}
+                />
+                <div
+                  className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300 ${
+                    isOtherLinksDropdownOpen
+                      ? "w-full"
+                      : "w-0 group-hover:w-full"
+                  }`}
+                ></div>
+              </button>
+
+              {isOtherLinksDropdownOpen && (
+                <div className="absolute left-0 top-full mt-2 w-48 bg-gray-900/95 backdrop-blur-2xl rounded-2xl shadow-2xl py-2 z-50 border border-white/10 animate-in fade-in slide-in-from-top-2 duration-200">
+                  {otherLinks.map((link, index) => {
+                    const isActive = isActiveLink(link.href);
+                    return (
+                      <Link
+                        key={index}
+                        href={link.href}
+                        className={`flex items-center gap-3 px-4 py-3 transition-all duration-200 ${
+                          isActive
+                            ? "text-cyan-300 bg-gradient-to-r from-cyan-500/20 to-blue-500/20"
+                            : "text-white hover:text-cyan-300 hover:bg-gradient-to-r hover:from-cyan-500/20 hover:to-blue-500/20"
+                        }`}
+                        onClick={handleOtherLinksDropdownClose}
+                      >
+                        <span>{link.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </li>
           </ul>
 
           {/* Right: Desktop Login/Register/Profile + Mobile Menu Button */}
@@ -420,6 +500,42 @@ const Navbar = () => {
                     </li>
                   );
                 })}
+
+                {/* Other Links Section */}
+                <li className="pt-4">
+                  <div className="text-white/50 text-xs font-semibold uppercase tracking-wider px-4 pb-2">
+                    Other Links
+                  </div>
+                  <div className="space-y-1">
+                    {otherLinks.map((link, index) => {
+                      const isActive = isActiveLink(link.href);
+                      return (
+                        <Link
+                          key={index}
+                          href={link.href}
+                          className={`flex items-center justify-between text-white transition-all duration-300 py-3 px-4 rounded-xl border group ${
+                            isActive
+                              ? "text-cyan-300 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-cyan-400/30"
+                              : "hover:text-cyan-300 hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-blue-500/10 border-transparent hover:border-white/10"
+                          }`}
+                          onClick={handleMobileMenuLinkClick}
+                        >
+                          <span className="text-base font-medium">
+                            {link.label}
+                          </span>
+                          <Icon
+                            icon="lucide:chevron-right"
+                            className={`w-5 h-5 transition-all duration-300 group-hover:translate-x-1 ${
+                              isActive
+                                ? "opacity-100"
+                                : "opacity-50 group-hover:opacity-100"
+                            }`}
+                          />
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </li>
               </ul>
             </nav>
 
