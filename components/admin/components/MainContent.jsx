@@ -284,6 +284,12 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
       action: () => setActiveTab("best_selling"),
       description: "Manage featured items",
     },
+    {
+      title: "Coupon Management",
+      icon: "mdi:ticket-percent",
+      action: () => setActiveTab("coupons"),
+      description: "Manage discount coupons",
+    },
   ];
 
   // Enhanced loading state

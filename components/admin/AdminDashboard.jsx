@@ -2,6 +2,7 @@
 import AdminManagementPage from "@/components/admin/components/admin/ModernAdmin";
 import AnalyticsContent from "@/components/admin/components/analytic/AnalyticsContent";
 import BestSellingMain from "@/components/admin/components/bestselling/BestSelling";
+import CouponManagement from "@/components/admin/components/coupon/Coupon";
 import DiveCenterManagementPage from "@/components/admin/components/divecenter/DiveCenter";
 import GalleryManagementPage from "@/components/admin/components/gallery/Gallery";
 import PackageManagement from "@/components/admin/components/package/Package";
@@ -353,6 +354,12 @@ const AdminDashboard = () => {
       color: "text-rose-500",
     },
     {
+      id: "coupons",
+      label: "Coupons",
+      icon: "mdi:ticket-percent",
+      color: "text-purple-500",
+    },
+    {
       id: "users",
       label: "Users",
       icon: "mdi:account-group",
@@ -491,6 +498,8 @@ const AdminDashboard = () => {
         return <CourseManagement />;
       case "best_selling":
         return <BestSellingMain />;
+      case "coupons":
+        return <CouponManagement />;
       case "users":
         return <UserManagementPage />;
       case "gallery":

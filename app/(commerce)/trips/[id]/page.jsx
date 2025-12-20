@@ -6,6 +6,7 @@ import Input from "@/components/ui/Input";
 import MarkdownRenderer from "@/components/ui/MarkdownRender";
 import Select from "@/components/ui/Select";
 import { getData, postData } from "@/lib/axios";
+import CouponService from "@/services/couponService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { formatDuration } from "@/utils/formatDurations";
 import { Icon } from "@iconify/react";
@@ -97,6 +98,10 @@ const TripPage = ({ params }) => {
   const [paymentType, setPaymentType] = useState("online");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showCouponInput, setShowCouponInput] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponLoading, setCouponLoading] = useState(false);
 
   const getCurrencySymbol = (currencyCode) => {
     const currency = currencies.find((c) => c.value === currencyCode);
@@ -222,7 +227,8 @@ const TripPage = ({ params }) => {
   };
 
   const calculateTotalPrice = () => {
-    if (!tripData) return { original: 0, final: 0, discount: null };
+    if (!tripData)
+      return { original: 0, final: 0, discount: null, couponDiscount: 0 };
 
     const pricing = getCurrentPricing();
     const originalPrice = Math.round(
@@ -230,15 +236,28 @@ const TripPage = ({ params }) => {
     );
 
     const discount = calculateDiscount();
+    let finalPrice = originalPrice;
 
+    // Apply trip discount first
     if (discount.isApplied) {
-      const finalPrice = Math.round(
-        originalPrice * (1 - discount.percentage / 100)
-      );
-      return { original: originalPrice, final: finalPrice, discount };
+      finalPrice = Math.round(originalPrice * (1 - discount.percentage / 100));
     }
 
-    return { original: originalPrice, final: originalPrice, discount };
+    // Apply coupon discount on top of trip discount
+    let couponDiscount = 0;
+    if (appliedCoupon && appliedCoupon.discount_percentage) {
+      couponDiscount = Math.round(
+        finalPrice * (appliedCoupon.discount_percentage / 100)
+      );
+      finalPrice = finalPrice - couponDiscount;
+    }
+
+    return {
+      original: originalPrice,
+      final: finalPrice,
+      discount,
+      couponDiscount,
+    };
   };
 
   const handleInputChange = (name, value) => {
@@ -279,6 +298,54 @@ const TripPage = ({ params }) => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lightboxOpen, currentImageIndex]);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Please enter a coupon code");
+      return;
+    }
+
+    if (!isAuthenticated) {
+      toast.warn("Please log in to apply a coupon.");
+      router.push(`/login`);
+      return;
+    }
+
+    setCouponLoading(true);
+    try {
+      const result = await CouponService.apply(couponCode.trim());
+
+      if (result.success && result.coupon) {
+        // Check if coupon is valid for this activity
+        if (
+          result.coupon.activity !== "all" &&
+          result.coupon.activity !== "trip"
+        ) {
+          toast.error("This coupon is not valid for trips");
+          return;
+        }
+
+        setAppliedCoupon(result.coupon);
+        toast.success(
+          `Coupon applied! ${result.coupon.discount_percentage}% discount`
+        );
+      } else {
+        toast.error(result.message || "Failed to apply coupon");
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.detail || "Failed to apply coupon";
+      toast.error(errorMessage);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    toast.info("Coupon removed");
+  };
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -915,6 +982,95 @@ const TripPage = ({ params }) => {
                       </div>
                     )}
 
+                    {/* Coupon Section */}
+                    <div className="space-y-3">
+                      {!showCouponInput && !appliedCoupon && (
+                        <button
+                          type="button"
+                          onClick={() => setShowCouponInput(true)}
+                          className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center transition-colors"
+                        >
+                          <Icon
+                            icon="mdi:ticket-percent"
+                            className="w-4 h-4 mr-1.5"
+                          />
+                          Have a coupon?
+                        </button>
+                      )}
+
+                      {showCouponInput && !appliedCoupon && (
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <Input
+                              icon="mdi:ticket-percent"
+                              name="couponCode"
+                              type="text"
+                              placeholder="Enter coupon code"
+                              value={couponCode}
+                              onChange={(e) =>
+                                setCouponCode(e.target.value.toUpperCase())
+                              }
+                              className="text-lg"
+                              onKeyPress={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  handleApplyCoupon();
+                                }
+                              }}
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleApplyCoupon}
+                            disabled={couponLoading || !couponCode.trim()}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                          >
+                            {couponLoading ? (
+                              <Icon
+                                icon="mdi:loading"
+                                className="w-5 h-5 animate-spin"
+                              />
+                            ) : (
+                              <span>Apply</span>
+                            )}
+                          </button>
+                        </div>
+                      )}
+
+                      {appliedCoupon && (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <Icon
+                                icon="mdi:check-circle"
+                                className="w-5 h-5 text-green-600 mr-2"
+                              />
+                              <div>
+                                <p className="font-semibold text-green-800">
+                                  {appliedCoupon.code}
+                                </p>
+                                <p className="text-sm text-green-600">
+                                  {appliedCoupon.discount_percentage}% discount
+                                  applied
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleRemoveCoupon}
+                              className="text-green-600 hover:text-green-700 p-1"
+                              title="Remove coupon"
+                            >
+                              <Icon
+                                icon="mdi:close-circle"
+                                className="w-5 h-5"
+                              />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     <Input
                       name="hotelName"
                       value={formData.hotelName}
@@ -1031,11 +1187,46 @@ const TripPage = ({ params }) => {
                           </div>
                         )}
 
+                        {/* Display Trip Discount if applied */}
+                        {appliedDiscount.isApplied && (
+                          <div className="flex justify-between text-green-600 text-xs">
+                            <span>
+                              Trip Discount ({appliedDiscount.percentage}%):
+                            </span>
+                            <span>
+                              - EGP{" "}
+                              {formatPrice(
+                                originalTotalPrice -
+                                  originalTotalPrice *
+                                    (1 - appliedDiscount.percentage / 100)
+                              )}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Display Coupon Discount if applied */}
+                        {(() => {
+                          const calc = calculateTotalPrice();
+                          return (
+                            calc.couponDiscount > 0 && (
+                              <div className="flex justify-between text-green-600 text-xs">
+                                <span>
+                                  Coupon Discount (
+                                  {appliedCoupon.discount_percentage}%):
+                                </span>
+                                <span>
+                                  - EGP {formatPrice(calc.couponDiscount)}
+                                </span>
+                              </div>
+                            )
+                          );
+                        })()}
+
                         {/* Display Total and Discount */}
                         <div className="flex justify-between font-bold text-lg border-t pt-2 text-gray-800 items-end">
                           <span>Total:</span>
                           <div className="text-right">
-                            {appliedDiscount.isApplied && (
+                            {(appliedDiscount.isApplied || appliedCoupon) && (
                               <span className="text-gray-400 line-through text-sm mr-2">
                                 EGP {formatPrice(originalTotalPrice)}
                               </span>
@@ -1063,6 +1254,15 @@ const TripPage = ({ params }) => {
                                 {tripData.discount_percentage}% discount!
                               </p>
                             ) : null}
+                          </div>
+                        )}
+
+                        {/* Coupon Success Message */}
+                        {appliedCoupon && (
+                          <div className="text-center pt-1">
+                            <p className="text-green-600 text-xs font-medium">
+                              💰 Coupon {appliedCoupon.code} applied!
+                            </p>
                           </div>
                         )}
                       </div>
