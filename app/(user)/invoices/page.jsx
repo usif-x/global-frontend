@@ -708,10 +708,17 @@ export default function MyInvoicesPage() {
                           ({inv.activity})
                         </span>
                       </div>
-                      <span className="text-green-600 font-semibold flex items-center gap-1">
-                        <Icon icon="mdi:check-circle" className="w-4 h-4" />
-                        Paid
-                      </span>
+                      {inv.status.toLowerCase() === "paid" ? (
+                        <span className="text-green-600 font-semibold flex items-center gap-1">
+                          <Icon icon="mdi:check-circle" className="w-4 h-4" />
+                          Paid
+                        </span>
+                      ) : (
+                        <span className="text-yellow-600 font-semibold flex items-center gap-1">
+                          <Icon icon="mdi:clock-outline" className="w-4 h-4" />
+                          Pending
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
