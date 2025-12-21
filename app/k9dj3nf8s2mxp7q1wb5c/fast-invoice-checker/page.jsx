@@ -10,6 +10,7 @@ export default function FastInvoiceChecker() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [pickupLoading, setPickupLoading] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
 
   const handleCheck = async (e) => {
     e.preventDefault();
@@ -58,6 +59,27 @@ export default function FastInvoiceChecker() {
       setError(err.response?.data?.message || "Failed to update pickup status");
     } finally {
       setPickupLoading(false);
+    }
+  };
+
+  const handleStatusChange = async (newStatus) => {
+    if (!invoice) return;
+
+    setStatusLoading(true);
+    setError("");
+    try {
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/invoices/p8k5m2x9w4q7n3v6r1t/fast-pay?ref_number=${invoice.customer_reference}&status=${newStatus}`
+      );
+
+      // Update the invoice state with the new status
+      setInvoice({ ...invoice, status: newStatus });
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Failed to update invoice status"
+      );
+    } finally {
+      setStatusLoading(false);
     }
   };
 
@@ -189,77 +211,214 @@ export default function FastInvoiceChecker() {
 
             {/* Action Buttons */}
             <div className="p-6 sm:p-8 border-b bg-gray-50">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={handleCheckAnother}
-                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
-                >
-                  Check Another Invoice
-                </button>
-                <button
-                  onClick={() => handlePickupToggle(true)}
-                  disabled={pickupLoading || invoice.picked_up}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {pickupLoading && invoice.picked_up === false ? (
-                    <>
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                          fill="none"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      Updating...
-                    </>
-                  ) : (
-                    <>
-                      {invoice.picked_up ? "✓ Picked Up" : "Mark as Picked Up"}
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={() => handlePickupToggle(false)}
-                  disabled={pickupLoading || !invoice.picked_up}
-                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {pickupLoading && invoice.picked_up === true ? (
-                    <>
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                          fill="none"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      Updating...
-                    </>
-                  ) : (
-                    <>
-                      {!invoice.picked_up
-                        ? "✓ Not Picked Up"
-                        : "Mark as Not Picked Up"}
-                    </>
-                  )}
-                </button>
+              <div className="space-y-4">
+                {/* Check Another Button */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={handleCheckAnother}
+                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                  >
+                    Check Another Invoice
+                  </button>
+                </div>
+
+                {/* Status Change Buttons */}
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    Change Status
+                  </h3>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={() => handleStatusChange("PAID")}
+                      disabled={statusLoading || invoice.status === "PAID"}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {statusLoading && invoice.status !== "PAID" ? (
+                        <>
+                          <svg
+                            className="animate-spin h-5 w-5"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                              fill="none"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                          </svg>
+                          Updating...
+                        </>
+                      ) : (
+                        <>
+                          {invoice.status === "PAID"
+                            ? "✓ PAID"
+                            : "Mark as PAID"}
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleStatusChange("PENDING")}
+                      disabled={statusLoading || invoice.status === "PENDING"}
+                      className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {statusLoading && invoice.status !== "PENDING" ? (
+                        <>
+                          <svg
+                            className="animate-spin h-5 w-5"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                              fill="none"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                          </svg>
+                          Updating...
+                        </>
+                      ) : (
+                        <>
+                          {invoice.status === "PENDING"
+                            ? "✓ PENDING"
+                            : "Mark as PENDING"}
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleStatusChange("CANCELLED")}
+                      disabled={statusLoading || invoice.status === "CANCELLED"}
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {statusLoading && invoice.status !== "CANCELLED" ? (
+                        <>
+                          <svg
+                            className="animate-spin h-5 w-5"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                              fill="none"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                          </svg>
+                          Updating...
+                        </>
+                      ) : (
+                        <>
+                          {invoice.status === "CANCELLED"
+                            ? "✓ CANCELLED"
+                            : "Mark as CANCELLED"}
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Pickup Toggle Buttons */}
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    Pickup Status
+                  </h3>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={() => handlePickupToggle(true)}
+                      disabled={pickupLoading || invoice.picked_up}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {pickupLoading && invoice.picked_up === false ? (
+                        <>
+                          <svg
+                            className="animate-spin h-5 w-5"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                              fill="none"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                          </svg>
+                          Updating...
+                        </>
+                      ) : (
+                        <>
+                          {invoice.picked_up
+                            ? "✓ Picked Up"
+                            : "Mark as Picked Up"}
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handlePickupToggle(false)}
+                      disabled={pickupLoading || !invoice.picked_up}
+                      className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {pickupLoading && invoice.picked_up === true ? (
+                        <>
+                          <svg
+                            className="animate-spin h-5 w-5"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                              fill="none"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                          </svg>
+                          Updating...
+                        </>
+                      ) : (
+                        <>
+                          {!invoice.picked_up
+                            ? "✓ Not Picked Up"
+                            : "Mark as Not Picked Up"}
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 

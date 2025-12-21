@@ -10,6 +10,11 @@ import { getData, postData } from "@/lib/axios";
 import CouponService from "@/services/couponService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { formatDuration } from "@/utils/formatDurations";
+import {
+  createTripInvoicePayload,
+  handleInvoiceError,
+  isAmountMismatchError,
+} from "@/utils/invoiceHelpers";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -376,64 +381,45 @@ const TripPage = ({ params }) => {
       setIsSubmitting(true);
       setShowPaymentModal(false);
 
-      // --- Use the final price from our new calculation ---
-      const { final: finalPrice, couponDiscount } = calculateTotalPrice();
+      // Calculate the final price on frontend for display/validation
+      const { final: finalPrice } = calculateTotalPrice();
 
-      // If a coupon is applied, the backend will calculate the discount.
-      // We should send the amount BEFORE the coupon discount.
-      const amountToSend = appliedCoupon
-        ? finalPrice + couponDiscount
-        : finalPrice;
-
-      const peopleCount = formData.adults + formData.children;
-      const bookingTime = new Date().toLocaleString("en-US", {
-        dateStyle: "full",
-        timeStyle: "short",
+      // Use helper utility to create properly formatted invoice payload
+      const invoicePayload = createTripInvoicePayload({
+        tripId: id,
+        tripName: tripData.name,
+        customerInfo: {
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          nationality: formData.nationality,
+        },
+        bookingDetails: {
+          adults: formData.adults,
+          children: formData.children,
+          preferredDate: formData.preferredDate,
+          hotelName: formData.hotelName,
+          roomNumber: formData.roomNumber,
+          specialRequests: formData.specialRequests,
+        },
+        paymentDetails: {
+          amount: finalPrice,
+          currency: formData.currency,
+          invoiceType: selectedPaymentType,
+          couponCode: appliedCoupon ? appliedCoupon.code : null,
+        },
       });
-
-      const invoiceDescription = `Trip Booking: ${tripData.name}\nCustomer: ${
-        formData.fullName
-      }\nDate of Trip: ${formatDate(formData.preferredDate)}\nGuests: ${
-        formData.adults
-      } Adult(s), ${
-        formData.children
-      } Child(ren) - Total ${peopleCount}.\nHotel: ${
-        formData.hotelName
-      }, Room #${
-        formData.roomNumber
-      }.\nBooking placed on: ${bookingTime}.\nSpecial Requests: ${
-        formData.specialRequests || "None"
-      }`;
-
-      const invoicePayload = {
-        buyer_name: formData.fullName,
-        buyer_email: formData.email,
-        buyer_phone: formData.phone,
-        invoice_description: invoiceDescription,
-        activity: tripData.name,
-        activity_details: [
-          {
-            name: tripData.name,
-            activity_date: formData.preferredDate,
-            adults: formData.adults,
-            children: formData.children,
-            hotel_name: formData.hotelName,
-            room_number: formData.roomNumber,
-            special_requests: formData.specialRequests,
-          },
-        ],
-        picked_up: false,
-        amount: amountToSend, // Use the amount before coupon
-        currency: formData.currency,
-        invoice_type: selectedPaymentType, // Add the payment type
-        coupon_code: appliedCoupon ? appliedCoupon.code : null,
-      };
 
       const invoiceResponse = await postData(
         "/invoices/",
         invoicePayload,
         true
       );
+
+      // Log discount breakdown for debugging (optional)
+      if (invoiceResponse.discount_breakdown) {
+        console.log("Discount Breakdown:", invoiceResponse.discount_breakdown);
+      }
 
       if (selectedPaymentType === "online") {
         toast.success("Invoice created! Opening payment page...");
@@ -448,12 +434,17 @@ const TripPage = ({ params }) => {
         router.push(`/invoices/${invoiceResponse.id}`);
       }
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.detail?.[0]?.msg ||
-        error.response?.data?.detail ||
-        "Booking failed. Please try again.";
+      // Use helper utility for error handling
+      const errorMessage = handleInvoiceError(error);
       setError(errorMessage);
       toast.error(errorMessage);
+
+      // Special handling for amount mismatch errors
+      if (isAmountMismatchError(errorMessage)) {
+        toast.info("Please refresh the page and try booking again.", {
+          autoClose: 5000,
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -1011,7 +1002,7 @@ const TripPage = ({ params }) => {
                     <Select
                       name="nationality"
                       value={formData.nationality}
-                      onChange={(value) =>
+                      onChange={({ value }) =>
                         handleInputChange("nationality", value)
                       }
                       options={countries}

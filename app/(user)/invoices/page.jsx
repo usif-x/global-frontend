@@ -314,6 +314,99 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
                 {invoice.invoice_description}
               </pre>
             </div>
+
+            {/* Discount Breakdown */}
+            {invoice.discount_breakdown && (
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b pb-2">
+                  Price Breakdown
+                </h3>
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600">Base Price:</span>
+                    <span className="font-semibold text-slate-800">
+                      EGP {invoice.discount_breakdown.base_price?.toFixed(2)}
+                    </span>
+                  </div>
+
+                  {invoice.discount_breakdown.group_discount && (
+                    <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-green-700 font-medium">
+                          <Icon
+                            icon="mdi:account-group"
+                            className="w-4 h-4 inline mr-1"
+                          />
+                          Group Discount (
+                          {invoice.discount_breakdown.group_discount.percentage}
+                          %)
+                        </span>
+                        <span className="font-bold text-green-700">
+                          - EGP{" "}
+                          {invoice.discount_breakdown.group_discount.amount?.toFixed(
+                            2
+                          )}
+                        </span>
+                      </div>
+                      <p className="text-xs text-green-600">
+                        {
+                          invoice.discount_breakdown.group_discount
+                            .applied_because
+                        }
+                      </p>
+                    </div>
+                  )}
+
+                  {invoice.discount_breakdown.promo_discount && (
+                    <div className="bg-purple-50 border border-purple-200 rounded-md p-3">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-purple-700 font-medium">
+                          <Icon
+                            icon="mdi:ticket-percent"
+                            className="w-4 h-4 inline mr-1"
+                          />
+                          Promo Code (
+                          {invoice.discount_breakdown.promo_discount.percentage}
+                          %)
+                        </span>
+                        <span className="font-bold text-purple-700">
+                          - EGP{" "}
+                          {invoice.discount_breakdown.promo_discount.amount?.toFixed(
+                            2
+                          )}
+                        </span>
+                      </div>
+                      <p className="text-xs text-purple-600 font-mono">
+                        Code: {invoice.discount_breakdown.promo_discount.code}
+                      </p>
+                    </div>
+                  )}
+
+                  {invoice.discount_breakdown.total_discount > 0 && (
+                    <div className="flex justify-between text-sm border-t pt-2">
+                      <span className="text-green-600 font-semibold">
+                        <Icon
+                          icon="mdi:piggy-bank"
+                          className="w-4 h-4 inline mr-1"
+                        />
+                        Total Savings:
+                      </span>
+                      <span className="font-bold text-green-600">
+                        EGP{" "}
+                        {invoice.discount_breakdown.total_discount?.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between font-bold text-lg border-t pt-3">
+                    <span className="text-slate-800">Final Amount:</span>
+                    <span className="text-blue-600">
+                      EGP {invoice.discount_breakdown.final_price?.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="pt-6 border-t border-slate-200 flex flex-wrap gap-3">
               {invoice.status.toLowerCase() === "pending" && (
                 <>

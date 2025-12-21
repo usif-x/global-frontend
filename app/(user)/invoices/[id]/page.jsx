@@ -551,6 +551,141 @@ export default function InvoiceDetailPage() {
                   </pre>
                 </div>
 
+                {/* Discount Breakdown */}
+                {invoice.discount_breakdown && (
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-800 mb-3 border-b pb-2">
+                      Price Breakdown
+                    </h2>
+                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-6 space-y-4">
+                      <div className="flex justify-between">
+                        <span className="text-slate-600">Base Price:</span>
+                        <span className="font-semibold text-slate-800 text-lg">
+                          EGP{" "}
+                          {invoice.discount_breakdown.base_price?.toFixed(2)}
+                        </span>
+                      </div>
+
+                      {invoice.discount_breakdown.group_discount && (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <div className="flex justify-between mb-2">
+                            <span className="text-green-700 font-medium flex items-center gap-2">
+                              <Icon
+                                icon="mdi:account-group"
+                                className="w-5 h-5"
+                              />
+                              Group Discount (
+                              {
+                                invoice.discount_breakdown.group_discount
+                                  .percentage
+                              }
+                              %)
+                            </span>
+                            <span className="font-bold text-green-700 text-lg">
+                              - EGP{" "}
+                              {invoice.discount_breakdown.group_discount.amount?.toFixed(
+                                2
+                              )}
+                            </span>
+                          </div>
+                          <p className="text-sm text-green-600">
+                            {
+                              invoice.discount_breakdown.group_discount
+                                .applied_because
+                            }
+                          </p>
+                        </div>
+                      )}
+
+                      {invoice.discount_breakdown.promo_discount && (
+                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                          <div className="flex justify-between mb-2">
+                            <span className="text-purple-700 font-medium flex items-center gap-2">
+                              <Icon
+                                icon="mdi:ticket-percent"
+                                className="w-5 h-5"
+                              />
+                              Promo Code (
+                              {
+                                invoice.discount_breakdown.promo_discount
+                                  .percentage
+                              }
+                              %)
+                            </span>
+                            <span className="font-bold text-purple-700 text-lg">
+                              - EGP{" "}
+                              {invoice.discount_breakdown.promo_discount.amount?.toFixed(
+                                2
+                              )}
+                            </span>
+                          </div>
+                          <p className="text-sm text-purple-600 font-mono">
+                            Code:{" "}
+                            {invoice.discount_breakdown.promo_discount.code}
+                          </p>
+                        </div>
+                      )}
+
+                      {invoice.discount_breakdown.total_discount > 0 && (
+                        <div className="flex justify-between border-t pt-3">
+                          <span className="text-green-600 font-semibold flex items-center gap-2">
+                            <Icon icon="mdi:piggy-bank" className="w-5 h-5" />
+                            Total Savings:
+                          </span>
+                          <span className="font-bold text-green-600 text-xl">
+                            EGP{" "}
+                            {invoice.discount_breakdown.total_discount?.toFixed(
+                              2
+                            )}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg p-4">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-blue-100 text-sm mb-1">
+                              Final Amount
+                            </p>
+                            <p className="font-black text-3xl">
+                              EGP{" "}
+                              {invoice.discount_breakdown.final_price?.toFixed(
+                                2
+                              )}
+                            </p>
+                          </div>
+                          {invoice.discount_breakdown.total_discount > 0 && (
+                            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                              <p className="text-xs text-blue-100">You saved</p>
+                              <p className="font-bold text-lg">
+                                EGP{" "}
+                                {invoice.discount_breakdown.total_discount?.toFixed(
+                                  2
+                                )}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {invoice.discount_breakdown.total_discount > 0 && (
+                        <div className="text-center pt-2">
+                          <p className="text-green-600 font-medium flex items-center justify-center gap-2">
+                            <Icon icon="mdi:check-circle" className="w-5 h-5" />
+                            🎉 You saved{" "}
+                            {Math.round(
+                              (invoice.discount_breakdown.total_discount /
+                                invoice.discount_breakdown.base_price) *
+                                100
+                            )}
+                            % on this booking!
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Footer and Actions */}
                 <div className="pt-8 border-t space-y-4">
                   {renderCallToAction()}
