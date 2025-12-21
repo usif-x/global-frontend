@@ -3,6 +3,7 @@
 import MarkdownRenderer from "@/components/ui/MarkdownRender";
 import { getData } from "@/lib/server-axios";
 import { formatDuration } from "@/utils/formatDurations";
+import { getImageUrl } from "@/utils/imageUtils";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -202,9 +203,8 @@ const PackagePage = async ({ params }) => {
                         {trip.images && trip.images.length > 0 ? (
                           <Image
                             src={
-                              process.env.NEXT_PUBLIC_IMAGE_BASE_URL +
-                              "storage/images/" +
-                              trip.images[0]
+                              getImageUrl(trip.images[0]) ||
+                              "/placeholder-image.png"
                             }
                             alt={trip.name}
                             fill
