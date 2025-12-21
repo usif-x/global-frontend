@@ -707,6 +707,23 @@ export default function MyInvoicesPage() {
                         <span className="text-slate-600 ml-3">
                           ({inv.activity})
                         </span>
+                        <span
+                          className={`ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                            inv.invoice_type === "online"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
+                          <Icon
+                            icon={
+                              inv.invoice_type === "online"
+                                ? "mdi:credit-card"
+                                : "mdi:cash"
+                            }
+                            className="w-3 h-3"
+                          />
+                          {inv.invoice_type === "online" ? "Online" : "Cash"}
+                        </span>
                       </div>
                       {inv.status.toLowerCase() === "paid" ? (
                         <span className="text-green-600 font-semibold flex items-center gap-1">
