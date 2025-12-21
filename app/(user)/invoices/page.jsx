@@ -593,7 +593,11 @@ export default function MyInvoicesPage() {
   // Check for paid but unpicked invoices
   const unpickedInvoices = useMemo(() => {
     return allInvoices.filter(
-      (inv) => inv.status.toLowerCase() === "paid" && inv.picked_up === false
+      (inv) =>
+        inv.picked_up === false &&
+        (inv.status.toLowerCase() === "paid" ||
+          (inv.status.toLowerCase() === "pending" &&
+            inv.invoice_type === "cash"))
     );
   }, [allInvoices]);
 
