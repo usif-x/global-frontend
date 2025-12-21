@@ -89,11 +89,7 @@ const PackagePage = async ({ params }) => {
         {packageData.images?.[0] && (
           <div className="absolute inset-0">
             <Image
-              src={
-                process.env.NEXT_PUBLIC_API_BASE_URL +
-                "/storage/images/" +
-                packageData.images[0]
-              }
+              src={packageData.images[0]}
               alt={packageData.name}
               fill
               className="object-cover opacity-30 blur-sm"
