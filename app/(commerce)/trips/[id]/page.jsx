@@ -1532,104 +1532,117 @@ const TripPage = ({ params }) => {
       {/* Image Lightbox Modal */}
       {lightboxOpen && tripData.images && (
         <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-xl flex flex-col">
-          {/* Header Controls */}
-          <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20 pointer-events-none">
-            {/* Counter */}
-            <div className="bg-black/30 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 pointer-events-auto">
-              <span className="text-white font-medium text-sm">
-                {currentImageIndex + 1} / {tripData.images.length}
-              </span>
-            </div>
+          {/* Header Controls - with padding to avoid navbar overlap */}
+          <div className="w-full flex justify-center items-center z-20 pt-20 sm:pt-24 pb-4 px-4">
+            <div className="w-full max-w-7xl flex justify-between items-center">
+              {/* Counter - Centered Left */}
+              <div className="bg-black/30 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+                <span className="text-white font-medium text-sm sm:text-base">
+                  {currentImageIndex + 1} / {tripData.images.length}
+                </span>
+              </div>
 
-            {/* Close Button */}
-            <button
-              onClick={closeLightbox}
-              className="p-3 bg-black/30 hover:bg-red-500/80 text-white rounded-full transition-all duration-300 border border-white/10 hover:border-red-500/50 group pointer-events-auto mt-2 mr-2 sm:mt-4 sm:mr-4"
-            >
-              <Icon
-                icon="lucide:x"
-                className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300"
-              />
-            </button>
+              {/* Close Button - Centered Right */}
+              <button
+                onClick={closeLightbox}
+                className="p-3 bg-black/30 hover:bg-red-500/80 text-white rounded-full transition-all duration-300 border border-white/10 hover:border-red-500/50 group"
+                aria-label="Close preview"
+              >
+                <Icon
+                  icon="lucide:x"
+                  className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300"
+                />
+              </button>
+            </div>
           </div>
 
-          {/* Main Image Area */}
+          {/* Main Image Area - Centered */}
           <div
-            className="flex-1 relative flex items-center justify-center p-4 sm:p-8 overflow-hidden"
+            className="flex-1 relative flex items-center justify-center px-4 sm:px-8 pb-4 overflow-hidden"
             onClick={closeLightbox}
           >
-            {/* Previous Button */}
-            {tripData.images.length > 1 && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  goToPrevImage();
-                }}
-                className="absolute left-2 sm:left-8 p-3 bg-black/30 hover:bg-blue-600/80 text-white rounded-full transition-all duration-300 border border-white/10 hover:border-blue-500/50 backdrop-blur-md z-20"
-              >
-                <Icon
-                  icon="lucide:chevron-left"
-                  className="w-6 h-6 sm:w-8 sm:h-8"
-                />
-              </button>
-            )}
+            <div className="relative w-full h-full max-w-7xl flex items-center justify-center">
+              {/* Previous Button - Centered vertically */}
+              {tripData.images.length > 1 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToPrevImage();
+                  }}
+                  className="absolute left-0 sm:left-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 bg-black/30 hover:bg-blue-600/80 text-white rounded-full transition-all duration-300 border border-white/10 hover:border-blue-500/50 backdrop-blur-md z-20"
+                  aria-label="Previous image"
+                >
+                  <Icon
+                    icon="lucide:chevron-left"
+                    className="w-6 h-6 sm:w-8 sm:h-8"
+                  />
+                </button>
+              )}
 
-            <div
-              className="relative w-full h-full max-w-7xl flex items-center justify-center"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Image
-                src={tripData.images[currentImageIndex]}
-                alt={`${tripData.name} - Photo ${currentImageIndex + 1}`}
-                fill
-                className="object-contain drop-shadow-2xl"
-                quality={100}
-                priority
-              />
+              {/* Image Container - Fully Centered */}
+              <div
+                className="relative w-full h-full flex items-center justify-center"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="relative w-full h-full max-h-[calc(100vh-280px)] sm:max-h-[calc(100vh-320px)]">
+                  <Image
+                    src={tripData.images[currentImageIndex]}
+                    alt={`${tripData.name} - Photo ${currentImageIndex + 1}`}
+                    fill
+                    className="object-contain drop-shadow-2xl"
+                    quality={100}
+                    priority
+                  />
+                </div>
+              </div>
+
+              {/* Next Button - Centered vertically */}
+              {tripData.images.length > 1 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToNextImage();
+                  }}
+                  className="absolute right-0 sm:right-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 bg-black/30 hover:bg-blue-600/80 text-white rounded-full transition-all duration-300 border border-white/10 hover:border-blue-500/50 backdrop-blur-md z-20"
+                  aria-label="Next image"
+                >
+                  <Icon
+                    icon="lucide:chevron-right"
+                    className="w-6 h-6 sm:w-8 sm:h-8"
+                  />
+                </button>
+              )}
             </div>
-
-            {/* Next Button */}
-            {tripData.images.length > 1 && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  goToNextImage();
-                }}
-                className="absolute right-2 sm:right-8 p-3 bg-black/30 hover:bg-blue-600/80 text-white rounded-full transition-all duration-300 border border-white/10 hover:border-blue-500/50 backdrop-blur-md z-20"
-              >
-                <Icon
-                  icon="lucide:chevron-right"
-                  className="w-6 h-6 sm:w-8 sm:h-8"
-                />
-              </button>
-            )}
           </div>
 
-          {/* Thumbnails */}
+          {/* Thumbnails - Centered */}
           {tripData.images.length > 1 && (
-            <div className="h-24 sm:h-32 w-full bg-black/40 backdrop-blur-md border-t border-white/10 p-4 z-20 flex-shrink-0">
-              <div className="flex gap-3 h-full overflow-x-auto justify-start sm:justify-center items-center scrollbar-hide px-4">
-                {tripData.images.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCurrentImageIndex(index);
-                    }}
-                    className={`relative flex-shrink-0 h-16 w-16 sm:h-20 sm:w-20 rounded-lg overflow-hidden transition-all duration-300 ${
-                      index === currentImageIndex
-                        ? "ring-2 ring-blue-500 scale-110 opacity-100"
-                        : "opacity-50 hover:opacity-100 hover:scale-105"
-                    }`}
-                  >
-                    <Image
-                      src={image}
-                      alt={`Thumbnail ${index + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </button>
-                ))}
+            <div className="w-full bg-black/40 backdrop-blur-md border-t border-white/10 py-4 z-20 flex-shrink-0">
+              <div className="max-w-7xl mx-auto px-4">
+                <div className="flex gap-2 sm:gap-3 overflow-x-auto justify-start sm:justify-center items-center scrollbar-hide">
+                  {tripData.images.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImageIndex(index);
+                      }}
+                      className={`relative flex-shrink-0 h-14 w-14 sm:h-20 sm:w-20 rounded-lg overflow-hidden transition-all duration-300 ${
+                        index === currentImageIndex
+                          ? "ring-2 sm:ring-3 ring-blue-500 scale-105 sm:scale-110 opacity-100"
+                          : "opacity-50 hover:opacity-100 hover:scale-105"
+                      }`}
+                      aria-label={`Go to image ${index + 1}`}
+                    >
+                      <Image
+                        src={image}
+                        alt={`Thumbnail ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
