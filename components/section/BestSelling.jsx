@@ -32,7 +32,13 @@ const normalizeApiItem = (apiItem) => {
 
       // If it's an array with a single string element, try to parse that string
       if (Array.isArray(data)) {
-        if (data.length > 0 && typeof data[0] === "string") {
+        if (
+          data.length === 1 &&
+          typeof data[0] === "string" &&
+          (data[0].trim().startsWith("[") ||
+            data[0].trim().startsWith("{") ||
+            data[0].trim().startsWith('"'))
+        ) {
           try {
             data = JSON.parse(data[0]);
             continue; // Try again with the parsed result
