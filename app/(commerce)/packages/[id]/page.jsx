@@ -205,7 +205,11 @@ const PackagePage = async ({ params }) => {
                       <div className="relative h-48 overflow-hidden">
                         {trip.images && trip.images.length > 0 ? (
                           <Image
-                            src={trip.images[0]}
+                            src={
+                              process.env.NEXT_PUBLIC_IMAGE_BASE_URL +
+                              "storage/images/" +
+                              trip.images[0]
+                            }
                             alt={trip.name}
                             fill
                             className="object-cover transition-transform duration-300 group-hover:scale-105"
