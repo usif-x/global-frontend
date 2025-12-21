@@ -18,35 +18,58 @@ const normalizeApiItem = (apiItem) => {
   const itemData = isCourse ? apiItem.course : apiItem.trip;
   if (!itemData) return null;
 
-  // Helper function to parse field data (same as trips page)
+  // Helper function to parse field data with multiple levels of JSON encoding
   const parseFieldData = (fieldData) => {
     let items = [];
-    if (Array.isArray(fieldData)) {
-      if (fieldData.length > 0 && typeof fieldData[0] === "string") {
+    let data = fieldData;
+
+    // Keep unwrapping until we get to the actual array
+    let attempts = 0;
+    const maxAttempts = 10; // Prevent infinite loops
+
+    while (attempts < maxAttempts) {
+      attempts++;
+
+      // If it's an array with a single string element, try to parse that string
+      if (Array.isArray(data)) {
+        if (data.length > 0 && typeof data[0] === "string") {
+          try {
+            data = JSON.parse(data[0]);
+            continue; // Try again with the parsed result
+          } catch {
+            // If parsing fails, treat array elements as items
+            items = data.filter(
+              (item) => item && (typeof item === "string" ? item.trim() : item)
+            );
+            break;
+          }
+        } else if (data.length > 0 && Array.isArray(data[0])) {
+          // If first element is an array, unwrap it
+          data = data[0];
+          continue;
+        } else {
+          // It's an array of strings
+          items = data.filter(
+            (item) => item && (typeof item === "string" ? item.trim() : item)
+          );
+          break;
+        }
+      } else if (typeof data === "string") {
+        // Try to parse string
         try {
-          const parsed = JSON.parse(fieldData[0]);
-          items = Array.isArray(parsed)
-            ? parsed.filter((item) => item && item.trim())
-            : [];
+          data = JSON.parse(data);
+          continue; // Try again with the parsed result
         } catch {
-          items = fieldData.filter((item) => item && item.trim());
+          // If parsing fails, treat as single item
+          items = [data];
+          break;
         }
       } else {
-        items = fieldData.filter((item) => item && item.trim());
-      }
-    } else if (typeof fieldData === "string") {
-      try {
-        const parsed = JSON.parse(fieldData);
-        items = Array.isArray(parsed)
-          ? parsed.filter((item) => item && item.trim())
-          : [];
-      } catch {
-        items = fieldData
-          .split(",")
-          .map((item) => item.trim())
-          .filter((item) => item);
+        // Unknown type, stop
+        break;
       }
     }
+
     return items;
   };
 

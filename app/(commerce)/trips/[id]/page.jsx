@@ -629,38 +629,62 @@ const TripPage = ({ params }) => {
 
             {(tripData?.included || tripData?.not_included) &&
               (() => {
-                // Helper function to parse field data
+                // Helper function to parse field data with multiple levels of JSON encoding
                 const parseFieldData = (fieldData) => {
                   let items = [];
-                  if (Array.isArray(fieldData)) {
-                    if (
-                      fieldData.length > 0 &&
-                      typeof fieldData[0] === "string"
-                    ) {
+                  let data = fieldData;
+
+                  // Keep unwrapping until we get to the actual array
+                  let attempts = 0;
+                  const maxAttempts = 10; // Prevent infinite loops
+
+                  while (attempts < maxAttempts) {
+                    attempts++;
+
+                    // If it's an array with a single string element, try to parse that string
+                    if (Array.isArray(data)) {
+                      if (data.length > 0 && typeof data[0] === "string") {
+                        try {
+                          data = JSON.parse(data[0]);
+                          continue; // Try again with the parsed result
+                        } catch {
+                          // If parsing fails, treat array elements as items
+                          items = data.filter(
+                            (item) =>
+                              item &&
+                              (typeof item === "string" ? item.trim() : item)
+                          );
+                          break;
+                        }
+                      } else if (data.length > 0 && Array.isArray(data[0])) {
+                        // If first element is an array, unwrap it
+                        data = data[0];
+                        continue;
+                      } else {
+                        // It's an array of strings
+                        items = data.filter(
+                          (item) =>
+                            item &&
+                            (typeof item === "string" ? item.trim() : item)
+                        );
+                        break;
+                      }
+                    } else if (typeof data === "string") {
+                      // Try to parse string
                       try {
-                        const parsed = JSON.parse(fieldData[0]);
-                        items = Array.isArray(parsed)
-                          ? parsed.filter((item) => item && item.trim())
-                          : [];
+                        data = JSON.parse(data);
+                        continue; // Try again with the parsed result
                       } catch {
-                        items = fieldData.filter((item) => item && item.trim());
+                        // If parsing fails, treat as single item
+                        items = [data];
+                        break;
                       }
                     } else {
-                      items = fieldData.filter((item) => item && item.trim());
-                    }
-                  } else if (typeof fieldData === "string") {
-                    try {
-                      const parsed = JSON.parse(fieldData);
-                      items = Array.isArray(parsed)
-                        ? parsed.filter((item) => item && item.trim())
-                        : [];
-                    } catch {
-                      items = fieldData
-                        .split(",")
-                        .map((item) => item.trim())
-                        .filter((item) => item);
+                      // Unknown type, stop
+                      break;
                     }
                   }
+
                   return items;
                 };
 
@@ -738,46 +762,69 @@ const TripPage = ({ params }) => {
 
             {tripData?.terms_and_conditions &&
               (() => {
-                // Parse terms_and_conditions field if it's a JSON string
-                let termsItems = [];
-                if (Array.isArray(tripData.terms_and_conditions)) {
-                  // Check if array contains a JSON string as first element
-                  if (
-                    tripData.terms_and_conditions.length > 0 &&
-                    typeof tripData.terms_and_conditions[0] === "string"
-                  ) {
-                    try {
-                      // Try to parse the first element as JSON
-                      const parsed = JSON.parse(
-                        tripData.terms_and_conditions[0]
-                      );
-                      termsItems = Array.isArray(parsed)
-                        ? parsed.filter((item) => item && item.trim())
-                        : [];
-                    } catch {
-                      // If parsing fails, treat as regular array
-                      termsItems = tripData.terms_and_conditions.filter(
-                        (item) => item && item.trim()
-                      );
+                // Use the same parseFieldData function for terms_and_conditions
+                // Helper function to parse field data with multiple levels of JSON encoding
+                const parseFieldData = (fieldData) => {
+                  let items = [];
+                  let data = fieldData;
+
+                  // Keep unwrapping until we get to the actual array
+                  let attempts = 0;
+                  const maxAttempts = 10; // Prevent infinite loops
+
+                  while (attempts < maxAttempts) {
+                    attempts++;
+
+                    // If it's an array with a single string element, try to parse that string
+                    if (Array.isArray(data)) {
+                      if (data.length > 0 && typeof data[0] === "string") {
+                        try {
+                          data = JSON.parse(data[0]);
+                          continue; // Try again with the parsed result
+                        } catch {
+                          // If parsing fails, treat array elements as items
+                          items = data.filter(
+                            (item) =>
+                              item &&
+                              (typeof item === "string" ? item.trim() : item)
+                          );
+                          break;
+                        }
+                      } else if (data.length > 0 && Array.isArray(data[0])) {
+                        // If first element is an array, unwrap it
+                        data = data[0];
+                        continue;
+                      } else {
+                        // It's an array of strings
+                        items = data.filter(
+                          (item) =>
+                            item &&
+                            (typeof item === "string" ? item.trim() : item)
+                        );
+                        break;
+                      }
+                    } else if (typeof data === "string") {
+                      // Try to parse string
+                      try {
+                        data = JSON.parse(data);
+                        continue; // Try again with the parsed result
+                      } catch {
+                        // If parsing fails, treat as single item
+                        items = [data];
+                        break;
+                      }
+                    } else {
+                      // Unknown type, stop
+                      break;
                     }
-                  } else {
-                    termsItems = tripData.terms_and_conditions.filter(
-                      (item) => item && item.trim()
-                    );
                   }
-                } else if (typeof tripData.terms_and_conditions === "string") {
-                  try {
-                    const parsed = JSON.parse(tripData.terms_and_conditions);
-                    termsItems = Array.isArray(parsed)
-                      ? parsed.filter((item) => item && item.trim())
-                      : [];
-                  } catch {
-                    termsItems = tripData.terms_and_conditions
-                      .split(",")
-                      .map((item) => item.trim())
-                      .filter((item) => item);
-                  }
-                }
+
+                  return items;
+                };
+
+                const termsItems = parseFieldData(
+                  tripData.terms_and_conditions
+                );
 
                 return termsItems.length > 0 ? (
                   <div className="bg-white rounded-2xl shadow-xl p-8">
