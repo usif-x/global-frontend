@@ -21,70 +21,112 @@ const features = [
     description:
       "Our PADI-certified instructors are passionate, experienced, and dedicated to your safety and enjoyment on every dive.",
   },
+  {
+    icon: "mdi:shield-check",
+    title: "Safety First",
+    description:
+      "Your safety is our top priority. We maintain the highest standards of equipment and follow strict safety protocols on every dive.",
+  },
+  {
+    icon: "mdi:calendar-check",
+    title: "Flexible Booking",
+    description:
+      "Easy online booking with flexible cancellation policies. We understand that plans can change and we're here to accommodate.",
+  },
+  {
+    icon: "mdi:diving-scuba-tank",
+    title: "Top Equipment",
+    description:
+      "We use only the best diving equipment, regularly serviced and maintained to ensure optimal performance and safety.",
+  },
 ];
 
 const WhyChooseUs = () => {
   return (
-    <section className="relative bg-gradient-to-b from-sky-50 to-white py-20 sm:py-24 md:py-32 overflow-hidden">
-      {/* Floating bubbles animation */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-1/4 left-1/4 w-4 h-4 bg-cyan-200/50 rounded-full animate-bounce"></div>
-        <div
-          className="absolute top-3/4 right-1/4 w-3 h-3 bg-sky-300/50 rounded-full animate-bounce"
-          style={{ animationDelay: "0.5s" }}
-        ></div>
-        <div
-          className="absolute top-1/2 left-3/4 w-2 h-2 bg-cyan-300/50 rounded-full animate-bounce"
-          style={{ animationDelay: "1s" }}
-        ></div>
-        <div
-          className="absolute top-1/3 right-1/3 w-5 h-5 bg-sky-200/50 rounded-full animate-bounce"
-          style={{ animationDelay: "1.5s" }}
-        ></div>
+    <section className="relative py-20 overflow-hidden">
+      {/* Modern Background with Gradient Mesh */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-cyan-50/30 to-blue-50"></div>
+
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-200/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-200/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
       {/* Main content */}
-      <div className="relative z-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* Section Header */}
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-base font-semibold leading-7 text-sky-600">
-              UNMATCHED EXCELLENCE
-            </h2>
-            <p className="mt-2 text-4xl sm:text-5xl font-bold tracking-tight text-gray-900">
-              Why Choose TopDivers?
-            </p>
-            <p className="mt-6 text-lg leading-8 text-gray-600">
-              We are committed to providing an unparalleled diving experience,
-              blending safety, expertise, and pure underwater magic.
-            </p>
+      <div className="relative container mx-auto px-4">
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center justify-center gap-2 px-6 py-2 bg-white/80 backdrop-blur-sm rounded-full border border-gray-200 mb-6">
+            <Icon icon="mdi:star-circle" className="text-cyan-500" width={20} />
+            <span className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+              Why Choose Us
+            </span>
           </div>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 mb-6">
+            Your Perfect Diving Partner
+          </h2>
+          <p className="text-gray-600 text-lg md:text-xl max-w-3xl mx-auto">
+            Experience the difference with TopDivers. We combine expertise,
+            passion, and dedication to create unforgettable underwater
+            adventures.
+          </p>
+        </div>
 
-          {/* Features Grid */}
-          <div className="mx-auto mt-16 sm:mt-20 lg:mt-24 max-w-none">
-            <dl className="grid grid-cols-1 gap-10 sm:gap-12 md:grid-cols-2 lg:grid-cols-3">
-              {features.map((feature) => (
-                <div
-                  key={feature.title}
-                  className="group flex flex-col items-center text-center p-8 transition-all duration-300 transform hover:-translate-y-2 bg-white/50 rounded-xl shadow-sm hover:shadow-2xl hover:shadow-sky-100 border border-slate-200/80"
-                >
-                  {/* Icon container */}
-                  <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-cyan-500/30">
-                    <Icon icon={feature.icon} className="h-8 w-8 text-white" />
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          {features.map((feature, index) => (
+            <div
+              key={feature.title}
+              className="group relative"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              {/* Card */}
+              <div className="relative h-full bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-cyan-200">
+                {/* Icon */}
+                <div className="mb-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <Icon icon={feature.icon} className="w-8 h-8 text-white" />
                   </div>
-
-                  {/* Title */}
-                  <dt className="mt-6 text-xl font-semibold leading-7 text-gray-900">
-                    {feature.title}
-                  </dt>
-
-                  {/* Description */}
-                  <dd className="mt-2 flex-auto text-base leading-7 text-gray-600">
-                    {feature.description}
-                  </dd>
                 </div>
-              ))}
-            </dl>
+
+                {/* Content */}
+                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {feature.description}
+                </p>
+
+                {/* Hover Effect Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom CTA Section */}
+        <div className="mt-20 text-center">
+          <div className="inline-flex flex-col items-center gap-4 px-8 py-6 bg-white/80 backdrop-blur-sm rounded-3xl border border-gray-200 shadow-lg">
+            <div className="flex items-center gap-3">
+              <Icon
+                icon="mdi:certificate"
+                className="text-cyan-500"
+                width={32}
+              />
+              <div className="text-left">
+                <p className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                  Certified Excellence
+                </p>
+                <p className="text-2xl font-bold text-gray-800">
+                  PADI 5-Star Dive Center
+                </p>
+              </div>
+            </div>
+            <p className="text-gray-600 max-w-md">
+              Recognized for outstanding service, professional instruction, and
+              commitment to diver safety
+            </p>
           </div>
         </div>
       </div>

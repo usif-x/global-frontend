@@ -152,11 +152,7 @@ const CourseCard = ({ course }) => {
 
   return (
     <Link href={`/courses/${course.id}`}>
-      <div
-        className="group flex flex-col bg-white rounded-3xl overflow-hidden shadow-lg border border-transparent 
-                   hover:border-blue-500/30 hover:-translate-y-2 hover:shadow-2xl
-                   transition-all duration-300 ease-in-out will-change-transform h-full"
-      >
+      <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col border border-gray-100 hover:border-cyan-200 group">
         {/* --- Image Section --- */}
         <div className="h-56 relative overflow-hidden">
           {showImage ? (
@@ -167,212 +163,107 @@ const CourseCard = ({ course }) => {
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-700 flex flex-col items-center justify-center text-center p-4">
-              <Waves className="w-12 h-12 text-white/50" />
-              <h4 className="mt-3 font-bold text-white tracking-tight">
-                {course.name}
-              </h4>
-              <p className="text-sm text-white/70 capitalize">
-                {course.course_level}
-              </p>
+            <div className="w-full h-full bg-gradient-to-br from-cyan-500 to-blue-600 flex flex-col items-center justify-center text-center p-4">
+              <Icon
+                icon="mdi:diving-scuba-tank"
+                className="w-16 h-16 text-white/50 mb-3"
+              />
+              <h4 className="font-bold text-white text-lg">{course.name}</h4>
             </div>
           )}
 
-          {/* Overlay Badges */}
+          {/* Overlay Gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
           {/* Course Level Badge */}
-          <div className="absolute top-4 left-4 z-10">
-            {course.course_level && (
-              <span className="bg-blue-600/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-semibold capitalize">
+          {course.course_level && (
+            <div className="absolute top-4 left-4 z-10">
+              <span className="bg-cyan-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-semibold capitalize">
                 {course.course_level}
               </span>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Discount Badge */}
           {course.has_discount && course.discount_always_available && (
             <div className="absolute top-4 right-4 z-10">
-              <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse">
+              <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
                 -{course.discount_percentage}% OFF
               </span>
             </div>
           )}
-
-          {/* Provider Badge */}
-          {course.provider && (
-            <div className="absolute bottom-4 left-4 z-10">
-              <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
-                <span className="text-white text-xs font-medium">
-                  {course.provider}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Course Type Icon */}
-          <div className="absolute bottom-4 right-4 z-10">
-            <div className="bg-white/20 backdrop-blur-sm p-2 rounded-full">
-              <Icon
-                icon={getCourseTypeIcon(course.course_type)}
-                className="w-5 h-5 text-white"
-              />
-            </div>
-          </div>
         </div>
 
         {/* --- Content Section --- */}
         <div className="p-6 flex flex-col flex-1">
-          {/* Course Title and Price */}
-          <div className="flex justify-between items-start mb-4">
-            <h3 className="text-xl font-bold text-gray-800 flex-1 pr-4 group-hover:text-blue-600 transition-colors">
-              {course.name}
-            </h3>
-            <div className="text-right">
-              {typeof priceDisplay === "object" ? (
-                <div className="flex flex-col items-end">
-                  <span className="text-sm line-through text-gray-400">
-                    EGP{priceDisplay.original}
-                  </span>
-                  <span className="text-xl font-bold text-green-600">
-                    EGP{priceDisplay.discounted}
-                  </span>
-                </div>
-              ) : (
-                <span
-                  className={`text-xl font-bold ${
-                    !course.price_available
-                      ? "text-orange-600"
-                      : "text-blue-600"
-                  }`}
-                >
-                  {priceDisplay}
+          {/* Title */}
+          <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-cyan-600 transition-colors">
+            {course.name}
+          </h3>
+
+          {/* Price */}
+          <div className="mb-4">
+            {typeof priceDisplay === "object" ? (
+              <div className="flex items-baseline gap-2">
+                <span className="text-sm line-through text-gray-400">
+                  EGP{priceDisplay.original}
                 </span>
-              )}
-            </div>
+                <span className="text-2xl font-bold text-green-600">
+                  EGP{priceDisplay.discounted}
+                </span>
+              </div>
+            ) : (
+              <span
+                className={`text-2xl font-bold ${
+                  !course.price_available ? "text-orange-600" : "text-cyan-600"
+                }`}
+              >
+                {priceDisplay}
+              </span>
+            )}
           </div>
 
-          {/* Level Indicator */}
-          <LevelIndicator level={course.course_level} />
-
-          {/* Course Features Row */}
-          <div className="flex flex-wrap gap-2 mb-4">
+          {/* Course Stats */}
+          <div className="flex items-center gap-4 text-sm text-gray-600 mb-4 pb-4 border-b border-gray-100">
+            <div className="flex items-center gap-1">
+              <Icon
+                icon="mdi:clock-outline"
+                className="w-4 h-4 text-gray-400"
+              />
+              <span>
+                {course.course_duration} {course.course_duration_unit}
+              </span>
+            </div>
             {course.has_certificate && (
-              <div className="flex items-center bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">
+              <div className="flex items-center gap-1">
                 <Icon
-                  icon={getCertificateIcon(course.certificate_type)}
-                  className="w-3 h-3 mr-1"
+                  icon="mdi:certificate"
+                  className="w-4 h-4 text-gray-400"
                 />
                 <span>Certificate</span>
               </div>
             )}
-            {course.has_online_content && (
-              <div className="flex items-center bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">
-                <Icon icon="lucide:wifi" className="w-3 h-3 mr-1" />
-                <span>Online</span>
-              </div>
-            )}
-            {course.course_type && (
-              <div className="flex items-center bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs capitalize">
-                <Icon
-                  icon={getCourseTypeIcon(course.course_type)}
-                  className="w-3 h-3 mr-1"
-                />
-                <span>{course.course_type}</span>
-              </div>
-            )}
           </div>
 
-          <hr className="my-3 border-gray-100" />
-
-          {/* Course Stats */}
-          <div className="flex items-center justify-around text-sm text-gray-600 py-3 mb-4">
-            <div className="flex flex-col items-center space-y-1">
-              <Icon icon="lucide:clock" className="w-5 h-5 text-gray-400" />
-              <span className="font-medium">
-                {course.course_duration} {course.course_duration_unit}
-              </span>
-            </div>
-            <div className="flex flex-col items-center space-y-1">
-              <Icon icon="lucide:users" className="w-5 h-5 text-gray-400" />
-              <span className="font-medium">Group Class</span>
-            </div>
-            <div className="flex flex-col items-center space-y-1">
-              <Icon
-                icon="hugeicons:package"
-                className="w-5 h-5 text-gray-400"
-              />
-              <span className="font-medium">Equipment</span>
-            </div>
-          </div>
-
-          {/* Course Description */}
+          {/* Description */}
           <div className="text-gray-600 text-sm line-clamp-3 mb-4 flex-grow">
             <MarkdownRenderer content={course.description} />
           </div>
 
-          {/* Group Discount Info */}
-          {course.has_discount && course.discount_requires_min_people && (
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
-              <div className="flex items-center text-orange-700 text-xs">
-                <Icon icon="lucide:users" className="w-4 h-4 mr-2" />
-                <span className="font-medium">
-                  {course.discount_percentage}% off for{" "}
-                  {course.discount_min_people}+ people
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Call to Action Button */}
-          <div className="mt-auto">
-            <button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl 
-                               flex items-center justify-center space-x-2
-                               transition-all duration-300 group-hover:bg-blue-700 group-hover:shadow-lg"
-            >
-              {course.price_available ? (
-                <>
-                  <Icon icon="lucide:credit-card" className="w-5 h-5" />
-                  <span>Book Now</span>
-                </>
-              ) : (
-                <>
-                  <Icon icon="lucide:mail" className="w-5 h-5" />
-                  <span>Inquire</span>
-                </>
-              )}
-              <Icon
-                icon="fluent:arrow-right-12-filled"
-                className="w-5 h-5 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300"
-              />
-            </button>
-          </div>
-
-          {/* Additional Course Info */}
-          {(course.certificate_type || course.contents?.length > 0) && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <div className="flex flex-wrap gap-2 text-xs text-gray-500">
-                {course.certificate_type && (
-                  <div className="flex items-center">
-                    <Icon icon="lucide:award" className="w-3 h-3 mr-1" />
-                    <span className="capitalize">
-                      {course.certificate_type} Cert
-                    </span>
-                  </div>
-                )}
-                {course.contents?.length > 0 && (
-                  <div className="flex items-center">
-                    <Icon icon="lucide:book-open" className="w-3 h-3 mr-1" />
-                    <span>
-                      {course.contents.length} Module
-                      {course.contents.length !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          {/* CTA Button */}
+          <button className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group-hover:shadow-lg">
+            {course.price_available ? (
+              <>
+                <Icon icon="mdi:book-check" className="w-5 h-5" />
+                <span>Enroll Now</span>
+              </>
+            ) : (
+              <>
+                <Icon icon="mdi:email-outline" className="w-5 h-5" />
+                <span>Inquire</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
     </Link>
@@ -521,128 +412,69 @@ const DivingCourses = () => {
     (course) => !featuredCourses.includes(course)
   );
 
-  const visibleCourses = showAll ? regularCourses : regularCourses.slice(0, 2);
+  const visibleCourses = showAll ? regularCourses : regularCourses.slice(0, 3);
 
   return (
-    <main id="booking" className="min-h-screen bg-gray-50 py-12 md:py-20">
-      <div className="container mx-auto px-6">
-        {/* Hero Section */}
-        <section className="text-center mb-16">
-          <div className="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold inline-block mb-6">
+    <section className="relative py-20 overflow-hidden">
+      {/* Modern Background with Gradient Mesh */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-cyan-50"></div>
+
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-200/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      </div>
+
+      <div className="relative container mx-auto px-4">
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center justify-center gap-2 px-6 py-2 bg-white/80 backdrop-blur-sm rounded-full border border-gray-200 mb-6">
             <Icon
-              icon="lucide:graduation-cap"
-              className="w-4 h-4 inline mr-2"
+              icon="mdi:diving-scuba-tank"
+              className="text-blue-500"
+              width={20}
             />
-            Professional Diving Certifications
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight">
-            Explore Our Diving Courses
-          </h1>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            From your first breath underwater to becoming a Divemaster, we offer
-            professional courses for every step of your diving adventure.
-          </p>
-          <div className="flex items-center justify-center mt-8 text-gray-600">
-            <Icon icon="lucide:book-marked" className="w-5 h-5 mr-2" />
-            <span className="text-lg">
-              {courses.length} Course{courses.length !== 1 ? "s" : ""} Available
+            <span className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+              Diving Courses
             </span>
           </div>
-        </section>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 mb-6">
+            Start Your Diving Journey
+          </h2>
+          <p className="text-gray-600 text-lg md:text-xl max-w-3xl mx-auto">
+            From beginner to professional, explore our range of PADI-certified
+            diving courses
+          </p>
+        </div>
 
-        {/* Featured Courses Section */}
-        {featuredCourses.length > 0 && (
-          <section className="mb-16">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                ⭐ Featured Courses
-              </h2>
-              <p className="text-gray-600">
-                Special offers and popular courses with exclusive benefits
-              </p>
+        {/* Courses Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          {visibleCourses.map((course, index) => (
+            <div
+              key={course.id}
+              className="group relative"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <CourseCard course={course} />
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-              {featuredCourses.map((course) => (
-                <FeaturedCourseCard key={course.id} course={course} />
-              ))}
-            </div>
-          </section>
-        )}
+          ))}
+        </div>
 
-        {/* All Courses Section */}
-        <section className="relative">
-          {featuredCourses.length > 0 && (
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                All Available Courses
-              </h2>
-              <p className="text-gray-600">
-                Complete range of diving certifications and specialties
-              </p>
-            </div>
-          )}
-
-          <div
-            className={`relative transition-all duration-500 ${
-              !showAll && regularCourses.length > 2
-                ? "max-h-[80rem] overflow-hidden"
-                : ""
-            }`}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {visibleCourses.map((course) => (
-                <CourseCard key={course.id} course={course} />
-              ))}
-            </div>
+        {/* Show More Button */}
+        {!showAll && regularCourses.length > 3 && (
+          <div className="mt-16 text-center">
+            <Link
+              href="/courses"
+              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-full hover:from-cyan-600 hover:to-blue-700 shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 transform hover:scale-105"
+            >
+              <Icon icon="mdi:diving" width={24} />
+              <span>View All Courses</span>
+              <Icon icon="mdi:arrow-right" width={20} />
+            </Link>
           </div>
-
-          {!showAll && regularCourses.length > 2 && (
-            <div className="relative mt-12">
-              {/* Subtle fade overlay */}
-              <div className="absolute -top-8 left-0 right-0 h-24 bg-gradient-to-t from-gray-50 via-gray-50/70 to-transparent pointer-events-none z-10" />
-
-              {/* Compact show more container */}
-              <div className="relative z-20 text-center">
-                <div className="inline-flex items-center bg-white rounded-full shadow-lg border border-gray-200 px-6 py-3 mb-4">
-                  <div className="flex items-center space-x-2 text-gray-600 text-sm">
-                    <Icon icon="lucide:layers" className="w-4 h-4" />
-                    <span>
-                      {visibleCourses.length} of {regularCourses.length} courses
-                      shown
-                    </span>
-                  </div>
-                </div>
-
-                <Link
-                  href={"/courses"}
-                  className="group inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 space-x-3"
-                >
-                  <Icon
-                    icon="lucide:plus-circle"
-                    className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300"
-                  />
-                  <span>
-                    Show {regularCourses.length - visibleCourses.length} More
-                    Courses
-                  </span>
-                  <Icon
-                    icon="lucide:arrow-right"
-                    className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300"
-                  />
-                </Link>
-
-                {/* Quick stats */}
-                <div className="mt-4 text-sm text-gray-500">
-                  <span>
-                    ✨ All courses include certification and equipment
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-        </section>
+        )}
       </div>
-    </main>
+    </section>
   );
 };
 

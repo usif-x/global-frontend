@@ -16,6 +16,7 @@ const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(null);
   const [isOtherLinksDropdownOpen, setIsOtherLinksDropdownOpen] =
     useState(false);
+  const [isMobileOtherLinksOpen, setIsMobileOtherLinksOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
@@ -141,6 +142,9 @@ const Navbar = () => {
     { href: "/destinations", label: "Destinations" },
     { href: "/dive-sites", label: "Dive Sites" },
     { href: "/contact", label: "Contact" },
+    { href: "/privacy-policy", label: "Privacy Policy" },
+    { href: "/terms-and-conditions", label: "Terms and Conditions" },
+    { href: "/safety-guidelines", label: "Safety Guidelines" },
   ];
 
   // Helper function to check if link is active
@@ -501,40 +505,54 @@ const Navbar = () => {
                   );
                 })}
 
-                {/* Other Links Section */}
+                {/* Other Links Dropdown Section */}
                 <li className="pt-4">
-                  <div className="text-white/50 text-xs font-semibold uppercase tracking-wider px-4 pb-2">
-                    Other Links
-                  </div>
-                  <div className="space-y-1">
-                    {otherLinks.map((link, index) => {
-                      const isActive = isActiveLink(link.href);
-                      return (
-                        <Link
-                          key={index}
-                          href={link.href}
-                          className={`flex items-center justify-between text-white transition-all duration-300 py-3 px-4 rounded-xl border group ${
-                            isActive
-                              ? "text-cyan-300 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-cyan-400/30"
-                              : "hover:text-cyan-300 hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-blue-500/10 border-transparent hover:border-white/10"
-                          }`}
-                          onClick={handleMobileMenuLinkClick}
-                        >
-                          <span className="text-base font-medium">
-                            {link.label}
-                          </span>
-                          <Icon
-                            icon="lucide:chevron-right"
-                            className={`w-5 h-5 transition-all duration-300 group-hover:translate-x-1 ${
+                  <button
+                    onClick={() =>
+                      setIsMobileOtherLinksOpen(!isMobileOtherLinksOpen)
+                    }
+                    className="w-full flex items-center justify-between text-white transition-all duration-300 py-4 px-4 rounded-xl border border-transparent hover:border-white/10 hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-blue-500/10 group"
+                  >
+                    <span className="text-lg font-medium">Other Links</span>
+                    <Icon
+                      icon="lucide:chevron-down"
+                      className={`w-5 h-5 transition-all duration-300 ${
+                        isMobileOtherLinksOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {isMobileOtherLinksOpen && (
+                    <div className="mt-2 space-y-1 pl-2">
+                      {otherLinks.map((link, index) => {
+                        const isActive = isActiveLink(link.href);
+                        return (
+                          <Link
+                            key={index}
+                            href={link.href}
+                            className={`flex items-center justify-between text-white transition-all duration-300 py-3 px-4 rounded-xl border group ${
                               isActive
-                                ? "opacity-100"
-                                : "opacity-50 group-hover:opacity-100"
+                                ? "text-cyan-300 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-cyan-400/30"
+                                : "hover:text-cyan-300 hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-blue-500/10 border-transparent hover:border-white/10"
                             }`}
-                          />
-                        </Link>
-                      );
-                    })}
-                  </div>
+                            onClick={handleMobileMenuLinkClick}
+                          >
+                            <span className="text-base font-medium">
+                              {link.label}
+                            </span>
+                            <Icon
+                              icon="lucide:chevron-right"
+                              className={`w-5 h-5 transition-all duration-300 group-hover:translate-x-1 ${
+                                isActive
+                                  ? "opacity-100"
+                                  : "opacity-50 group-hover:opacity-100"
+                              }`}
+                            />
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
                 </li>
               </ul>
             </nav>

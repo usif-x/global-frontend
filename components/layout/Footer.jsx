@@ -3,6 +3,7 @@
 import WavesArea from "@/components/ui/Wave";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
+import WeatherWidget from "./WeatherWidget";
 
 export default function Home() {
   return (
@@ -28,10 +29,10 @@ export default function Home() {
 
         {/* Footer added directly inside */}
         <footer className="mt-16 pt-8 pb-6 border-t border-white/20">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
               {/* Company Info */}
-              <div className="col-span-1 md:col-span-2">
+              <div className="lg:col-span-1">
                 <h3 className="text-xl font-bold mb-4 text-white">
                   About Top Divers Hurghada
                 </h3>
@@ -45,16 +46,19 @@ export default function Home() {
                   <a
                     href="https://www.facebook.com/profile.php?id=61579625321316"
                     className="text-white/60 hover:text-white transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    <Icon icon="mdi:facebook" width={20} height={20} />
+                    <Icon icon="mdi:facebook" width={24} height={24} />
                   </a>
                   <a
                     href="https://www.instagram.com/topdivers.hurghada"
                     className="text-white/60 hover:text-white transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    <Icon icon="mdi:instagram" width={20} height={20} />
+                    <Icon icon="mdi:instagram" width={24} height={24} />
                   </a>
-                  <a href="htt"></a>
                 </div>
               </div>
 
@@ -67,29 +71,82 @@ export default function Home() {
                   <div className="flex items-center space-x-3">
                     <Icon
                       icon="mdi:email"
-                      width={16}
-                      height={16}
+                      width={18}
+                      height={18}
                       className="text-white/60"
                     />
-                    <span className="text-white/80">
+                    <span className="text-white/80 text-sm">
                       contact@topdivers.online
                     </span>
                   </div>
                   <div className="flex items-start space-x-3">
                     <Icon
                       icon="mdi:map-marker"
-                      width={16}
-                      height={16}
+                      width={18}
+                      height={18}
                       className="text-white/60 mt-1"
                     />
-                    <span className="text-white/80">
+                    <span className="text-white/80 text-sm">
                       Sunrise Aqua Joy
                       <br />
                       Egypt Hurghada
                     </span>
                   </div>
+                  <div className="flex items-center space-x-3">
+                    <Icon
+                      icon="mdi:phone"
+                      width={18}
+                      height={18}
+                      className="text-white/60"
+                    />
+                    <span className="text-white/80 text-sm">
+                      +20 107 044 0861
+                    </span>
+                  </div>
                 </div>
               </div>
+
+              {/* Quick Links */}
+              <div>
+                <h4 className="text-lg font-semibold mb-4 text-white">
+                  Quick Links
+                </h4>
+                <div className="space-y-2">
+                  <Link
+                    href="/packages"
+                    className="block text-white/80 hover:text-white transition-colors text-sm"
+                  >
+                    Dive Packages
+                  </Link>
+                  <Link
+                    href="/trips"
+                    className="block text-white/80 hover:text-white transition-colors text-sm"
+                  >
+                    Daily Trips
+                  </Link>
+                  <Link
+                    href="/courses"
+                    className="block text-white/80 hover:text-white transition-colors text-sm"
+                  >
+                    Diving Courses
+                  </Link>
+                  <Link
+                    href="/destinations"
+                    className="block text-white/80 hover:text-white transition-colors text-sm"
+                  >
+                    Destinations
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="block text-white/80 hover:text-white transition-colors text-sm"
+                  >
+                    Contact Us
+                  </Link>
+                </div>
+              </div>
+
+              {/* Weather Widget */}
+              <WeatherWidget />
             </div>
 
             {/* Payment Methods */}
