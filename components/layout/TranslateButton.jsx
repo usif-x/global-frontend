@@ -58,7 +58,7 @@ const GoogleTranslateButton = () => {
         const script = document.createElement("script");
         script.type = "text/javascript";
         script.src =
-          "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+          "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit&hl=en";
         script.async = true;
         document.head.appendChild(script);
       } else if (window.google && !isInitialized.current) {
@@ -174,7 +174,78 @@ const GoogleTranslateButton = () => {
         </div>
       )}
 
-      <style jsx global>{``}</style>
+      <style jsx global>{`
+        /* Hide Google Translate Top Bar */
+        .goog-te-banner-frame.skiptranslate {
+          display: none !important;
+        }
+        body {
+          top: 0px !important;
+        }
+
+        /* Container */
+        .google-translate-container-fixed {
+          position: relative;
+          min-height: 40px;
+          width: 100%;
+        }
+
+        /* Hide "Powered by Google" and other text */
+        .goog-te-gadget {
+          font-size: 0 !important;
+          color: transparent !important;
+          width: 100%;
+        }
+
+        /* Style the Dropdown */
+        .goog-te-combo {
+          display: block !important;
+          width: 100% !important;
+          height: 44px !important;
+          padding: 10px 14px !important;
+          font-size: 14px !important;
+          line-height: 1.5 !important;
+          color: #1f2937 !important;
+          background-color: #ffffff !important;
+          border: 1px solid #e5e7eb !important;
+          border-radius: 0.5rem !important;
+          cursor: pointer !important;
+          outline: none !important;
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+          margin: 0 !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+
+        .goog-te-combo:hover {
+          border-color: #06b6d4 !important;
+        }
+
+        .goog-te-combo:focus {
+          border-color: #06b6d4 !important;
+          box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2) !important;
+        }
+
+        /* Hide Google Logo */
+        .goog-logo-link {
+          display: none !important;
+        }
+
+        /* Hide the "Suggest an edit" tooltip */
+        .goog-tooltip {
+          display: none !important;
+        }
+
+        /* Hide any other spans Google might inject */
+        .goog-te-gadget span {
+          display: none !important;
+        }
+
+        /* Ensure the dropdown stays visible */
+        .goog-te-gadget .goog-te-combo {
+          display: block !important;
+        }
+      `}</style>
     </>
   );
 };
