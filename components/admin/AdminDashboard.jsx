@@ -18,6 +18,7 @@ import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import BlogManagement from "./components/blog/Blog";
 import CourseManagement from "./components/course/Course";
 import InvoiceManagementPage from "./components/invoices/Invoices";
 import HeroDashboard from "./components/MainContent";
@@ -374,6 +375,12 @@ const AdminDashboard = () => {
       icon: "mdi:image-multiple",
       color: "text-pink-500",
     },
+    {
+      id: "blog",
+      label: "Blog",
+      icon: "mdi:post-outline",
+      color: "text-yellow-500",
+    },
     // Only show dive centers for level 2 admins
     ...(admin?.admin_level === 2
       ? [
@@ -513,6 +520,8 @@ const AdminDashboard = () => {
         return <UserManagementPage />;
       case "gallery":
         return <GalleryManagementPage />;
+      case "blog":
+        return <BlogManagement />;
       case "divecenters":
         return <DiveCenterManagementPage />;
       case "orders":
