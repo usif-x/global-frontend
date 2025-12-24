@@ -175,6 +175,17 @@ const TripPage = ({ params }) => {
     loadTripData();
   }, [id]);
 
+  // Auto-populate user data when available
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: user.full_name || prev.fullName,
+        email: user.email || prev.email,
+      }));
+    }
+  }, [user]);
+
   useEffect(() => {
     if (tripData && !tripData.child_allowed && formData.children > 0) {
       setFormData((prev) => ({ ...prev, children: 0 }));
