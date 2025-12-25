@@ -16,7 +16,7 @@ const WeatherWidget = () => {
 
         // Fetch weather for Hurghada, Red Sea
         const response = await fetch(
-          `http://api.weatherapi.com/v1/current.json?key=069c5a5246624da9ad2112005252412&q=Hurghada,Egypt&aqi=no`
+          `https://api.weatherapi.com/v1/current.json?key=069c5a5246624da9ad2112005252412&q=Hurghada,Egypt&aqi=no`
         );
 
         if (!response.ok) {
