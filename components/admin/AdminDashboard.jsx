@@ -327,61 +327,64 @@ const AdminDashboard = () => {
       label: "Dashboard",
       icon: "mdi:view-dashboard",
       color: "text-blue-500",
+      description: "Overview of your platform activities",
     },
     {
       id: "trips",
       label: "Trips",
       icon: "mdi:airplane",
       color: "text-green-500",
+      description: "Manage all trips and bookings",
     },
-    // Only show packages for level 2 admins or remove this restriction if level 1 should see packages
-    ...(admin?.admin_level === 2
-      ? [
-          {
-            id: "packages",
-            label: "Packages",
-            icon: "mdi:package-variant",
-            color: "text-purple-500",
-          },
-        ]
-      : []),
+    {
+      id: "packages",
+      label: "Packages",
+      icon: "mdi:package-variant",
+      color: "text-purple-500",
+      description: "Create and manage travel packages",
+    },
     {
       id: "courses",
       label: "Courses",
       icon: "mdi:book-open-page-variant",
-      color: "text-orange-500",
+      color: "text-orange-400",
+      description: "Manage courses and learning materials",
     },
     {
       id: "best_selling",
       label: "Best Selling",
       icon: "mdi:fire",
-      color: "text-rose-500",
+      color: "text-red-500",
+      description: "View best selling trips and packages",
     },
     {
       id: "coupons",
       label: "Coupons",
       icon: "mdi:ticket-percent",
-      color: "text-purple-500",
+      color: "text-pink-400",
+      description: "Create and manage discount coupons",
     },
     {
       id: "users",
       label: "Users",
       icon: "mdi:account-group",
-      color: "text-cyan-500",
+      color: "text-cyan-600",
+      description: "Manage user accounts and permissions",
     },
     {
       id: "gallery",
       label: "Gallery",
       icon: "mdi:image-multiple",
-      color: "text-pink-500",
+      color: "text-indigo-500",
+      description: "Upload and manage media content",
     },
     {
       id: "blog",
       label: "Blog",
       icon: "mdi:post-outline",
-      color: "text-yellow-500",
+      color: "text-yellow-600",
+      description: "Create and manage blog posts",
     },
-    // Only show dive centers for level 2 admins
     ...(admin?.admin_level === 2
       ? [
           {
@@ -389,10 +392,10 @@ const AdminDashboard = () => {
             label: "Dive Centers",
             icon: "mdi:diving",
             color: "text-teal-500",
+            description: "Manage dive centers and their info",
           },
         ]
       : []),
-    // Level 2 admin only items
     ...(admin?.admin_level === 2
       ? [
           {
@@ -400,12 +403,14 @@ const AdminDashboard = () => {
             label: "Orders",
             icon: "mdi:receipt-text-check-outline",
             color: "text-lime-500",
+            description: "View and manage customer orders",
           },
           {
             id: "admins",
             label: "Admins",
             icon: "mdi:shield-account",
-            color: "text-red-500",
+            color: "text-red-700",
+            description: "Manage other admin accounts",
           },
         ]
       : []),
@@ -413,7 +418,8 @@ const AdminDashboard = () => {
       id: "testimonials",
       label: "Testimonials",
       icon: "mdi:comment-quote",
-      color: "text-yellow-500",
+      color: "text-amber-500",
+      description: "Review customer feedback",
       badge:
         notificationStats.unaccepted_testimonials_count > 0
           ? notificationStats.unaccepted_testimonials_count
@@ -424,15 +430,16 @@ const AdminDashboard = () => {
       label: "Notifications",
       icon: "mdi:bell-ring",
       color: "text-orange-500",
+      description: "View all public notifications",
     },
-    // Level 2 admin only - invoice and payment related
     ...(admin?.admin_level === 2
       ? [
           {
             id: "invoices",
             label: "Invoices",
             icon: "mdi:calendar-check",
-            color: "text-indigo-500",
+            color: "text-indigo-700",
+            description: "Manage invoices and billing",
             badge:
               notificationStats.pending_invoices > 0
                 ? notificationStats.pending_invoices
@@ -443,6 +450,7 @@ const AdminDashboard = () => {
             label: "Payments",
             icon: "mdi:credit-card",
             color: "text-emerald-500",
+            description: "Track payments and transactions",
           },
         ]
       : []),
@@ -450,9 +458,9 @@ const AdminDashboard = () => {
       id: "analytics",
       label: "Analytics",
       icon: "mdi:chart-line",
-      color: "text-pink-500",
+      color: "text-pink-600",
+      description: "View platform statistics and reports",
     },
-    // Level 2 admin only - settings
     ...(admin?.admin_level === 2
       ? [
           {
@@ -460,6 +468,7 @@ const AdminDashboard = () => {
             label: "Settings",
             icon: "mdi:cog",
             color: "text-gray-500",
+            description: "Configure platform settings",
           },
         ]
       : []),
@@ -677,6 +686,20 @@ const AdminDashboard = () => {
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4 flex-shrink-0">
+              {/* Back to Main Page Button */}
+              <button
+                onClick={() => router.push("/")}
+                className="flex items-center px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-cyan-600 bg-cyan-50 hover:bg-cyan-100 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-300 whitespace-nowrap"
+                title="Back to Main Page"
+              >
+                <Icon
+                  icon="mdi:home"
+                  className="w-4 h-4 sm:mr-1"
+                  aria-hidden="true"
+                />
+                <span className="hidden sm:inline">Main Page</span>
+              </button>
+
               {/* Enhanced Notification Bell */}
               <div className="relative">
                 <button
