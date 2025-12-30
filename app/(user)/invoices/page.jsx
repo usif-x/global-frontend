@@ -560,7 +560,10 @@ export default function MyInvoicesPage() {
         header: "Activity",
         cell: ({ row }) => (
           <div className="font-medium text-slate-700">
-            {row.original.activity_details.name}
+            {row.original.activity_details
+  .map(activity => activity.name)
+  .join(", ")}
+
           </div>
         ),
       },
@@ -683,11 +686,24 @@ export default function MyInvoicesPage() {
   const currencyNote =
     "Please note: All summary totals on this page are shown in Egyptian Pounds (EGP) for consistency. When you proceed to payment for a pending invoice, you will be charged in the currency you originally selected during booking (e.g., USD, EUR). The payment provider will handle the final conversion.";
 
-  // Check for paid but unpicked invoices
-  const unpickedInvoices = useMemo(() => {
+  // Check for paid/cash but unpicked invoices that NEED CONFIRMATION
+  const actionRequiredInvoices = useMemo(() => {
     return allInvoices.filter(
       (inv) =>
         inv.picked_up === false &&
+        !inv.is_confirmed &&
+        (inv.status.toLowerCase() === "paid" ||
+          (inv.status.toLowerCase() === "pending" &&
+            inv.invoice_type === "cash"))
+    );
+  }, [allInvoices]);
+
+  // Check for confirmed invoices that are waiting for pickup
+  const confirmedWaitingInvoices = useMemo(() => {
+    return allInvoices.filter(
+      (inv) =>
+        inv.picked_up === false &&
+        inv.is_confirmed === true &&
         (inv.status.toLowerCase() === "paid" ||
           (inv.status.toLowerCase() === "pending" &&
             inv.invoice_type === "cash"))
@@ -715,8 +731,8 @@ export default function MyInvoicesPage() {
 
         <InfoBanner message={currencyNote} />
 
-        {/* Unpicked Invoices Alert */}
-        {unpickedInvoices.length > 0 && (
+        {/* Action Required: Confirm Your Trip (For unconfirmed invoices) */}
+        {actionRequiredInvoices.length > 0 && (
           <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-l-4 border-blue-500 p-6 rounded-r-xl mb-6 shadow-lg">
             <div className="flex items-start space-x-4">
               <Icon
@@ -726,16 +742,16 @@ export default function MyInvoicesPage() {
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-blue-900 mb-3">
                   Action Required: Confirm Your Trip
-                  {unpickedInvoices.length > 1 ? "s" : ""}
+                  {actionRequiredInvoices.length > 1 ? "s" : ""}
                 </h3>
 
-                {/* Check if there are any cash invoices */}
-                {unpickedInvoices.some((inv) => inv.invoice_type === "cash") ? (
+                {/* Check if there are any cash invoices in the action required list */}
+                {actionRequiredInvoices.some((inv) => inv.invoice_type === "cash") ? (
                   <div className="text-blue-800 mb-4">
                     <p className="font-semibold mb-3">
-                      You have {unpickedInvoices.length} invoice
-                      {unpickedInvoices.length > 1 ? "s" : ""} that require
-                      {unpickedInvoices.length === 1 ? "s" : ""} your attention:
+                      You have {actionRequiredInvoices.length} invoice
+                      {actionRequiredInvoices.length > 1 ? "s" : ""} that require
+                      {actionRequiredInvoices.length === 1 ? "s" : ""} your attention:
                     </p>
                     <div className="bg-white/60 rounded-lg p-4 mb-3">
                       <div className="space-y-2">
@@ -772,17 +788,17 @@ export default function MyInvoicesPage() {
                   </div>
                 ) : (
                   <p className="text-blue-800 mb-4">
-                    You have {unpickedInvoices.length} paid invoice
-                    {unpickedInvoices.length > 1 ? "s" : ""} that need
-                    {unpickedInvoices.length === 1 ? "s" : ""} confirmation.
+                    You have {actionRequiredInvoices.length} paid invoice
+                    {actionRequiredInvoices.length > 1 ? "s" : ""} that need
+                    {actionRequiredInvoices.length === 1 ? "s" : ""} confirmation.
                     Please contact us to finalize your trip details and provide
                     any additional important information.
                   </p>
                 )}
 
-                {/* List of unpicked invoices */}
+                {/* List of unconfirmed invoices */}
                 <div className="space-y-2 mb-4">
-                  {unpickedInvoices.map((inv) => (
+                  {actionRequiredInvoices.map((inv) => (
                     <div
                       key={inv.id}
                       className="bg-white/60 rounded-lg p-3 flex items-center justify-between"
@@ -798,7 +814,9 @@ export default function MyInvoicesPage() {
                           {inv.customer_reference}
                         </a>
                         <span className="text-slate-600 ml-3">
-                          ({inv.activity})
+{inv.activity_details
+                            .map(activity => activity.name)
+                            .join(", ")}
                         </span>
                         <span
                           className={`ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -874,6 +892,52 @@ export default function MyInvoicesPage() {
                     <span>Live Chat</span>
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Booking Confirmed: Please Wait at Hotel (For confirmed invoices) */}
+        {confirmedWaitingInvoices.length > 0 && (
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 p-6 rounded-r-xl mb-6 shadow-lg">
+            <div className="flex items-start space-x-4">
+              <Icon
+                icon="mdi:check-circle"
+                className="w-8 h-8 text-green-600 flex-shrink-0 mt-1"
+              />
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-green-900 mb-3">
+                  Your Booking is Confirmed!
+                </h3>
+                
+                {confirmedWaitingInvoices.map((inv) => (
+                  <div key={inv.id} className="mb-4 last:mb-0">
+                     <p className="text-green-800 font-medium text-lg">
+                        Please wait at {inv.activity_details?.hotel_name || "(your hotel)"} reception at 8 AM.
+                     </p>
+                     <div className="mt-2 text-sm text-green-700 bg-white/60 p-3 rounded-lg inline-block">
+                        <span className="font-semibold">Invoice Ref:</span> {inv.customer_reference} | 
+                        <span className="font-semibold ml-2">Activity:</span> {inv.activity}
+                     </div>
+                  </div>
+                ))}
+
+                 <div className="mt-4 text-green-800/80 text-sm">
+                    We look forward to seeing you! If you have any questions, feel free to contact us below.
+                 </div>
+
+                 {/* Contact options (Simplified for confirmed) */}
+                 <div className="flex flex-wrap gap-2 mt-4">
+                    <a
+                      href="https://api.whatsapp.com/send?phone=201070440861"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-green-100 text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-200 transition-colors text-sm font-medium"
+                    >
+                      <Icon icon="mdi:whatsapp" className="w-4 h-4" />
+                      <span>WhatsApp</span>
+                    </a>
+                 </div>
               </div>
             </div>
           </div>

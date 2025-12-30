@@ -1084,7 +1084,10 @@ export default function InvoiceManagementPage() {
             className={`inline-flex items-center gap-1.5 font-medium text-slate-700`}
           >
             <Icon icon="mdi:tag-outline" className="h-4 w-4 text-slate-400" />
-            {row.original.activity_details.name}
+            {row.original.activity_details
+  .map(activity => activity.name)
+  .join(", ")}
+
           </div>
         ),
       },
