@@ -560,7 +560,7 @@ export default function MyInvoicesPage() {
         header: "Activity",
         cell: ({ row }) => (
           <div className="font-medium text-slate-700">
-            {row.original.activity}
+            {row.original.activity_details.name}
           </div>
         ),
       },

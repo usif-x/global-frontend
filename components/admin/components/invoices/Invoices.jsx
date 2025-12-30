@@ -5,10 +5,10 @@ import InvoiceService from "@/services/invoiceService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Icon } from "@iconify/react";
 import {
-    flexRender,
-    getCoreRowModel,
-    getSortedRowModel,
-    useReactTable,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -1084,7 +1084,7 @@ export default function InvoiceManagementPage() {
             className={`inline-flex items-center gap-1.5 font-medium text-slate-700`}
           >
             <Icon icon="mdi:tag-outline" className="h-4 w-4 text-slate-400" />
-            {row.original.activity}
+            {row.original.activity_details.name}
           </div>
         ),
       },
