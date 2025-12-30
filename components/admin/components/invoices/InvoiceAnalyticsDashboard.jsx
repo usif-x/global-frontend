@@ -213,7 +213,7 @@ export default function InvoiceAnalyticsDashboard() {
                 {data.activity_breakdown?.map((item) => (
                   <ProgressBar
                     key={item.activity}
-                    label={item.activity_details[0]?.name}
+                    label={item.activity_details?.[0]?.name || item.activity}
                     value={item.count}
                     total={data.total_invoices}
                     color={item.activity === 'Trip' ? 'bg-cyan-500' : 'bg-indigo-500'}
