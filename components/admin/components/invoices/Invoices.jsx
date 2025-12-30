@@ -5,10 +5,10 @@ import InvoiceService from "@/services/invoiceService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Icon } from "@iconify/react";
 import {
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
+    flexRender,
+    getCoreRowModel,
+    getSortedRowModel,
+    useReactTable,
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -147,6 +147,9 @@ const ModalWrapper = ({ children, onClose, visible }) => {
 const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [notesValue, setNotesValue] = useState("");
+  const [savingNotes, setSavingNotes] = useState(false);
 
   useEffect(() => {
     if (!invoiceId) return;
@@ -169,6 +172,30 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
 
     fetchInvoiceDetails();
   }, [invoiceId, onClose]);
+
+  const handleSaveNotes = async () => {
+    setSavingNotes(true);
+    try {
+      await InvoiceService.updateInvoiceAdmin(invoiceId, {
+        notes: notesValue,
+      });
+      setInvoice({ ...invoice, notes: notesValue });
+      setEditingNotes(false);
+      toast.success("Notes updated successfully.");
+    } catch (error) {
+      toast.error(
+        "Failed to update notes. " +
+          (error.response?.data?.detail || error.message)
+      );
+    } finally {
+      setSavingNotes(false);
+    }
+  };
+
+  const handleEditNotes = () => {
+    setNotesValue(invoice.notes || "");
+    setEditingNotes(true);
+  };
 
   if (!invoiceId) return null;
 
@@ -225,6 +252,99 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
               </button>
             </div>
             <div className="p-8 max-h-[70vh] overflow-y-auto space-y-6">
+              {/* Confirmation Status */}
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                  <Icon
+                    icon="mdi:check-decagram"
+                    className="w-5 h-5 text-cyan-600"
+                  />
+                  Confirmation Status
+                </h3>
+                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                  <div className="flex items-center gap-3">
+                    <span className="text-slate-600 font-medium">Status:</span>
+                    {invoice.is_confirmed ?? true ? (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        <Icon icon="mdi:check-circle" className="w-4 h-4" />
+                        Confirmed
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
+                        <Icon icon="mdi:alert-circle" className="w-4 h-4" />
+                        Unconfirmed
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Admin Notes */}
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                  <Icon
+                    icon="mdi:note-text"
+                    className="w-5 h-5 text-cyan-600"
+                  />
+                  Admin Notes
+                </h3>
+                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                  {editingNotes ? (
+                    <div className="space-y-3">
+                      <textarea
+                        value={notesValue}
+                        onChange={(e) => setNotesValue(e.target.value)}
+                        className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 min-h-[100px]"
+                        placeholder="Add notes about this customer or invoice..."
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleSaveNotes}
+                          disabled={savingNotes}
+                          className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:opacity-50 flex items-center gap-2"
+                        >
+                          {savingNotes ? (
+                            <>
+                              <Icon icon="mdi:loading" className="w-4 h-4 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <Icon icon="mdi:content-save" className="w-4 h-4" />
+                              Save
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => setEditingNotes(false)}
+                          disabled={savingNotes}
+                          className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      {invoice.notes ? (
+                        <p className="text-slate-700 whitespace-pre-wrap mb-3">
+                          {invoice.notes}
+                        </p>
+                      ) : (
+                        <p className="text-slate-400 italic mb-3">No notes added yet.</p>
+                      )}
+                      <button
+                        onClick={handleEditNotes}
+                        className="text-cyan-600 hover:text-cyan-700 flex items-center gap-1 text-sm font-medium"
+                      >
+                        <Icon icon="mdi:pencil" className="w-4 h-4" />
+                        {invoice.notes ? "Edit Notes" : "Add Notes"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Customer Information */}
               <div>
                 <h3 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
@@ -640,6 +760,7 @@ export default function InvoiceManagementPage() {
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [confirmationFilter, setConfirmationFilter] = useState("all");
 
   const { userType } = useAuthStore();
   const router = useRouter();
@@ -699,8 +820,17 @@ export default function InvoiceManagementPage() {
         (invoice) => invoice.status.toLowerCase() === statusFilter
       );
     }
+    if (confirmationFilter !== "all") {
+      invoicesToDisplay = invoicesToDisplay.filter(
+        (invoice) => {
+          if (confirmationFilter === "confirmed") return invoice.is_confirmed;
+          if (confirmationFilter === "unconfirmed") return !invoice.is_confirmed;
+          return true;
+        }
+      );
+    }
     setFilteredInvoices(invoicesToDisplay);
-  }, [allInvoices, statusFilter]);
+  }, [allInvoices, statusFilter, confirmationFilter]);
 
   // Effect for debounced search and initial load
   useEffect(() => {
@@ -806,6 +936,38 @@ export default function InvoiceManagementPage() {
     }
   };
 
+  const handleToggleConfirmed = async (invoiceId, currentConfirmedStatus) => {
+    const newConfirmedStatus = !currentConfirmedStatus;
+
+    // Optimistically update the UI
+    setAllInvoices((prevInvoices) =>
+      prevInvoices.map((inv) =>
+        inv.id === invoiceId ? { ...inv, is_confirmed: newConfirmedStatus } : inv
+      )
+    );
+
+    try {
+      await InvoiceService.updateInvoiceAdmin(invoiceId, {
+        is_confirmed: newConfirmedStatus,
+      });
+      toast.success(
+        `Invoice #${invoiceId} marked as ${
+          newConfirmedStatus ? "Confirmed" : "Unconfirmed"
+        }.`
+      );
+    } catch (error) {
+      toast.error("Failed to update confirmation status. Reverting change.");
+      // Revert the optimistic update
+      setAllInvoices((prevInvoices) =>
+        prevInvoices.map((inv) =>
+          inv.id === invoiceId
+            ? { ...inv, is_confirmed: currentConfirmedStatus }
+            : inv
+        )
+      );
+    }
+  };
+
   const columns = useMemo(
     () => [
       {
@@ -880,6 +1042,37 @@ export default function InvoiceManagementPage() {
                 handleTogglePickedUp(invoice.id, invoice.picked_up)
               }
             />
+          );
+        },
+      },
+      {
+        accessorKey: "is_confirmed",
+        header: "Confirmed",
+        cell: ({ row }) => {
+          const invoice = row.original;
+          return (
+            <ToggleSwitch
+              checked={invoice.is_confirmed ?? true}
+              onChange={() =>
+                handleToggleConfirmed(invoice.id, invoice.is_confirmed ?? true)
+              }
+            />
+          );
+        },
+      },
+      {
+        accessorKey: "notes",
+        header: "Notes",
+        cell: ({ row }) => {
+          const notes = row.original.notes;
+          if (!notes) {
+            return <span className="text-slate-400 text-xs italic">No notes</span>;
+          }
+          const truncated = notes.length > 30 ? notes.substring(0, 30) + "..." : notes;
+          return (
+            <span className="text-xs text-slate-600" title={notes}>
+              {truncated}
+            </span>
           );
         },
       },
@@ -1053,6 +1246,20 @@ export default function InvoiceManagementPage() {
                     <option value="failed">Failed</option>
                     <option value="cancelled">Cancelled</option>
                     <option value="expired">Expired</option>
+                  </select>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <label className="text-sm font-medium text-slate-600">
+                    Confirmation:
+                  </label>
+                  <select
+                    value={confirmationFilter}
+                    onChange={(e) => setConfirmationFilter(e.target.value)}
+                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500"
+                  >
+                    <option value="all">All</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="unconfirmed">Unconfirmed</option>
                   </select>
                 </div>
               </div>

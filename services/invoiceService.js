@@ -131,6 +131,41 @@ class InvoiceService {
     // This calls the new DELETE endpoint
     return await deleteData(`/invoices/admin/${invoiceId}`, true);
   }
+
+  /**
+   * [ADMIN] Get comprehensive invoice analytics with all breakdowns.
+   * Includes status counts, revenue metrics, activity breakdown, payment method breakdown,
+   * invoice type breakdown, confirmation tracking, and pickup tracking.
+   * @returns {Promise<Object>} Detailed invoice summary with all analytics.
+   */
+  async getDetailedSummaryAdmin() {
+    return await getData("/invoices/admin/detailed-summary", true);
+  }
+
+  /**
+   * [ADMIN] Get invoice analytics filtered by specific month.
+   * @param {number} year - Year (e.g., 2025)
+   * @param {number} month - Month number (1-12)
+   * @returns {Promise<Object>} Monthly invoice analytics with all breakdowns.
+   */
+  async getMonthlyAnalytics(year, month) {
+    return await getData(
+      `/invoices/admin/monthly-analytics?year=${year}&month=${month}`,
+      true
+    );
+  }
+
+  /**
+   * [ADMIN] Get top customers ranked by total spending.
+   * @param {number} [limit=10] - Number of customers to return (default: 10, max: 100)
+   * @returns {Promise<Array>} List of top customers with spending details.
+   */
+  async getTopCustomers(limit = 10) {
+    return await getData(
+      `/invoices/admin/top-customers?limit=${limit}`,
+      true
+    );
+  }
 }
 
 export default new InvoiceService();
