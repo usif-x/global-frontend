@@ -2,8 +2,29 @@
 
 import AnalyticsService from "@/services/analyticsService";
 import { Icon } from "@iconify/react";
+import {
+  ArcElement,
+  BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  Title,
+  Tooltip,
+} from "chart.js";
 import { useEffect, useState } from "react";
+import { Bar, Pie } from "react-chartjs-2";
 import { toast } from "react-toastify";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
 
 // Helper components for charts/visualizations
 const ProgressBar = ({
@@ -51,37 +72,63 @@ const StatCard = ({ title, value, subValue, icon, color }) => (
   </div>
 );
 
-const SimpleBarChart = ({ data }) => {
+// Chart.js Bar Chart for Sales Over Time
+const SalesBarChart = ({ data }) => {
   if (!data || data.length === 0) return null;
-  const maxRevenue = Math.max(...data.map((d) => d.revenue));
+  const chartData = {
+    labels: data.map((d) => d.date),
+    datasets: [
+      {
+        label: "Revenue",
+        data: data.map((d) => d.revenue),
+        backgroundColor: "#06b6d4",
+      },
+      {
+        label: "Count",
+        data: data.map((d) => d.count),
+        backgroundColor: "#818cf8",
+      },
+    ],
+  };
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: { position: "top" },
+      title: { display: false },
+      tooltip: { mode: "index", intersect: false },
+    },
+    scales: {
+      x: { stacked: true },
+      y: { stacked: false, beginAtZero: true },
+    },
+  };
+  return <Bar data={chartData} options={options} height={180} />;
+};
 
+// Chart.js Pie Chart for Distribution
+const DistributionPieChart = ({ data, label }) => {
+  if (!data || data.length === 0) return null;
+  const chartData = {
+    labels: data.map((d) => d.name),
+    datasets: [
+      {
+        data: data.map((d) => d.value),
+        backgroundColor: [
+          "#06b6d4",
+          "#f472b6",
+          "#facc15",
+          "#818cf8",
+          "#34d399",
+          "#f87171",
+        ],
+      },
+    ],
+  };
   return (
-    <div className="flex items-end space-x-2 h-48 w-full overflow-x-auto pb-2">
-      {data.map((item, index) => (
-        <div
-          key={index}
-          className="flex flex-col items-center flex-1 min-w-[30px] group relative"
-        >
-          {/* Tooltip */}
-          <div className="absolute bottom-full mb-2 hidden group-hover:block bg-slate-800 text-white text-xs p-2 rounded z-10 whitespace-nowrap">
-            <p>{item.date}</p>
-            <p>Rev: {item.revenue}</p>
-            <p>Count: {item.count}</p>
-          </div>
-          <div
-            className="w-full bg-cyan-500 rounded-t opacity-80 hover:opacity-100 transition-all"
-            style={{
-              height: `${
-                maxRevenue > 0 ? (item.revenue / maxRevenue) * 100 : 0
-              }%`,
-            }}
-          ></div>
-          <span className="text-[10px] text-slate-400 mt-1 truncate w-full text-center">
-            {new Date(item.date).getDate()}
-          </span>
-        </div>
-      ))}
-    </div>
+    <Pie
+      data={chartData}
+      options={{ plugins: { legend: { position: "bottom" } } }}
+    />
   );
 };
 
@@ -148,18 +195,6 @@ export default function InvoiceAnalyticsDashboard() {
     );
   }
 
-  // Calculate totals for distributions to calculate percentages in ProgressBar
-  const totalActivity =
-    data?.charts?.activity_distribution?.reduce(
-      (sum, item) => sum + item.value,
-      0
-    ) || 0;
-  const totalPayment =
-    data?.charts?.payment_method_distribution?.reduce(
-      (sum, item) => sum + item.value,
-      0
-    ) || 0;
-
   const isFiltered = selectedMonth && selectedYear;
   const timeLabel = isFiltered
     ? `${months.find((m) => m.value == selectedMonth)?.label} ${selectedYear}`
@@ -225,14 +260,14 @@ export default function InvoiceAnalyticsDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard
               title={`Sales ${timeLabel}`}
-              value={formatCurrency(data.stats?.revenue_today)}
-              subValue={`${data.stats?.sales_count_today} Invoices | Trips: ${data.stats?.trips_booked_today}`}
+              value={formatCurrency(data.stats?.revenue)}
+              subValue={`${data.stats?.sales_count} Invoices | Trips: ${data.stats?.trips_booked}`}
               icon="mdi:cash-register"
               color="bg-green-500"
             />
             <StatCard
               title={`Pending ${timeLabel}`}
-              value={data.stats?.pending_invoices_today}
+              value={data.stats?.pending_invoices}
               subValue="Action Items"
               icon="mdi:clock-alert-outline"
               color="bg-yellow-500"
@@ -269,7 +304,45 @@ export default function InvoiceAnalyticsDashboard() {
               icon="mdi:check-decagram"
               color="bg-teal-500"
             />
-            {/* Placeholders for layout balance if needed, or expand others */}
+            <StatCard
+              title="Best Selling Month"
+              value={data.stats?.best_selling_month}
+              subValue="All Time"
+              icon="mdi:trophy"
+              color="bg-yellow-400"
+            />
+          </div>
+
+          {/* Row 3: Users, Testimonials, Content, Invoices breakdowns */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard
+              title="Total Users"
+              value={data.users?.total}
+              subValue={`Active: ${data.users?.active} | Inactive: ${data.users?.inactive}`}
+              icon="mdi:account-group"
+              color="bg-cyan-500"
+            />
+            <StatCard
+              title="Testimonials"
+              value={data.testimonials?.total}
+              subValue={`Accepted: ${data.testimonials?.accepted} | Unaccepted: ${data.testimonials?.unaccepted}`}
+              icon="mdi:comment-quote"
+              color="bg-purple-500"
+            />
+            <StatCard
+              title="Content"
+              value={`Trips: ${data.content?.trips}`}
+              subValue={`Packages: ${data.content?.packages} | Courses: ${data.content?.courses}`}
+              icon="mdi:folder-multiple"
+              color="bg-blue-400"
+            />
+            <StatCard
+              title="Invoices"
+              value={data.invoices?.total}
+              subValue={`Paid: ${data.invoices?.paid} | Pending: ${data.invoices?.pending}`}
+              icon="mdi:file-document"
+              color="bg-green-400"
+            />
           </div>
 
           {/* Charts Section */}
@@ -283,7 +356,7 @@ export default function InvoiceAnalyticsDashboard() {
                 />
                 Sales Trend ({isFiltered ? `${timeLabel}` : "Last 30 Days"})
               </h2>
-              <SimpleBarChart data={data.charts?.sales_over_time} />
+              <SalesBarChart data={data.charts?.sales_over_time} />
             </div>
 
             {/* Distribution Charts */}
@@ -294,19 +367,10 @@ export default function InvoiceAnalyticsDashboard() {
                   <Icon icon="mdi:pie-chart" className="text-purple-600" />
                   Activity Mix
                 </h2>
-                <div className="space-y-4">
-                  {data.charts?.activity_distribution?.map((item) => (
-                    <ProgressBar
-                      key={item.name}
-                      label={item.name}
-                      value={item.value}
-                      total={totalActivity}
-                      color={
-                        item.name === "Trip" ? "bg-cyan-500" : "bg-pink-500"
-                      }
-                    />
-                  ))}
-                </div>
+                <DistributionPieChart
+                  data={data.charts?.activity_distribution}
+                  label="Activity"
+                />
               </div>
 
               {/* Payment Distribution */}
@@ -318,17 +382,100 @@ export default function InvoiceAnalyticsDashboard() {
                   />
                   Payment Methods
                 </h2>
-                <div className="space-y-4">
-                  {data.charts?.payment_method_distribution?.map((item) => (
-                    <ProgressBar
-                      key={item.name}
-                      label={item.name}
-                      value={item.value}
-                      total={totalPayment}
-                      color="bg-green-500"
-                    />
-                  ))}
-                </div>
+                <DistributionPieChart
+                  data={data.charts?.payment_method_distribution}
+                  label="Payment"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Top Courses & Activities */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Top Courses */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <Icon
+                  icon="mdi:book-open-page-variant"
+                  className="text-blue-600"
+                />
+                Top Courses
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
+                        Course
+                      </th>
+                      <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
+                        Revenue
+                      </th>
+                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                        Count
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {data.top_courses?.map((course, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50">
+                        <td className="py-3 px-2">
+                          <span className="font-medium text-sm text-slate-800">
+                            {course.name}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
+                          {formatCurrency(course.revenue)}
+                        </td>
+                        <td className="py-3 px-2 text-center text-sm">
+                          {course.count}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Top Activities */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <Icon icon="mdi:run-fast" className="text-pink-600" />
+                Top Activities
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
+                        Activity
+                      </th>
+                      <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
+                        Revenue
+                      </th>
+                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                        Count
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {data.top_activities?.map((activity, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50">
+                        <td className="py-3 px-2">
+                          <span className="font-medium text-sm text-slate-800">
+                            {activity.name}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
+                          {formatCurrency(activity.revenue)}
+                        </td>
+                        <td className="py-3 px-2 text-center text-sm">
+                          {activity.count}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
