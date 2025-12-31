@@ -1,6 +1,6 @@
 "use client";
 
-import InvoiceService from "@/services/invoiceService";
+import AnalyticsService from "@/services/analyticsService";
 import { Icon } from "@iconify/react";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -40,43 +40,51 @@ const StatCard = ({ title, value, subValue, icon, color }) => (
   </div>
 );
 
+const SimpleBarChart = ({ data }) => {
+  if (!data || data.length === 0) return null;
+  const maxRevenue = Math.max(...data.map(d => d.revenue));
+
+  return (
+    <div className="flex items-end space-x-2 h-48 w-full overflow-x-auto pb-2">
+      {data.map((item, index) => (
+        <div key={index} className="flex flex-col items-center flex-1 min-w-[30px] group relative">
+           {/* Tooltip */}
+           <div className="absolute bottom-full mb-2 hidden group-hover:block bg-slate-800 text-white text-xs p-2 rounded z-10 whitespace-nowrap">
+            <p>{item.date}</p>
+            <p>Rev: {item.revenue}</p>
+            <p>Count: {item.count}</p>
+          </div>
+          <div 
+            className="w-full bg-cyan-500 rounded-t opacity-80 hover:opacity-100 transition-all"
+            style={{ height: `${maxRevenue > 0 ? (item.revenue / maxRevenue) * 100 : 0}%` }}
+          ></div>
+          <span className="text-[10px] text-slate-400 mt-1 truncate w-full text-center">
+            {new Date(item.date).getDate()}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export default function InvoiceAnalyticsDashboard() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
-  const [period, setPeriod] = useState("all"); // 'all' or 'monthly'
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [topCustomers, setTopCustomers] = useState([]);
 
   useEffect(() => {
     fetchData();
-    fetchTopCustomers();
-  }, [period, selectedYear, selectedMonth]);
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      let result;
-      if (period === "all") {
-        result = await InvoiceService.getDetailedSummaryAdmin();
-      } else {
-        result = await InvoiceService.getMonthlyAnalytics(selectedYear, selectedMonth);
-      }
+      const result = await AnalyticsService.getDashboardSummary();
       setData(result);
     } catch (error) {
-      console.error("Error fetching invoice analytics:", error);
+      console.error("Error fetching analytics dashboard:", error);
       toast.error("Failed to load analytics data");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchTopCustomers = async () => {
-    try {
-      const customers = await InvoiceService.getTopCustomers(10);
-      setTopCustomers(customers || []);
-    } catch (error) {
-      console.error("Error fetching top customers:", error);
     }
   };
 
@@ -88,26 +96,6 @@ export default function InvoiceAnalyticsDashboard() {
     }).format(amount || 0);
   };
 
-  const years = Array.from(
-    { length: 5 },
-    (_, i) => new Date().getFullYear() - i
-  );
-  
-  const months = [
-    { value: 1, label: "January" },
-    { value: 2, label: "February" },
-    { value: 3, label: "March" },
-    { value: 4, label: "April" },
-    { value: 5, label: "May" },
-    { value: 6, label: "June" },
-    { value: 7, label: "July" },
-    { value: 8, label: "August" },
-    { value: 9, label: "September" },
-    { value: 10, label: "October" },
-    { value: 11, label: "November" },
-    { value: 12, label: "December" },
-  ];
-
   if (loading && !data) {
     return (
       <div className="flex justify-center items-center h-96">
@@ -116,252 +104,212 @@ export default function InvoiceAnalyticsDashboard() {
     );
   }
 
+  // Calculate totals for distributions to calculate percentages in ProgressBar
+  const totalActivity = data?.charts?.activity_distribution?.reduce((sum, item) => sum + item.value, 0) || 0;
+  const totalPayment = data?.charts?.payment_method_distribution?.reduce((sum, item) => sum + item.value, 0) || 0;
+
   return (
     <div className="space-y-8 p-6 bg-slate-50 min-h-screen">
-      {/* Header & Filters */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Invoice Analytics</h1>
-          <p className="text-slate-500">Detailed financial insights and reports</p>
+          <h1 className="text-2xl font-bold text-slate-800">Analytics Dashboard</h1>
+          <p className="text-slate-500">Real-time snapshots and historical trends</p>
         </div>
         
-        <div className="flex items-center gap-3">
-          <select
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-cyan-500 outline-none"
-          >
-            <option value="all">All Time</option>
-            <option value="monthly">Monthly</option>
-          </select>
-
-          {period === "monthly" && (
-            <>
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                className="px-4 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-cyan-500 outline-none"
-              >
-                {months.map((m) => (
-                  <option key={m.value} value={m.value}>{m.label}</option>
-                ))}
-              </select>
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="px-4 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-cyan-500 outline-none"
-              >
-                {years.map((y) => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </select>
-            </>
-          )}
-          
-          <button 
-            onClick={fetchData}
-            className="p-2 bg-cyan-100 text-cyan-600 rounded-lg hover:bg-cyan-200 transition-colors"
-          >
-            <Icon icon="mdi:refresh" className="w-5 h-5" />
-          </button>
-        </div>
+        <button 
+          onClick={fetchData}
+          className="p-2 bg-cyan-100 text-cyan-600 rounded-lg hover:bg-cyan-200 transition-colors"
+        >
+          <Icon icon="mdi:refresh" className="w-5 h-5" />
+        </button>
       </div>
 
       {data && (
         <>
-          {/* Summary Cards */}
+          {/* Key Metrics - Row 1: Today's Snapshot */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard
-              title="Total Revenue"
-              value={formatCurrency(data.total_revenue)}
-              subValue={`${data.paid_count} paid invoices`}
-              icon="mdi:cash-multiple"
+              title="Sales Today"
+              value={formatCurrency(data.stats?.revenue_today)}
+              subValue={`${data.stats?.sales_count_today} Invoices | Trips: ${data.stats?.trips_booked_today}`}
+              icon="mdi:cash-register"
               color="bg-green-500"
             />
             <StatCard
-              title="Pending Amount"
-              value={formatCurrency(data.pending_amount)}
-              subValue={`${data.pending_count} pending invoices`}
-              icon="mdi:cash-clock"
+              title="Pending Today"
+              value={data.stats?.pending_invoices_today}
+              subValue="Action Items"
+              icon="mdi:clock-alert-outline"
               color="bg-yellow-500"
             />
             <StatCard
-              title="Avg Invoice Value"
-              value={formatCurrency(data.average_invoice_amount)}
-              subValue="Based on paid invoices"
-              icon="mdi:chart-areaspline"
+              title="Avg Order Value"
+              value={formatCurrency(data.stats?.average_order_value)}
+              subValue="Per Paid Invoice"
+              icon="mdi:cart-outline"
               color="bg-blue-500"
             />
-            <StatCard
-              title="Conversion Rate"
-              value={`${data.conversion_rate || 0}%`}
-              subValue={`${data.payment_success_rate || 0}% payment success`}
-              icon="mdi:percent"
-              color="bg-purple-500"
+             <StatCard
+              title="Total Discounts"
+              value={formatCurrency(data.stats?.total_discount_given)}
+              subValue="Given Today"
+              icon="mdi:sale"
+              color="bg-red-400"
             />
           </div>
 
-          {/* Breakdowns Grid */}
+          {/* Row 2: Operational & Potential */}
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+             <StatCard
+              title="Potential Revenue"
+              value={formatCurrency(data.stats?.potential_revenue)}
+              subValue="Locked in Pending"
+              icon="mdi:cash-lock"
+              color="bg-indigo-500"
+            />
+            <StatCard
+              title="Confirmation Rate"
+              value={`${data.stats?.confirmation_rate}%`}
+              subValue="Of Invoices"
+              icon="mdi:check-decagram"
+              color="bg-teal-500"
+            />
+            {/* Placeholders for layout balance if needed, or expand others */}
+          </div>
+
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Sales Over Time */}
+            <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+               <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <Icon icon="mdi:chart-timeline-variant" className="text-cyan-600" />
+                Sales Trend (Last 30 Days)
+              </h2>
+              <SimpleBarChart data={data.charts?.sales_over_time} />
+            </div>
+
+            {/* Distribution Charts */}
+            <div className="space-y-8">
+               {/* Activity Distribution */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <Icon icon="mdi:pie-chart" className="text-purple-600" />
+                  Activity Mix
+                </h2>
+                <div className="space-y-4">
+                  {data.charts?.activity_distribution?.map((item) => (
+                    <ProgressBar
+                      key={item.name}
+                      label={item.name}
+                      value={item.value}
+                      total={totalActivity}
+                      color={item.name === 'Trip' ? 'bg-cyan-500' : 'bg-pink-500'}
+                    />
+                  ))}
+                </div>
+              </div>
+
+               {/* Payment Distribution */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <Icon icon="mdi:credit-card-settings-outline" className="text-orange-600" />
+                  Payment Methods
+                </h2>
+                 <div className="space-y-4">
+                  {data.charts?.payment_method_distribution?.map((item) => (
+                    <ProgressBar
+                      key={item.name}
+                      label={item.name}
+                      value={item.value}
+                      total={totalPayment}
+                      color="bg-green-500"
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tables Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Activity Breakdown */}
+            {/* Top Customers */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
               <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <Icon icon="mdi:airplane" className="text-cyan-600" />
-                Revenue by Activity
+                <Icon icon="mdi:account-star" className="text-yellow-600" />
+                Top Customers
               </h2>
-              <div className="space-y-6">
-                {data.activity_breakdown?.map((item) => (
-                  <ProgressBar
-                    key={item.activity}
-                    label={item.activity_details?.[0]?.name || item.activity}
-                    value={item.count}
-                    total={data.total_invoices}
-                    color={item.activity === 'Trip' ? 'bg-cyan-500' : 'bg-indigo-500'}
-                    subLabel={`Revenue: ${formatCurrency(item.total_revenue)}`}
-                  />
-                ))}
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">Name</th>
+                      <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">Spent</th>
+                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">Orders</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {data.top_customers?.map((customer, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50">
+                        <td className="py-3 px-2">
+                          <div className="flex flex-col">
+                            <span className="font-medium text-sm text-slate-800">{customer.name}</span>
+                            <span className="text-xs text-slate-500">{customer.email}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
+                          {formatCurrency(customer.total_spent)}
+                        </td>
+                        <td className="py-3 px-2 text-center text-sm">
+                          {customer.order_count}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
 
-            {/* Payment Method Breakdown */}
+            {/* Recent Transactions */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
               <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <Icon icon="mdi:credit-card-outline" className="text-green-600" />
-                Payment Methods
+                <Icon icon="mdi:history" className="text-blue-600" />
+                Recent Transactions
               </h2>
-              <div className="space-y-6">
-                {data.payment_method_breakdown?.map((item) => (
-                  <ProgressBar
-                    key={item.payment_method}
-                    label={item.payment_method}
-                    value={item.count}
-                    total={data.total_invoices}
-                    color="bg-green-500"
-                    subLabel={`Success Rate: ${item.success_rate}%`}
-                  />
-                ))}
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">ID</th>
+                      <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">Buyer</th>
+                      <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">Amount</th>
+                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {data.recent_transactions?.map((tx, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50">
+                         <td className="py-3 px-2 text-xs text-slate-500">#{tx.id}</td>
+                        <td className="py-3 px-2 text-sm text-slate-800">{tx.buyer}</td>
+                        <td className="py-3 px-2 text-right font-medium text-slate-800 text-sm">
+                          {formatCurrency(tx.amount)}
+                        </td>
+                        <td className="py-3 px-2 text-center">
+                          <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${
+                            tx.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {tx.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
-
-            {/* Invoice Type Breakdown */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <Icon icon="mdi:file-compare" className="text-orange-600" />
-                Invoice Types
-              </h2>
-              <div className="grid grid-cols-2 gap-4">
-                {data.invoice_type_breakdown?.map((item) => (
-                  <div key={item.invoice_type} className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Icon 
-                        icon={item.invoice_type === 'online' ? 'mdi:web' : 'mdi:cash'} 
-                        className="text-slate-500"
-                      />
-                      <span className="font-semibold text-slate-700 capitalize">{item.invoice_type}</span>
-                    </div>
-                    <p className="text-2xl font-bold text-slate-800">{item.count}</p>
-                    <p className="text-sm text-slate-500">{formatCurrency(item.total_revenue)}</p>
-                    <div className="mt-2 text-xs text-slate-400">
-                      {item.paid_count} Paid • {item.pending_count} Pending
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Pickup & Confirmation Stats */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <Icon icon="mdi:checkbox-marked-circle-outline" className="text-pink-600" />
-                Operational Status
-              </h2>
-              <div className="space-y-6">
-                {/* Confirmation Status */}
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="font-medium text-slate-700">Confirmed Invoices</span>
-                    <span className="text-slate-600 font-bold">
-                      {data.confirmed_invoices} / {data.total_invoices}
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2.5">
-                    <div
-                      className="h-2.5 rounded-full bg-blue-500"
-                      style={{ width: `${(data.confirmed_invoices / data.total_invoices) * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* Pickup Status */}
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="font-medium text-slate-700">Picked Up (Paid)</span>
-                    <span className="text-slate-600 font-bold">
-                      {data.picked_up_count} / {data.paid_count}
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2.5">
-                    <div
-                      className="h-2.5 rounded-full bg-green-500"
-                      style={{ width: data.paid_count > 0 ? `${(data.picked_up_count / data.paid_count) * 100}%` : '0%' }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div> 
+          </div>
         </>
       )}
-
-      {/* Top Customers Table */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-        <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-          <Icon icon="mdi:account-star" className="text-yellow-600" />
-          Top Customers
-        </h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead>
-              <tr className="border-b border-slate-100">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">Customer</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">Email</th>
-                <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600">Invoices</th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600">Total Spent</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {topCustomers.map((customer, idx) => (
-                <tr key={customer.user_id} className="hover:bg-slate-50 transition-colors">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
-                      <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600">
-                        {idx + 1}
-                      </span>
-                      <span className="font-medium text-slate-800">{customer.buyer_name}</span>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 text-sm text-slate-500">{customer.buyer_email}</td>
-                  <td className="py-3 px-4 text-center">
-                    <span className="inline-block px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-semibold">
-                      {customer.paid_invoices} Paid
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-right font-bold text-slate-800">
-                    {formatCurrency(customer.total_spent)}
-                  </td>
-                </tr>
-              ))}
-              {topCustomers.length === 0 && (
-                <tr>
-                  <td colSpan="4" className="py-8 text-center text-slate-400">
-                    No customer data available
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   );
 }

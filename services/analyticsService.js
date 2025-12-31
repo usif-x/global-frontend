@@ -28,6 +28,14 @@ class AnalyticsService {
   static async getPickupStats() {
     return await getData("/analytics/invoices/pickup");
   }
+
+  /**
+   * Get consolidated dashboard summary.
+   * @returns {Promise<Object>} Object with stats, charts, top_customers, and recent_transactions.
+   */
+  static async getDashboardSummary() {
+    return await getData("/analytics/dashboard");
+  }
 }
 
 export default AnalyticsService;
