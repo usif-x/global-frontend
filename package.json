@@ -13,6 +13,7 @@
     "@tanstack/react-table": "^8.21.3",
     "@uiw/react-md-editor": "^4.0.8",
     "axios": "^1.11.0",
+    "chart.js": "^4.5.1",
     "date-fns": "^4.1.0",
     "html2pdf.js": "^0.10.3",
     "jose": "^6.0.12",
