@@ -305,12 +305,18 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
                         >
                           {savingNotes ? (
                             <>
-                              <Icon icon="mdi:loading" className="w-4 h-4 animate-spin" />
+                              <Icon
+                                icon="mdi:loading"
+                                className="w-4 h-4 animate-spin"
+                              />
                               Saving...
                             </>
                           ) : (
                             <>
-                              <Icon icon="mdi:content-save" className="w-4 h-4" />
+                              <Icon
+                                icon="mdi:content-save"
+                                className="w-4 h-4"
+                              />
                               Save
                             </>
                           )}
@@ -331,7 +337,9 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
                           {invoice.notes}
                         </p>
                       ) : (
-                        <p className="text-slate-400 italic mb-3">No notes added yet.</p>
+                        <p className="text-slate-400 italic mb-3">
+                          No notes added yet.
+                        </p>
                       )}
                       <button
                         onClick={handleEditNotes}
@@ -821,13 +829,11 @@ export default function InvoiceManagementPage() {
       );
     }
     if (confirmationFilter !== "all") {
-      invoicesToDisplay = invoicesToDisplay.filter(
-        (invoice) => {
-          if (confirmationFilter === "confirmed") return invoice.is_confirmed;
-          if (confirmationFilter === "unconfirmed") return !invoice.is_confirmed;
-          return true;
-        }
-      );
+      invoicesToDisplay = invoicesToDisplay.filter((invoice) => {
+        if (confirmationFilter === "confirmed") return invoice.is_confirmed;
+        if (confirmationFilter === "unconfirmed") return !invoice.is_confirmed;
+        return true;
+      });
     }
     setFilteredInvoices(invoicesToDisplay);
   }, [allInvoices, statusFilter, confirmationFilter]);
@@ -942,7 +948,9 @@ export default function InvoiceManagementPage() {
     // Optimistically update the UI
     setAllInvoices((prevInvoices) =>
       prevInvoices.map((inv) =>
-        inv.id === invoiceId ? { ...inv, is_confirmed: newConfirmedStatus } : inv
+        inv.id === invoiceId
+          ? { ...inv, is_confirmed: newConfirmedStatus }
+          : inv
       )
     );
 
@@ -1066,9 +1074,12 @@ export default function InvoiceManagementPage() {
         cell: ({ row }) => {
           const notes = row.original.notes;
           if (!notes) {
-            return <span className="text-slate-400 text-xs italic">No notes</span>;
+            return (
+              <span className="text-slate-400 text-xs italic">No notes</span>
+            );
           }
-          const truncated = notes.length > 30 ? notes.substring(0, 30) + "..." : notes;
+          const truncated =
+            notes.length > 30 ? notes.substring(0, 30) + "..." : notes;
           return (
             <span className="text-xs text-slate-600" title={notes}>
               {truncated}
@@ -1085,9 +1096,8 @@ export default function InvoiceManagementPage() {
           >
             <Icon icon="mdi:tag-outline" className="h-4 w-4 text-slate-400" />
             {row.original.activity_details
-  .map(activity => activity.name)
-  .join(", ")}
-
+              .map((activity) => activity.name)
+              .join(", ")}
           </div>
         ),
       },
