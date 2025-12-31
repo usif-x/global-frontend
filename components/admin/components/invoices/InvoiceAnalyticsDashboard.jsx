@@ -70,15 +70,19 @@ const SimpleBarChart = ({ data }) => {
 export default function InvoiceAnalyticsDashboard() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
+  
+  // Filtering State
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [selectedMonth, selectedYear]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const result = await AnalyticsService.getDashboardSummary();
+      const result = await AnalyticsService.getDashboardSummary(selectedMonth, selectedYear);
       setData(result);
     } catch (error) {
       console.error("Error fetching analytics dashboard:", error);
@@ -95,6 +99,25 @@ export default function InvoiceAnalyticsDashboard() {
       minimumFractionDigits: 2,
     }).format(amount || 0);
   };
+  
+  // Helpers for Dropdowns
+  const months = [
+    { value: 1, label: "January" },
+    { value: 2, label: "February" },
+    { value: 3, label: "March" },
+    { value: 4, label: "April" },
+    { value: 5, label: "May" },
+    { value: 6, label: "June" },
+    { value: 7, label: "July" },
+    { value: 8, label: "August" },
+    { value: 9, label: "September" },
+    { value: 10, label: "October" },
+    { value: 11, label: "November" },
+    { value: 12, label: "December" },
+  ];
+
+  const currentYear = new Date().getFullYear();
+  const years = [currentYear, currentYear - 1, currentYear - 2];
 
   if (loading && !data) {
     return (
@@ -107,37 +130,69 @@ export default function InvoiceAnalyticsDashboard() {
   // Calculate totals for distributions to calculate percentages in ProgressBar
   const totalActivity = data?.charts?.activity_distribution?.reduce((sum, item) => sum + item.value, 0) || 0;
   const totalPayment = data?.charts?.payment_method_distribution?.reduce((sum, item) => sum + item.value, 0) || 0;
+  
+  const isFiltered = selectedMonth && selectedYear;
+  const timeLabel = isFiltered 
+    ? `${months.find(m => m.value == selectedMonth)?.label} ${selectedYear}`
+    : "Today";
 
   return (
     <div className="space-y-8 p-6 bg-slate-50 min-h-screen">
-      {/* Header */}
+      {/* Header & Filters */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Analytics Dashboard</h1>
           <p className="text-slate-500">Real-time snapshots and historical trends</p>
         </div>
         
-        <button 
-          onClick={fetchData}
-          className="p-2 bg-cyan-100 text-cyan-600 rounded-lg hover:bg-cyan-200 transition-colors"
-        >
-          <Icon icon="mdi:refresh" className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Month Filter */}
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-cyan-500 focus:outline-none bg-slate-50"
+          >
+            <option value="">Current (Today)</option>
+            {months.map((m) => (
+              <option key={m.value} value={m.value}>{m.label}</option>
+            ))}
+          </select>
+          
+          {/* Year Filter (only show if month is selected for better UX, or always show) */}
+           <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+            disabled={!selectedMonth}
+            className={`px-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-cyan-500 focus:outline-none bg-slate-50 ${!selectedMonth ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <option value="">Year</option>
+            {years.map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+
+          <button 
+            onClick={fetchData}
+            className="p-2 bg-cyan-100 text-cyan-600 rounded-lg hover:bg-cyan-200 transition-colors"
+          >
+            <Icon icon="mdi:refresh" className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {data && (
         <>
-          {/* Key Metrics - Row 1: Today's Snapshot */}
+          {/* Key Metrics - Row 1: Sales Snapshot */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard
-              title="Sales Today"
+              title={`Sales ${timeLabel}`}
               value={formatCurrency(data.stats?.revenue_today)}
               subValue={`${data.stats?.sales_count_today} Invoices | Trips: ${data.stats?.trips_booked_today}`}
               icon="mdi:cash-register"
               color="bg-green-500"
             />
             <StatCard
-              title="Pending Today"
+              title={`Pending ${timeLabel}`}
               value={data.stats?.pending_invoices_today}
               subValue="Action Items"
               icon="mdi:clock-alert-outline"
@@ -153,7 +208,7 @@ export default function InvoiceAnalyticsDashboard() {
              <StatCard
               title="Total Discounts"
               value={formatCurrency(data.stats?.total_discount_given)}
-              subValue="Given Today"
+              subValue={`Given ${timeLabel}`}
               icon="mdi:sale"
               color="bg-red-400"
             />
@@ -184,7 +239,7 @@ export default function InvoiceAnalyticsDashboard() {
             <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
                 <Icon icon="mdi:chart-timeline-variant" className="text-cyan-600" />
-                Sales Trend (Last 30 Days)
+                Sales Trend ({isFiltered ? `${timeLabel}` : "Last 30 Days"})
               </h2>
               <SimpleBarChart data={data.charts?.sales_over_time} />
             </div>

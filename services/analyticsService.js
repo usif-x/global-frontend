@@ -31,10 +31,21 @@ class AnalyticsService {
 
   /**
    * Get consolidated dashboard summary.
+   * @param {number} [month] - Optional month (1-12)
+   * @param {number} [year] - Optional year
    * @returns {Promise<Object>} Object with stats, charts, top_customers, and recent_transactions.
    */
-  static async getDashboardSummary() {
-    return await getData("/analytics/dashboard");
+  static async getDashboardSummary(month, year) {
+    let url = "/analytics/dashboard";
+    const params = [];
+    if (month) params.push(`month=${month}`);
+    if (year) params.push(`year=${year}`);
+    
+    if (params.length > 0) {
+      url += `?${params.join("&")}`;
+    }
+    
+    return await getData(url);
   }
 }
 
