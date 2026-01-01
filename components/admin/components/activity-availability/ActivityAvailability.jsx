@@ -55,7 +55,7 @@ const ActivityAvailability = () => {
       setIsLoading(true);
       const [tripsData, coursesData, closuresData] = await Promise.all([
         tripService.getAll(),
-        courseService.getAll(),
+        courseService.getAllWithContents(),
         ActivityAvailabilityService.getAll(),
       ]);
       setTrips(tripsData);
@@ -156,17 +156,21 @@ const ActivityAvailability = () => {
   const getActivityName = (closure) => {
     if (closure.activity_type === "trip") {
       const trip = trips.find((t) => t.id === closure.activity_id);
-      return trip?.title || `Trip #${closure.activity_id}`;
+      return trip?.name || `Trip #${closure.activity_id}`;
     } else {
       const course = courses.find((c) => c.id === closure.activity_id);
-      return course?.title || `Course #${closure.activity_id}`;
+      return course?.name || `Course #${closure.activity_id}`;
     }
   };
 
   const activityOptions =
     formData.activity_type === "trip"
-      ? trips.map((trip) => ({ value: trip.id, label: trip.title }))
-      : courses.map((course) => ({ value: course.id, label: course.title }));
+      ? trips
+          .filter((trip) => trip && trip.name)
+          .map((trip) => ({ value: trip.id, label: trip.name }))
+      : courses
+          .filter((course) => course && course.name)
+          .map((course) => ({ value: course.id, label: course.name }));
 
   if (isLoading) {
     return (
@@ -231,10 +235,10 @@ const ActivityAvailability = () => {
                   label="Activity Type"
                   name="activity_type"
                   value={formData.activity_type}
-                  onChange={(e) => {
+                  onChange={(option) => {
                     setFormData({
                       ...formData,
-                      activity_type: e.target.value,
+                      activity_type: option?.value || "",
                       activity_id: "",
                     });
                   }}
@@ -249,8 +253,11 @@ const ActivityAvailability = () => {
                   label="Activity"
                   name="activity_id"
                   value={formData.activity_id}
-                  onChange={(e) =>
-                    setFormData({ ...formData, activity_id: e.target.value })
+                  onChange={(option) =>
+                    setFormData({
+                      ...formData,
+                      activity_id: option?.value || "",
+                    })
                   }
                   options={activityOptions}
                   color="cyan"
@@ -296,10 +303,10 @@ const ActivityAvailability = () => {
               label="Filter by Activity Type"
               name="filter_activity_type"
               value={filters.activity_type}
-              onChange={(e) =>
+              onChange={(option) =>
                 setFilters({
                   ...filters,
-                  activity_type: e.target.value,
+                  activity_type: option?.value || "",
                   activity_id: "",
                 })
               }
@@ -315,20 +322,24 @@ const ActivityAvailability = () => {
                 label="Filter by Activity"
                 name="filter_activity_id"
                 value={filters.activity_id}
-                onChange={(e) =>
-                  setFilters({ ...filters, activity_id: e.target.value })
+                onChange={(option) =>
+                  setFilters({ ...filters, activity_id: option?.value || "" })
                 }
                 options={[
                   { value: "", label: "All Activities" },
                   ...(filters.activity_type === "trip"
-                    ? trips.map((trip) => ({
-                        value: trip.id,
-                        label: trip.title,
-                      }))
-                    : courses.map((course) => ({
-                        value: course.id,
-                        label: course.title,
-                      }))),
+                    ? trips
+                        .filter((trip) => trip && trip.name)
+                        .map((trip) => ({
+                          value: trip.id,
+                          label: trip.name,
+                        }))
+                    : courses
+                        .filter((course) => course && course.name)
+                        .map((course) => ({
+                          value: course.id,
+                          label: course.name,
+                        }))),
                 ]}
                 color="cyan"
               />
