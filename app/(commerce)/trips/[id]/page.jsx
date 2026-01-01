@@ -7,6 +7,7 @@ import Input from "@/components/ui/Input";
 import MarkdownRenderer from "@/components/ui/MarkdownRender";
 import Select from "@/components/ui/Select";
 import { getData, postData } from "@/lib/axios";
+import ActivityAvailabilityService from "@/services/activityAvailabilityService";
 import CouponService from "@/services/couponService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { formatDuration } from "@/utils/formatDurations";
@@ -108,6 +109,8 @@ const TripPage = ({ params }) => {
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponLoading, setCouponLoading] = useState(false);
+  const [dateAvailability, setDateAvailability] = useState(null);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
 
   const getCurrencySymbol = (currencyCode) => {
     const currency = currencies.find((c) => c.value === currencyCode);
@@ -212,6 +215,13 @@ const TripPage = ({ params }) => {
       if (new Date(formData.preferredDate) < today)
         errors.preferredDate = "Date cannot be in the past";
     }
+
+    // Check if selected date is available
+    if (dateAvailability && !dateAvailability.is_available) {
+      errors.preferredDate =
+        "Selected date is not available. Please choose another date.";
+    }
+
     const maxPersons = tripData?.maxim_person || 10;
     if (formData.adults + formData.children > maxPersons)
       errors.total = `Total participants cannot exceed ${maxPersons}`;
@@ -281,6 +291,38 @@ const TripPage = ({ params }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (formErrors[name])
       setFormErrors((prev) => ({ ...prev, [name]: undefined }));
+
+    // Check availability when date is selected
+    if (name === "preferredDate" && value && tripData) {
+      checkDateAvailability(value);
+    }
+  };
+
+  const checkDateAvailability = async (date) => {
+    if (!date || !tripData) return;
+
+    try {
+      setCheckingAvailability(true);
+      setDateAvailability(null);
+
+      const response = await ActivityAvailabilityService.checkAvailability(
+        "trip",
+        tripData.id,
+        date
+      );
+
+      setDateAvailability(response);
+
+      if (!response.is_available) {
+        toast.warning(response.message || "This date is not available");
+      }
+    } catch (error) {
+      console.error("Error checking availability:", error);
+      // If API fails, assume date is available
+      setDateAvailability({ is_available: true });
+    } finally {
+      setCheckingAvailability(false);
+    }
   };
 
   const openLightbox = (index) => {
@@ -1129,6 +1171,43 @@ const TripPage = ({ params }) => {
                       className="text-lg"
                       error={formErrors.preferredDate}
                     />
+
+                    {/* Date Availability Check */}
+                    {checkingAvailability && formData.preferredDate && (
+                      <div className="flex items-center space-x-2 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-cyan-500"></div>
+                        <span>Checking availability...</span>
+                      </div>
+                    )}
+
+                    {!checkingAvailability &&
+                      dateAvailability &&
+                      !dateAvailability.is_available &&
+                      formData.preferredDate && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                          <div className="flex items-start space-x-3">
+                            <Icon
+                              icon="mdi:calendar-remove"
+                              className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5"
+                            />
+                            <div>
+                              <h4 className="font-semibold text-red-900 mb-1">
+                                Date Not Available
+                              </h4>
+                              <p className="text-sm text-red-700">
+                                {dateAvailability.message ||
+                                  "This trip is not available on the selected date. Please choose another day."}
+                              </p>
+                              {dateAvailability.reason && (
+                                <p className="text-xs text-red-600 mt-1">
+                                  Reason: {dateAvailability.reason}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                     <Input
                       name="specialRequests"
                       value={formData.specialRequests}

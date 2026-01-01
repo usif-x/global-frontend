@@ -1,4 +1,5 @@
 "use client";
+import ActivityAvailability from "@/components/admin/components/activity-availability/ActivityAvailability";
 import AdminManagementPage from "@/components/admin/components/admin/ModernAdmin";
 import AnalyticsContent from "@/components/admin/components/analytic/AnalyticsContent";
 import BestSellingMain from "@/components/admin/components/bestselling/BestSelling";
@@ -386,6 +387,13 @@ const AdminDashboard = () => {
       color: "text-yellow-600",
       description: "Create and manage blog posts",
     },
+    {
+      id: "activity_availability",
+      label: "Availability",
+      icon: "mdi:calendar-remove",
+      color: "text-rose-500",
+      description: "Manage closed dates for activities",
+    },
     ...(admin?.admin_level === 2
       ? [
           {
@@ -540,6 +548,8 @@ const AdminDashboard = () => {
         return <GalleryManagementPage />;
       case "blog":
         return <BlogManagement />;
+      case "activity_availability":
+        return <ActivityAvailability />;
       case "divecenters":
         return <DiveCenterManagementPage />;
       case "orders":
