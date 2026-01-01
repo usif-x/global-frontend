@@ -96,16 +96,6 @@ const TripCard = ({ trip, packages }) => {
             </div>
           )}
 
-          {/* Package Badge */}
-          {packageInfo && (
-            <div className="absolute bottom-4 left-4 z-10">
-              <span className="bg-cyan-500/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-lg">
-                <Icon icon="lucide:package" className="w-3 h-3" />
-                {packageInfo.name}
-              </span>
-            </div>
-          )}
-
           {/* Title overlay on image */}
           <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
             <h3 className="text-xl font-bold text-white line-clamp-2 drop-shadow-lg group-hover:text-cyan-300 transition-colors duration-200">
@@ -122,7 +112,13 @@ const TripCard = ({ trip, packages }) => {
           </div>
 
           {/* Stats */}
-          <div className="flex items-center gap-4 text-sm text-gray-600 mb-4 pb-4 border-b border-gray-100">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 mb-4 pb-4 border-b border-gray-100">
+            {packageInfo && (
+              <div className="flex items-center gap-1">
+                <Icon icon="lucide:package" className="w-4 h-4 text-cyan-500" />
+                <span>{packageInfo.name}</span>
+              </div>
+            )}
             <div className="flex items-center gap-1">
               <Icon icon="lucide:clock" className="w-4 h-4 text-cyan-500" />
               <span>{formatDuration(trip.duration, trip.duration_unit)}</span>
@@ -200,7 +196,7 @@ const PackageCard = ({ pkg, trips }) => {
 
   return (
     <Link href={`/packages/${pkg.id}`}>
-      <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 h-full flex flex-col border border-gray-100 hover:border-purple-200 group">
+      <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 h-full flex flex-col border border-gray-100 hover:border-cyan-200 group">
         {/* Image Section */}
         <div className="h-64 relative overflow-hidden">
           {pkg.images && pkg.images.length > 0 ? (
@@ -212,7 +208,7 @@ const PackageCard = ({ pkg, trips }) => {
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
               <Icon icon="lucide:package" className="w-16 h-16 text-white/50" />
             </div>
           )}
@@ -222,7 +218,7 @@ const PackageCard = ({ pkg, trips }) => {
 
           {/* Package Badge */}
           <div className="absolute top-4 left-4 z-10">
-            <span className="bg-purple-500 text-white px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 shadow-lg">
+            <span className="bg-cyan-500 text-white px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 shadow-lg">
               <Icon icon="lucide:package" className="w-4 h-4" />
               Package
             </span>
@@ -240,7 +236,7 @@ const PackageCard = ({ pkg, trips }) => {
 
           {/* Title overlay on image */}
           <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
-            <h3 className="text-xl font-bold text-white line-clamp-2 drop-shadow-lg group-hover:text-purple-300 transition-colors duration-200">
+            <h3 className="text-xl font-bold text-white line-clamp-2 drop-shadow-lg group-hover:text-cyan-300 transition-colors duration-200">
               {pkg.name}
             </h3>
           </div>
@@ -258,20 +254,20 @@ const PackageCard = ({ pkg, trips }) => {
             <div className="flex items-center gap-1">
               <Icon
                 icon="lucide:calendar-check"
-                className="w-4 h-4 text-purple-500"
+                className="w-4 h-4 text-cyan-500"
               />
               <span>
                 {tripCount} {tripCount === 1 ? "Trip" : "Trips"}
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <Icon icon="lucide:gift" className="w-4 h-4 text-purple-500" />
+              <Icon icon="lucide:gift" className="w-4 h-4 text-cyan-500" />
               <span>Bundled Deal</span>
             </div>
           </div>
 
           {/* CTA Button */}
-          <button className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-purple-500/50 transform hover:scale-[1.02]">
+          <button className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-cyan-500/50 transform hover:scale-[1.02]">
             <Icon icon="lucide:arrow-right-circle" className="w-5 h-5" />
             <span>View Trips</span>
           </button>
@@ -488,14 +484,14 @@ const PackageTripClientWrapper = ({ initialPackages, initialTrips }) => {
             <div className="inline-flex items-center justify-center gap-2 px-6 py-2 bg-white/80 backdrop-blur-sm rounded-full border border-gray-200 mb-6">
               <Icon icon="lucide:waves" className="text-cyan-500" width={20} />
               <span className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                Diving Trips
+                Trips
               </span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
               Explore Our Trips
             </h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Discover unforgettable diving adventures across the Red Sea
+              Discover unforgettable adventures across the Red Sea
             </p>
           </div>
 
@@ -571,7 +567,7 @@ const PackageTripClientWrapper = ({ initialPackages, initialTrips }) => {
             <div className="inline-flex items-center justify-center gap-2 px-6 py-2 bg-white/80 backdrop-blur-sm rounded-full border border-gray-200 mb-6">
               <Icon
                 icon="lucide:package"
-                className="text-purple-500"
+                className="text-cyan-500"
                 width={20}
               />
               <span className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
@@ -582,7 +578,7 @@ const PackageTripClientWrapper = ({ initialPackages, initialTrips }) => {
               Curated Packages
             </h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Bundle and save with our specially designed diving packages
+              Bundle and save with our specially designed packages
             </p>
           </div>
 
@@ -617,16 +613,16 @@ const PackageTripClientWrapper = ({ initialPackages, initialTrips }) => {
             </Swiper>
 
             {/* Custom Navigation Arrows */}
-            <div className="swiper-button-prev-packages absolute top-1/2 -left-4 lg:-left-16 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-xl cursor-pointer z-10 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-600 hover:text-white transition-all duration-300 group">
+            <div className="swiper-button-prev-packages absolute top-1/2 -left-4 lg:-left-16 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-xl cursor-pointer z-10 hover:bg-gradient-to-r hover:from-cyan-500 hover:to-blue-600 hover:text-white transition-all duration-300 group">
               <Icon
                 icon="lucide:chevron-left"
-                className="h-6 w-6 text-purple-600 group-hover:text-white"
+                className="h-6 w-6 text-cyan-600 group-hover:text-white"
               />
             </div>
-            <div className="swiper-button-next-packages absolute top-1/2 -right-4 lg:-right-16 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-xl cursor-pointer z-10 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-600 hover:text-white transition-all duration-300 group">
+            <div className="swiper-button-next-packages absolute top-1/2 -right-4 lg:-right-16 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-xl cursor-pointer z-10 hover:bg-gradient-to-r hover:from-cyan-500 hover:to-blue-600 hover:text-white transition-all duration-300 group">
               <Icon
                 icon="lucide:chevron-right"
-                className="h-6 w-6 text-purple-600 group-hover:text-white"
+                className="h-6 w-6 text-cyan-600 group-hover:text-white"
               />
             </div>
 
@@ -639,9 +635,9 @@ const PackageTripClientWrapper = ({ initialPackages, initialTrips }) => {
             <div className="mt-12 text-center">
               <Link
                 href="/packages"
-                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-semibold rounded-full hover:from-purple-600 hover:to-pink-700 shadow-lg hover:shadow-purple-500/50 transition-all duration-300 transform hover:scale-105"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-full hover:from-cyan-600 hover:to-blue-700 shadow-lg hover:shadow-cyan-500/50 transition-all duration-300 transform hover:scale-105"
               >
-                <Icon icon="lucide:gift" width={24} />
+                <Icon icon="lucide:package" width={24} />
                 <span>View All {packages.length} Packages</span>
                 <Icon icon="lucide:arrow-right" width={20} />
               </Link>

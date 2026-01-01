@@ -316,7 +316,7 @@ const BestSellersHero = () => {
                 className="pb-16"
               >
                 {items.map((item) => (
-                  <SwiperSlide key={item.id}>
+                  <SwiperSlide key={`${item.type}-${item.id}`}>
                     <BestSellerCard item={item} />
                   </SwiperSlide>
                 ))}

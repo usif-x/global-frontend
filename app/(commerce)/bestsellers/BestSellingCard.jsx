@@ -100,7 +100,7 @@ const BestSellingItemCard = ({ item }) => {
             <div />
           )}
           <div className="text-sm font-semibold text-amber-600 flex items-center">
-            Learn More
+            View {isCourse ? "Course" : "Trip"} Details
             <Icon
               icon="mdi:arrow-right"
               className="w-4 h-4 ml-1 transition-transform duration-300 group-hover:translate-x-1"
