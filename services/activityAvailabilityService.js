@@ -10,7 +10,7 @@ const ActivityAvailabilityService = {
     if (filters.date_from) params.append("date_from", filters.date_from);
     if (filters.date_to) params.append("date_to", filters.date_to);
 
-    return await getData(`/activity-availability/?${params.toString()}`);
+    return await getData(`/activity-availability/?${params.toString()}`, true);
   },
 
   // Check if a specific date is available
@@ -20,12 +20,15 @@ const ActivityAvailabilityService = {
       activity_id: activityId,
       date: date,
     });
-    return await getData(`/activity-availability/check?${params.toString()}`);
+    return await getData(
+      `/activity-availability/check?${params.toString()}`,
+      true
+    );
   },
 
   // Close an activity date
   closeDate: async (data) => {
-    return await postData("/activity-availability/close", data);
+    return await postData("/activity-availability/close", data, true);
   },
 
   // Reopen an activity date
@@ -36,18 +39,19 @@ const ActivityAvailabilityService = {
       date: date,
     });
     return await deleteData(
-      `/activity-availability/reopen?${params.toString()}`
+      `/activity-availability/reopen?${params.toString()}`,
+      true
     );
   },
 
   // Update a closure
   update: async (id, data) => {
-    return await patchData(`/activity-availability/${id}`, data);
+    return await patchData(`/activity-availability/${id}`, data, true);
   },
 
   // Manual cleanup
   cleanup: async () => {
-    return await postData("/activity-availability/cleanup");
+    return await postData("/activity-availability/cleanup", {}, true);
   },
 };
 
