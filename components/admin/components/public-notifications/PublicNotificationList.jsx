@@ -1,14 +1,22 @@
 "use client";
+import Input from "@/components/ui/Input";
 import PublicNotificationService from "@/services/publicNotificationService";
 import { Icon } from "@iconify/react";
-import { useEffect, useState } from "react";
+import {
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 //=================================================================
 //  HELPER & UI COMPONENTS
 //=================================================================
 
-// Loading Spinner
+// Thematic Loading Spinner
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center p-8">
     <div className="relative">
@@ -18,21 +26,27 @@ const LoadingSpinner = () => (
   </div>
 );
 
-// Skeleton Loader
-const NotificationSkeleton = ({ count = 6 }) => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-    {Array.from({ length: count }).map((_, i) => (
+// Table Skeleton Loader
+const TableSkeleton = ({ rows = 5 }) => (
+  <div className="p-4 space-y-4 animate-pulse">
+    {Array.from({ length: rows }).map((_, i) => (
       <div
         key={i}
-        className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden"
+        className="bg-white rounded-xl p-6 shadow-sm border border-slate-200"
       >
-        <div className="h-24 bg-gradient-to-r from-cyan-200 to-blue-200"></div>
-        <div className="p-6 space-y-4">
-          <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-          <div className="h-4 bg-slate-200 rounded w-1/2"></div>
-          <div className="flex space-x-3">
-            <div className="h-10 bg-slate-200 rounded flex-1"></div>
-            <div className="h-10 bg-slate-200 rounded flex-1"></div>
+        <div className="flex items-start space-x-4">
+          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-cyan-200 to-blue-200"></div>
+          <div className="flex-1 space-y-3">
+            <div
+              className={`h-4 rounded bg-slate-200 ${
+                i % 2 === 0 ? "w-3/4" : "w-2/3"
+              }`}
+            ></div>
+            <div className="h-3 rounded bg-slate-200 w-1/2"></div>
+            <div className="flex space-x-2">
+              <div className="h-8 w-16 rounded bg-slate-200"></div>
+              <div className="h-8 w-16 rounded bg-slate-200"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -40,196 +54,81 @@ const NotificationSkeleton = ({ count = 6 }) => (
   </div>
 );
 
-// Helper function to format dates
+// Format Date Helper
 const formatDate = (dateString) => {
   if (!dateString) return "N/A";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  try {
+    return new Date(dateString.replace(" ", "T")).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } catch (error) {
+    return "Invalid Date";
+  }
 };
 
-// Notification Card Component
-const NotificationCard = ({ notification, onEdit, onDelete }) => {
-  const [showDetails, setShowDetails] = useState(false);
-
-  const getTypeGradient = () => {
-    switch (notification.type) {
-      case "success":
-        return "from-green-500 to-emerald-600";
-      case "warning":
-        return "from-yellow-500 to-orange-600";
-      case "error":
-        return "from-red-500 to-rose-600";
-      case "info":
-      default:
-        return "from-cyan-500 to-blue-600";
-    }
+// Notification Type Badge
+const NotificationTypeBadge = ({ type }) => {
+  const configs = {
+    info: {
+      icon: "mdi:information",
+      bg: "bg-blue-100",
+      text: "text-blue-700",
+      label: "Info",
+    },
+    success: {
+      icon: "mdi:check-circle",
+      bg: "bg-green-100",
+      text: "text-green-700",
+      label: "Success",
+    },
+    warning: {
+      icon: "mdi:alert",
+      bg: "bg-yellow-100",
+      text: "text-yellow-700",
+      label: "Warning",
+    },
+    error: {
+      icon: "mdi:close-circle",
+      bg: "bg-red-100",
+      text: "text-red-700",
+      label: "Error",
+    },
   };
 
-  const getTypeIcon = () => {
-    switch (notification.type) {
-      case "success":
-        return "mdi:check-circle";
-      case "warning":
-        return "mdi:alert";
-      case "error":
-        return "mdi:close-circle";
-      case "info":
-      default:
-        return "mdi:information";
-    }
-  };
-
-  const getTypeBadgeColor = () => {
-    switch (notification.type) {
-      case "success":
-        return "bg-green-100 text-green-800";
-      case "warning":
-        return "bg-yellow-100 text-yellow-800";
-      case "error":
-        return "bg-red-100 text-red-800";
-      case "info":
-      default:
-        return "bg-blue-100 text-blue-800";
-    }
-  };
+  const config = configs[type] || configs.info;
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-      {/* Header with Gradient */}
-      <div
-        className={`bg-gradient-to-r ${getTypeGradient()} p-6 text-white relative overflow-hidden`}
-      >
-        <div className="absolute top-0 right-0 opacity-10">
-          <Icon icon={getTypeIcon()} className="w-32 h-32" />
-        </div>
-        <div className="relative z-10">
-          <div className="flex items-start justify-between mb-3">
-            <Icon icon="mdi:bullhorn" className="w-8 h-8" />
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-bold ${getTypeBadgeColor()} capitalize`}
-            >
-              {notification.type}
-            </span>
-          </div>
-          <h3 className="text-xl font-bold mb-2 line-clamp-2">
-            {notification.title}
-          </h3>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-6">
-        <div className="mb-4">
-          <p className="text-slate-600 text-sm line-clamp-3">
-            {notification.message}
-          </p>
-        </div>
-
-        {/* Details Toggle */}
-        <button
-          onClick={() => setShowDetails(!showDetails)}
-          className="text-cyan-600 hover:text-cyan-800 text-sm font-medium flex items-center space-x-1 mb-4"
-        >
-          <span>{showDetails ? "Hide" : "Show"} Details</span>
-          <Icon
-            icon={showDetails ? "mdi:chevron-up" : "mdi:chevron-down"}
-            className="w-4 h-4"
-          />
-        </button>
-
-        {/* Expandable Details */}
-        {showDetails && (
-          <div className="space-y-3 pt-4 border-t border-slate-200 animate-fadeIn">
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <p className="text-slate-500 mb-1">Created</p>
-                <p className="font-medium text-slate-800">
-                  {formatDate(notification.created_at)}
-                </p>
-              </div>
-              <div>
-                <p className="text-slate-500 mb-1">Notification ID</p>
-                <p className="font-medium text-slate-800 font-mono">
-                  #{notification.id}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Action Buttons */}
-        <div className="flex space-x-3 pt-4 border-t border-slate-200 mt-4">
-          <button
-            onClick={() => onEdit(notification)}
-            className="flex-1 bg-gradient-to-r from-blue-500 to-sky-600 text-white px-4 py-2.5 rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2"
-          >
-            <Icon icon="mdi:pencil" className="w-5 h-5" />
-            <span>Edit</span>
-          </button>
-          <button
-            onClick={() => onDelete(notification)}
-            className="flex-1 bg-gradient-to-r from-red-500 to-rose-600 text-white px-4 py-2.5 rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2"
-          >
-            <Icon icon="mdi:delete" className="w-5 h-5" />
-            <span>Delete</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Statistics Card Component
-const StatCard = ({ icon, title, value, color }) => {
-  return (
-    <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6 hover:shadow-lg transition-shadow duration-200">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm text-slate-600 font-medium mb-2">{title}</p>
-          <p className={`text-3xl font-bold ${color}`}>{value}</p>
-        </div>
-        <div
-          className={`bg-gradient-to-br ${color
-            .replace("text-", "from-")
-            .replace("-600", "-500")} to-${
-            color.split("-")[1]
-          }-600 p-3 rounded-xl`}
-        >
-          <Icon icon={icon} className="w-6 h-6 text-white" />
-        </div>
-      </div>
-    </div>
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
+    >
+      <Icon icon={config.icon} className="w-3 h-3" />
+      {config.label}
+    </span>
   );
 };
 
 //=================================================================
-//  MAIN COMPONENT
+//  MAIN NOTIFICATION MANAGEMENT COMPONENT
 //=================================================================
-const PublicNotificationList = ({ onEdit, onAdd }) => {
+export default function PublicNotificationList({ onEdit, onAdd }) {
   const [notifications, setNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedNotification, setSelectedNotification] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [filter, setFilter] = useState("all"); // 'all', 'info', 'success', 'warning', 'error'
+  const [sorting, setSorting] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
 
   useEffect(() => {
-    loadNotifications();
+    fetchNotifications();
   }, []);
 
-  const loadNotifications = async () => {
+  const fetchNotifications = async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       const data = await PublicNotificationService.getAll(0, 100);
       setNotifications(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Error loading notifications:", error);
       toast.error("Failed to load notifications");
       setNotifications([]);
     } finally {
@@ -237,251 +136,351 @@ const PublicNotificationList = ({ onEdit, onAdd }) => {
     }
   };
 
-  const handleDelete = (notification) => {
-    setSelectedNotification(notification);
-    setShowDeleteModal(true);
-  };
+  const handleDelete = async (notification) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    });
 
-  const confirmDelete = async () => {
-    if (!selectedNotification) return;
-    try {
-      setDeleteLoading(true);
-      await PublicNotificationService.delete(selectedNotification.id);
-      toast.success("Notification deleted successfully!");
-      setNotifications(
-        notifications.filter((n) => n.id !== selectedNotification.id)
-      );
-      setShowDeleteModal(false);
-      setSelectedNotification(null);
-    } catch (error) {
-      console.error("Error deleting notification:", error);
-      toast.error(error.message || "Failed to delete notification");
-    } finally {
-      setDeleteLoading(false);
+    if (result.isConfirmed) {
+      try {
+        await PublicNotificationService.delete(notification.id);
+        toast.success("Notification deleted successfully.");
+        fetchNotifications();
+      } catch (error) {
+        toast.error(error.message || "Failed to delete notification.");
+      }
     }
   };
 
-  // Filter notifications
-  const filteredNotifications =
-    filter === "all"
-      ? notifications
-      : notifications.filter((n) => n.type === filter);
+  const filteredNotifications = useMemo(() => {
+    return notifications.filter((notification) => {
+      const matchesType =
+        typeFilter === "all" || notification.type === typeFilter;
+      const matchesSearch =
+        !searchTerm ||
+        notification.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        notification.message?.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesType && matchesSearch;
+    });
+  }, [notifications, typeFilter, searchTerm]);
 
-  // Calculate statistics
-  const stats = {
-    total: notifications.length,
-    info: notifications.filter((n) => n.type === "info").length,
-    success: notifications.filter((n) => n.type === "success").length,
-    warning: notifications.filter((n) => n.type === "warning").length,
-    error: notifications.filter((n) => n.type === "error").length,
-  };
+  const stats = useMemo(() => {
+    const total = notifications.length;
+    const info = notifications.filter((n) => n.type === "info").length;
+    const success = notifications.filter((n) => n.type === "success").length;
+    const warning = notifications.filter((n) => n.type === "warning").length;
+    const error = notifications.filter((n) => n.type === "error").length;
+    return { total, info, success, warning, error };
+  }, [notifications]);
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl shadow-xl p-8 text-white">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="bg-white/20 p-4 rounded-xl backdrop-blur-sm">
-              <Icon icon="mdi:bullhorn" className="w-10 h-10" />
+  const columns = useMemo(
+    () => [
+      {
+        accessorKey: "title",
+        header: "Notification",
+        cell: ({ row }) => (
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex-shrink-0 flex items-center justify-center text-white font-bold text-lg">
+              <Icon icon="mdi:bullhorn" className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold mb-2">Public Notifications</h1>
-              <p className="text-cyan-100">
-                Manage global notifications visible to all users
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onAdd}
-            className="bg-white text-cyan-600 px-6 py-3 rounded-xl font-semibold hover:shadow-2xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
-          >
-            <Icon icon="mdi:plus-circle" className="w-6 h-6" />
-            <span>Add Notification</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatCard
-          icon="mdi:bell-ring"
-          title="Total Notifications"
-          value={stats.total}
-          color="text-cyan-600"
-        />
-        <StatCard
-          icon="mdi:information"
-          title="Info"
-          value={stats.info}
-          color="text-blue-600"
-        />
-        <StatCard
-          icon="mdi:check-circle"
-          title="Success"
-          value={stats.success}
-          color="text-green-600"
-        />
-        <StatCard
-          icon="mdi:alert"
-          title="Warning"
-          value={stats.warning}
-          color="text-yellow-600"
-        />
-        <StatCard
-          icon="mdi:close-circle"
-          title="Error"
-          value={stats.error}
-          color="text-red-600"
-        />
-      </div>
-
-      {/* Filter Tabs */}
-      <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6">
-        <div className="flex items-center space-x-3 mb-4">
-          <Icon icon="mdi:filter-variant" className="w-6 h-6 text-cyan-600" />
-          <h2 className="text-lg font-bold text-slate-800">
-            Filter Notifications
-          </h2>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          {[
-            { key: "all", label: "All", icon: "mdi:view-grid" },
-            { key: "info", label: "Info", icon: "mdi:information" },
-            { key: "success", label: "Success", icon: "mdi:check-circle" },
-            { key: "warning", label: "Warning", icon: "mdi:alert" },
-            { key: "error", label: "Error", icon: "mdi:close-circle" },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setFilter(tab.key)}
-              className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
-                filter === tab.key
-                  ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg transform scale-105"
-                  : "text-slate-600 hover:bg-slate-100 border border-slate-200"
-              }`}
-            >
-              <Icon icon={tab.icon} className="w-5 h-5" />
-              <span>{tab.label}</span>
-              <span
-                className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                  filter === tab.key
-                    ? "bg-white/30 text-white"
-                    : "bg-cyan-100 text-cyan-700"
-                }`}
-              >
-                {tab.key === "all" ? stats.total : stats[tab.key]}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Loading State */}
-      {isLoading && (
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
-          <LoadingSpinner />
-          <p className="text-center text-slate-600 font-medium mt-4">
-            Loading notifications...
-          </p>
-          <NotificationSkeleton />
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!isLoading && filteredNotifications.length === 0 && (
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-16 text-center">
-          <div className="bg-gradient-to-br from-cyan-100 to-blue-100 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <Icon icon="mdi:bullhorn" className="w-14 h-14 text-cyan-500" />
-          </div>
-          <h3 className="text-2xl font-bold text-slate-800 mb-3">
-            {filter === "all"
-              ? "No Notifications Yet"
-              : `No ${filter} Notifications`}
-          </h3>
-          <p className="text-slate-600 mb-6">
-            {filter === "all"
-              ? "Create your first notification to inform users"
-              : `There are no ${filter} notifications at the moment`}
-          </p>
-          {filter === "all" && (
-            <button
-              onClick={onAdd}
-              className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-3.5 rounded-xl font-semibold hover:shadow-2xl transform hover:scale-105 transition-all duration-200 inline-flex items-center space-x-2"
-            >
-              <Icon icon="mdi:plus-circle" className="w-6 h-6" />
-              <span>Create First Notification</span>
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Notification Grid */}
-      {!isLoading && filteredNotifications.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredNotifications.map((notification) => (
-            <NotificationCard
-              key={notification.id}
-              notification={notification}
-              onEdit={onEdit}
-              onDelete={handleDelete}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="bg-gradient-to-r from-red-500 to-rose-600 p-6 text-white">
-              <div className="flex items-center space-x-3">
-                <Icon icon="mdi:alert-circle" className="w-8 h-8" />
-                <h3 className="text-xl font-bold">Delete Notification</h3>
+              <div className="font-medium text-slate-800">
+                {row.original.title}
+              </div>
+              <div className="text-xs text-slate-500 line-clamp-1">
+                {row.original.message}
               </div>
             </div>
-            <div className="p-6">
-              <p className="text-slate-600 mb-2">
-                Are you sure you want to delete this notification?
-              </p>
-              <p className="font-semibold text-slate-800 mb-4">
-                "{selectedNotification?.title}"
-              </p>
-              <p className="text-sm text-slate-500">
-                This action cannot be undone.
-              </p>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "type",
+        header: "Type",
+        cell: ({ row }) => <NotificationTypeBadge type={row.original.type} />,
+      },
+      {
+        accessorKey: "created_at",
+        header: "Created",
+        cell: ({ row }) => (
+          <div className="text-sm text-slate-600">
+            {formatDate(row.original.created_at)}
+          </div>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => (
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={() => onEdit(row.original)}
+              className="p-2 text-slate-500 rounded-full transition-all duration-200 hover:bg-orange-100 hover:text-orange-600"
+              title="Edit Notification"
+            >
+              <Icon icon="mdi:pencil-outline" width={18} />
+            </button>
+
+            <button
+              onClick={() => handleDelete(row.original)}
+              className="p-2 text-slate-500 rounded-full transition-all duration-200 hover:bg-red-100 hover:text-red-600"
+              title="Delete Notification"
+            >
+              <Icon icon="mdi:delete-outline" width={18} />
+            </button>
+          </div>
+        ),
+      },
+    ],
+    [onEdit]
+  );
+
+  const table = useReactTable({
+    data: filteredNotifications,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
+
+  return (
+    <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen">
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+        {/* Header Section */}
+        <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/60 mb-8 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5"></div>
+          <div className="relative flex items-center space-x-4">
+            <div className="p-3 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-xl shadow-lg">
+              <Icon icon="mdi:bullhorn" className="w-8 h-8" />
             </div>
-            <div className="bg-slate-50 px-6 py-4 flex justify-end space-x-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                disabled={deleteLoading}
-                className="px-6 py-2 text-slate-700 hover:bg-slate-200 rounded-lg font-medium transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                disabled={deleteLoading}
-                className="px-6 py-2 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {deleteLoading ? (
-                  <>
-                    <Icon icon="mdi:loading" className="w-5 h-5 animate-spin" />
-                    <span>Deleting...</span>
-                  </>
-                ) : (
-                  <>
-                    <Icon icon="mdi:delete" className="w-5 h-5" />
-                    <span>Delete</span>
-                  </>
-                )}
-              </button>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                Public Notifications
+              </h1>
+              <p className="text-sm text-slate-500 mt-1">
+                Manage global notifications visible to all users.
+              </p>
             </div>
           </div>
         </div>
-      )}
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          {[
+            {
+              title: "Total",
+              value: stats.total,
+              icon: "mdi:bell-ring",
+              color: "cyan",
+            },
+            {
+              title: "Info",
+              value: stats.info,
+              icon: "mdi:information",
+              color: "blue",
+            },
+            {
+              title: "Success",
+              value: stats.success,
+              icon: "mdi:check-circle",
+              color: "green",
+            },
+            {
+              title: "Warning",
+              value: stats.warning,
+              icon: "mdi:alert",
+              color: "yellow",
+            },
+            {
+              title: "Error",
+              value: stats.error,
+              icon: "mdi:close-circle",
+              color: "red",
+            },
+          ].map((stat, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-6 hover:shadow-xl transition-all duration-200"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-500 text-sm font-medium">
+                    {stat.title}
+                  </p>
+                  <p className="text-2xl font-bold text-slate-800 mt-1">
+                    {stat.value}
+                  </p>
+                </div>
+                <div className={`p-3 rounded-xl bg-${stat.color}-50`}>
+                  <Icon
+                    icon={stat.icon}
+                    className={`w-6 h-6 text-${stat.color}-600`}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Main Table */}
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden">
+          {/* Filters and Search */}
+          <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-cyan-50">
+            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+              <div className="flex-1 max-w-md">
+                <Input
+                  icon="mdi:magnify"
+                  name="search"
+                  type="text"
+                  placeholder="Search notifications..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  color="cyan"
+                  className="w-full"
+                />
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <label className="text-sm font-medium text-slate-600">
+                    Type:
+                  </label>
+                  <select
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value)}
+                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500"
+                  >
+                    <option value="all">All</option>
+                    <option value="info">Info</option>
+                    <option value="success">Success</option>
+                    <option value="warning">Warning</option>
+                    <option value="error">Error</option>
+                  </select>
+                </div>
+                <button
+                  onClick={onAdd}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
+                >
+                  <Icon icon="mdi:plus-circle" className="w-5 h-5" />
+                  <span>Add New</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Table Content */}
+          <div className="overflow-x-auto">
+            {isLoading ? (
+              <TableSkeleton />
+            ) : filteredNotifications.length === 0 ? (
+              <div className="p-12 text-center">
+                <div className="w-20 h-20 mx-auto mb-4 bg-cyan-100 rounded-full flex items-center justify-center">
+                  <Icon
+                    icon="mdi:bullhorn-outline"
+                    className="w-10 h-10 text-cyan-500"
+                  />
+                </div>
+                <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                  No Notifications Found
+                </h3>
+                <p className="text-slate-500 mb-6">
+                  {searchTerm || typeFilter !== "all"
+                    ? "No notifications match your current filters."
+                    : "Create your first notification to inform users!"}
+                </p>
+                {(searchTerm || typeFilter !== "all") && (
+                  <button
+                    onClick={() => {
+                      setSearchTerm("");
+                      setTypeFilter("all");
+                    }}
+                    className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold flex items-center space-x-2 mx-auto hover:shadow-lg transition-all"
+                  >
+                    <Icon icon="mdi:filter-remove" className="w-5 h-5" />
+                    <span>Clear Filters</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <table className="min-w-full">
+                <thead className="bg-gradient-to-r from-slate-50 to-cyan-50">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <th
+                          key={header.id}
+                          onClick={header.column.getToggleSortingHandler()}
+                          className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider cursor-pointer select-none hover:bg-cyan-100/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                            <Icon
+                              icon={
+                                header.column.getIsSorted() === "asc"
+                                  ? "mdi:arrow-up"
+                                  : header.column.getIsSorted() === "desc"
+                                  ? "mdi:arrow-down"
+                                  : "mdi:unfold-more-horizontal"
+                              }
+                              className="text-slate-400 w-4 h-4"
+                            />
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {table.getRowModel().rows.map((row, index) => (
+                    <tr
+                      key={row.id}
+                      className={`hover:bg-gradient-to-r hover:from-cyan-50/50 hover:to-blue-50/50 transition-all duration-200 ${
+                        index % 2 === 0 ? "bg-white" : "bg-slate-50/30"
+                      }`}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <td
+                          key={cell.id}
+                          className="px-6 py-4 whitespace-nowrap text-sm"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* Table Footer */}
+          {!isLoading && filteredNotifications.length > 0 && (
+            <div className="p-4 border-t border-slate-200 bg-gradient-to-r from-slate-50 to-cyan-50">
+              <div className="flex items-center justify-between text-sm text-slate-600">
+                <div className="flex items-center space-x-2">
+                  <Icon icon="mdi:information" className="w-4 h-4" />
+                  <span>
+                    Showing {filteredNotifications.length} of{" "}
+                    {notifications.length} notifications
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
-};
-
-export default PublicNotificationList;
+}

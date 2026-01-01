@@ -38,12 +38,12 @@ const ContentBlock = ({
 
   if (block.type === "image") {
     return (
-      <div className="group relative bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200 hover:shadow-lg transition-all duration-200">
+      <div className="group relative bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-6 border-2 border-cyan-200 hover:shadow-lg transition-all duration-200">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
-            <Icon icon="mdi:image" className="w-5 h-5 text-purple-600" />
-            <span className="text-sm font-semibold text-purple-700">
+            <Icon icon="mdi:image" className="w-5 h-5 text-cyan-600" />
+            <span className="text-sm font-semibold text-cyan-700">
               Image Block
             </span>
           </div>
@@ -53,7 +53,7 @@ const ContentBlock = ({
               type="button"
               onClick={() => onMoveUp(index)}
               disabled={isFirst || disabled}
-              className="p-2 text-purple-600 hover:text-purple-700 hover:bg-purple-100 rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-2 text-cyan-600 hover:text-cyan-700 hover:bg-cyan-100 rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
               title="Move Up"
             >
               <Icon icon="mdi:arrow-up" className="w-4 h-4" />
@@ -62,7 +62,7 @@ const ContentBlock = ({
               type="button"
               onClick={() => onMoveDown(index)}
               disabled={isLast || disabled}
-              className="p-2 text-purple-600 hover:text-purple-700 hover:bg-purple-100 rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-2 text-cyan-600 hover:text-cyan-700 hover:bg-cyan-100 rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
               title="Move Down"
             >
               <Icon icon="mdi:arrow-down" className="w-4 h-4" />
@@ -97,7 +97,7 @@ const ContentBlock = ({
             value={block.alt || ""}
             onChange={(e) => onUpdate(index, { ...block, alt: e.target.value })}
             placeholder="Describe the image for accessibility"
-            color="purple"
+            color="cyan"
             disabled={disabled}
           />
           <Input
@@ -108,7 +108,7 @@ const ContentBlock = ({
               onUpdate(index, { ...block, caption: e.target.value })
             }
             placeholder="Add a caption to display below the image"
-            color="purple"
+            color="cyan"
             disabled={disabled}
           />
         </div>
@@ -132,8 +132,8 @@ const ContentBlock = ({
             onClick={() => setPreviewMode(!previewMode)}
             className={`ml-4 px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
               previewMode
-                ? "bg-blue-600 text-white"
-                : "bg-white text-blue-600 border border-blue-200 hover:bg-blue-50"
+                ? "bg-cyan-600 text-white"
+                : "bg-white text-cyan-600 border border-cyan-200 hover:bg-cyan-50"
             }`}
           >
             {previewMode ? "Edit" : "Preview"}
@@ -145,7 +145,7 @@ const ContentBlock = ({
             type="button"
             onClick={() => onMoveUp(index)}
             disabled={isFirst || disabled}
-            className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-2 text-cyan-600 hover:text-cyan-700 hover:bg-cyan-100 rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
             title="Move Up"
           >
             <Icon icon="mdi:arrow-up" className="w-4 h-4" />
@@ -154,7 +154,7 @@ const ContentBlock = ({
             type="button"
             onClick={() => onMoveDown(index)}
             disabled={isLast || disabled}
-            className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-2 text-cyan-600 hover:text-cyan-700 hover:bg-cyan-100 rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
             title="Move Down"
           >
             <Icon icon="mdi:arrow-down" className="w-4 h-4" />
@@ -530,7 +530,7 @@ const BlogForm = ({ blog = null, onSuccess, onCancel }) => {
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-8 py-6">
+      <div className="bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
@@ -540,7 +540,7 @@ const BlogForm = ({ blog = null, onSuccess, onCancel }) => {
               <h2 className="text-2xl font-bold text-white">
                 {blog ? "Edit Blog Post" : "Create New Blog Post"}
               </h2>
-              <p className="text-indigo-100 text-sm">
+              <p className="text-cyan-100 text-sm">
                 {blog
                   ? "Update your blog content and settings"
                   : "Share your diving adventures and insights"}
@@ -569,7 +569,7 @@ const BlogForm = ({ blog = null, onSuccess, onCancel }) => {
             onChange={(e) => handleChange("title", e.target.value)}
             placeholder="Enter a captivating title"
             required
-            color="indigo"
+            color="cyan"
             disabled={isLoading}
           />
           <Input
@@ -580,7 +580,7 @@ const BlogForm = ({ blog = null, onSuccess, onCancel }) => {
             onChange={(e) => handleChange("subject", e.target.value)}
             placeholder="Brief description or excerpt (shown in blog list)"
             required
-            color="indigo"
+            color="cyan"
             disabled={isLoading}
           />
         </div>
@@ -596,7 +596,7 @@ const BlogForm = ({ blog = null, onSuccess, onCancel }) => {
           </p>
 
           {formData.featured_image ? (
-            <div className="relative bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 border-2 border-indigo-200">
+            <div className="relative bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-4 border-2 border-cyan-200">
               <div className="flex items-start space-x-4">
                 <img
                   src={formData.featured_image}
@@ -627,7 +627,7 @@ const BlogForm = ({ blog = null, onSuccess, onCancel }) => {
               className={`relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200 ${
                 uploadingFeaturedImage || isLoading
                   ? "border-slate-300 bg-slate-50 cursor-not-allowed"
-                  : "border-indigo-300 bg-indigo-50 hover:bg-indigo-100 hover:border-indigo-400"
+                  : "border-cyan-300 bg-cyan-50 hover:bg-cyan-100 hover:border-cyan-400"
               }`}
             >
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -635,9 +635,9 @@ const BlogForm = ({ blog = null, onSuccess, onCancel }) => {
                   <>
                     <Icon
                       icon="mdi:loading"
-                      className="w-12 h-12 text-indigo-500 mb-3 animate-spin"
+                      className="w-12 h-12 text-cyan-500 mb-3 animate-spin"
                     />
-                    <p className="text-sm font-medium text-indigo-600">
+                    <p className="text-sm font-medium text-cyan-600">
                       Uploading featured image...
                     </p>
                   </>
@@ -645,10 +645,10 @@ const BlogForm = ({ blog = null, onSuccess, onCancel }) => {
                   <>
                     <Icon
                       icon="mdi:cloud-upload"
-                      className="w-12 h-12 text-indigo-400 mb-3"
+                      className="w-12 h-12 text-cyan-400 mb-3"
                     />
                     <p className="mb-2 text-sm font-medium text-slate-700">
-                      <span className="text-indigo-600">Click to upload</span>{" "}
+                      <span className="text-cyan-600">Click to upload</span>{" "}
                       featured image
                     </p>
                     <p className="text-xs text-slate-500">
@@ -692,7 +692,7 @@ const BlogForm = ({ blog = null, onSuccess, onCancel }) => {
                 <span>Add Text</span>
               </Button>
               <label
-                className={`bg-gradient-to-r from-purple-500 to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg flex items-center space-x-2 cursor-pointer ${
+                className={`bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg flex items-center space-x-2 cursor-pointer ${
                   uploadingImage || isLoading
                     ? "opacity-50 cursor-not-allowed"
                     : ""
@@ -746,7 +746,7 @@ const BlogForm = ({ blog = null, onSuccess, onCancel }) => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="px-8 py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
+            className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
           >
             {isLoading ? (
               <>

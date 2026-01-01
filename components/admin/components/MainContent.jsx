@@ -176,345 +176,128 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
 
   return (
     <div className="space-y-8">
-      {/* Genius Welcome Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl p-8 shadow-xl text-white">
+      {/* Welcome Header */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-cyan-500 to-blue-600 rounded-3xl p-8 shadow-xl text-white">
         <div className="absolute top-0 right-0 p-8 opacity-10">
-          <Icon icon="mdi:finance" className="w-64 h-64" />
+          <Icon icon="mdi:view-dashboard" className="w-64 h-64" />
         </div>
-        <div className="relative z-10 max-w-2xl">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="bg-cyan-500 text-xs font-bold px-2 py-1 rounded text-white uppercase tracking-wider">
-              {admin?.role || "Admin"} Dashboard
-            </span>
-            <span className="text-slate-400 text-sm">
-              {new Date().toLocaleDateString("en-US", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </span>
-          </div>
-          <h1 className="text-4xl font-bold mb-2">
-            Hello, {admin?.name?.split(" ")[0] || "Captain"}! 👋
+        <div className="relative z-10">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">
+            Welcome back, {admin?.name?.split(" ")[0] || "Admin"}! 👋
           </h1>
-          <p className="text-slate-300 text-lg mb-6">
-            Here's what's happening with your business today. You have{" "}
-            <span className="text-cyan-400 font-bold">
-              {stats?.pending_invoices_today || 0} pending items
-            </span>{" "}
-            requiring attention.
+          <p className="text-cyan-50 text-lg">
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
           </p>
-          <div className="flex flex-wrap gap-4">
-            <button
-              onClick={() => setActiveTab("analytics")}
-              className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg shadow-cyan-500/30 flex items-center gap-2"
-            >
-              <Icon icon="mdi:chart-line" />
-              View Analytics
-            </button>
-            <button
-              onClick={() => setActiveTab("invoices")}
-              className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl font-semibold transition-all backdrop-blur-sm flex items-center gap-2"
-            >
-              <Icon icon="mdi:file-document-edit-outline" />
-              Manage Invoices
-            </button>
-            <button
-              onClick={() => setActiveTab("users")}
-              className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl font-semibold transition-all backdrop-blur-sm flex items-center gap-2"
-            >
-              <Icon icon="mdi:account-group" />
-              View Users
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* Genius Stats Grid */}
+      {/* Key Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <GeniusStatCard
           title="Total Revenue"
           value={formatEGP(stats?.revenue)}
-          subValue={`${stats?.sales_count} Sales | Trips: ${stats?.trips_booked}`}
+          subValue={`${stats?.sales_count || 0} Sales`}
           icon="mdi:cash-fast"
           color="bg-emerald-500"
-          trend="up"
-          trendValue="Live"
         />
         <GeniusStatCard
-          title="Potential Revenue"
+          title="Pending Revenue"
           value={formatEGP(stats?.potential_revenue)}
-          subValue={`${stats?.pending_invoices} Pending Orders`}
+          subValue={`${stats?.pending_invoices || 0} Orders`}
           icon="mdi:cash-clock"
           color="bg-amber-500"
-          trend="down"
-          trendValue="Pending"
         />
-        <GeniusStatCard
-          title="Avg. Order Value"
-          value={formatEGP(stats?.average_order_value)}
-          subValue="Per Paid Invoice"
-          icon="mdi:chart-box-outline"
-          color="bg-blue-500"
-        />
-        <GeniusStatCard
-          title="Best Selling Month"
-          value={
-            stats?.best_selling_month?.month
-              ? `${stats.best_selling_month.year}-${String(
-                  stats.best_selling_month.month
-                ).padStart(2, "0")}`
-              : "-"
-          }
-          subValue={
-            stats?.best_selling_month?.revenue
-              ? `EGP ${stats.best_selling_month.revenue}`
-              : "All Time"
-          }
-          icon="mdi:trophy"
-          color="bg-yellow-400"
-        />
-      </div>
-
-      {/* Invoice Summary Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
-        <GeniusStatCard
-          title="Total Invoices"
-          value={invoiceSummary?.total_invoices}
-          subValue={`Paid: ${invoiceSummary?.paid_count} | Pending: ${invoiceSummary?.pending_count}`}
-          icon="mdi:file-document"
-          color="bg-green-400"
-        />
-        <GeniusStatCard
-          title="Total Invoice Revenue"
-          value={formatEGP(invoiceSummary?.total_revenue)}
-          subValue={`Pending: ${formatEGP(
-            invoiceSummary?.pending_amount_total
-          )}`}
-          icon="mdi:cash"
-          color="bg-cyan-500"
-        />
-        <GeniusStatCard
-          title="Failed Invoices"
-          value={invoiceSummary?.failed_count}
-          subValue={`Failed Amount: ${formatEGP(
-            invoiceSummary?.failed_amount_total
-          )}`}
-          icon="mdi:close-circle"
-          color="bg-red-400"
-        />
-        <GeniusStatCard
-          title="Confirmed Invoices"
-          value={all?.confirmed_invoices_count}
-          subValue={`Unconfirmed: ${all?.unconfirmed_invoices_count}`}
-          icon="mdi:check-decagram"
-          color="bg-teal-500"
-        />
-      </div>
-
-      {/* Analytics Insights Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <GeniusStatCard
-          title="Conversion Rate"
-          value={`${(
-            ((invoiceSummary?.paid_count || 0) /
-              (invoiceSummary?.total_invoices || 1)) *
-            100
-          ).toFixed(1)}%`}
-          subValue="Paid vs Total"
-          icon="mdi:trending-up"
-          color="bg-teal-500"
-          trend="up"
-        />
-        <GeniusStatCard
-          title="Confirmation Rate"
-          value={`${stats?.confirmation_rate?.toFixed(1) || 0}%`}
-          subValue="Invoice Confirmations"
-          icon="mdi:shield-check"
-          color="bg-indigo-500"
-          trend="up"
-        />
-        <GeniusStatCard
-          title="Avg Discount Given"
-          value={formatEGP(stats?.total_discount_given)}
-          subValue="Total Discounts"
-          icon="mdi:sale"
-          color="bg-pink-500"
-        />
-        <GeniusStatCard
-          title="Success Rate"
-          value={`${(
-            ((invoiceSummary?.paid_count || 0) /
-              ((invoiceSummary?.paid_count || 0) +
-                (invoiceSummary?.failed_count || 0) || 1)) *
-            100
-          ).toFixed(1)}%`}
-          subValue="Payment Success"
-          icon="mdi:check-circle"
-          color="bg-emerald-500"
-          trend="up"
-        />
-      </div>
-
-      {/* New breakdowns row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <GeniusStatCard
           title="Total Users"
-          value={all?.users_count}
-          subValue={`Active: ${all?.active_users_count} | Inactive: ${all?.inactive_users_count}`}
+          value={all?.users_count || 0}
+          subValue={`${all?.active_users_count || 0} Active`}
           icon="mdi:account-group"
           color="bg-cyan-500"
         />
         <GeniusStatCard
-          title="Testimonials"
-          value={all?.testimonials_count}
-          subValue={`Accepted: ${all?.accepted_testimonials_count} | Unaccepted: ${all?.unaccepted_testimonials_count}`}
-          icon="mdi:comment-quote"
-          color="bg-purple-500"
-        />
-        <GeniusStatCard
           title="Content"
-          value={`Trips: ${all?.trips_count}`}
-          subValue={`Packages: ${all?.packages_count} | Courses: ${all?.courses_count}`}
+          value={`${all?.trips_count || 0}`}
+          subValue={`Trips & ${all?.courses_count || 0} Courses`}
           icon="mdi:folder-multiple"
-          color="bg-blue-400"
-        />
-        <GeniusStatCard
-          title="Invoices"
-          value={all?.invoices_count}
-          subValue={`Paid: ${all?.paid_invoices_count} | Pending: ${all?.pending_invoices_count}`}
-          icon="mdi:file-document"
-          color="bg-green-400"
+          color="bg-blue-500"
         />
       </div>
-      {/* Top Courses & Activities */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Top Courses */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8">
-          <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <Icon icon="mdi:book-open-page-variant" className="text-blue-600" />
-            Top Courses
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
-                    Course
-                  </th>
-                  <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
-                    Revenue
-                  </th>
-                  <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
-                    Count
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {top_courses && top_courses.length > 0 ? (
-                  top_courses.map((course, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50">
-                      <td className="py-3 px-2">
-                        <span className="font-medium text-sm text-slate-800">
-                          {course.name || course.course || "-"}
-                        </span>
-                      </td>
-                      <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
-                        {formatEGP(course.revenue || course.total_revenue)}
-                      </td>
-                      <td className="py-3 px-2 text-center text-sm">
-                        {course.count || course.sales_count}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={3} className="text-center text-slate-400 py-4">
-                      No course data
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
 
-        {/* Top Activities */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8">
-          <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <Icon icon="mdi:run-fast" className="text-pink-600" />
-            Top Activities
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
-                    Activity
-                  </th>
-                  <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
-                    Revenue
-                  </th>
-                  <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
-                    Count
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {top_activities && top_activities.length > 0 ? (
-                  top_activities.map((activity, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50">
-                      <td className="py-3 px-2">
-                        <span className="font-medium text-sm text-slate-800">
-                          {activity.name || activity.activity || "-"}
-                        </span>
-                      </td>
-                      <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
-                        {formatEGP(activity.revenue || activity.total_revenue)}
-                      </td>
-                      <td className="py-3 px-2 text-center text-sm">
-                        {activity.count || activity.sales_count}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={3} className="text-center text-slate-400 py-4">
-                      No activity data
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+      {/* Quick Actions */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <Icon icon="mdi:lightning-bolt" className="text-cyan-500" />
+          Quick Actions
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <QuickActionBtn
+            icon="mdi:chart-line"
+            title="View Analytics"
+            desc="Detailed insights & reports"
+            onClick={() => setActiveTab("analytics")}
+          />
+          <QuickActionBtn
+            icon="mdi:file-document-edit"
+            title="Manage Invoices"
+            desc="Track payments & billing"
+            onClick={() => setActiveTab("invoices")}
+          />
+          <QuickActionBtn
+            icon="mdi:account-group"
+            title="View Users"
+            desc="Manage user accounts"
+            onClick={() => setActiveTab("users")}
+          />
+          <QuickActionBtn
+            icon="mdi:airplane-plus"
+            title="Create Trip"
+            desc="Add new travel package"
+            onClick={() => setActiveTab("trips")}
+          />
+          <QuickActionBtn
+            icon="mdi:ticket-percent"
+            title="Create Coupon"
+            desc="Run a promotion"
+            onClick={() => setActiveTab("coupons")}
+          />
+          <QuickActionBtn
+            icon="mdi:cog"
+            title="Settings"
+            desc="Configure platform"
+            onClick={() => setActiveTab("settings")}
+          />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Feed: Recent Transactions */}
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+      {/* Recent Activity */}
+      {recent_transactions && recent_transactions.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
               <Icon icon="mdi:pulse" className="text-cyan-500" />
-              Live Pulse
+              Recent Activity
             </h3>
             <button
               onClick={() => setActiveTab("invoices")}
-              className="text-sm text-cyan-600 hover:underline"
+              className="text-sm text-cyan-600 hover:underline font-medium"
             >
-              View All
+              View All →
             </button>
           </div>
-          <div className="space-y-4">
-            {recent_transactions?.slice(0, 5).map((tx) => (
+          <div className="space-y-3">
+            {recent_transactions.slice(0, 3).map((tx) => (
               <div
                 key={tx.id}
-                className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 hover:border-cyan-200 transition-colors"
+                className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
                       tx.status === "PAID"
                         ? "bg-green-100 text-green-600"
                         : "bg-yellow-100 text-yellow-600"
@@ -527,22 +310,18 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
                     />
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-800">{tx.buyer}</p>
-                    <p className="text-xs text-slate-500">
-                      {new Date(tx.date).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}{" "}
-                      • Invoice #{tx.id}
+                    <p className="font-medium text-sm text-slate-800">
+                      {tx.buyer}
                     </p>
+                    <p className="text-xs text-slate-500">Invoice #{tx.id}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-slate-800">
+                  <p className="font-bold text-sm text-slate-800">
                     {formatEGP(tx.amount)}
                   </p>
                   <span
-                    className={`text-[10px] uppercase font-bold ${
+                    className={`text-[10px] uppercase font-semibold ${
                       tx.status === "PAID"
                         ? "text-green-600"
                         : "text-yellow-600"
@@ -553,74 +332,9 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
                 </div>
               </div>
             ))}
-            {(!recent_transactions || recent_transactions.length === 0) && (
-              <div className="text-center py-10 text-slate-400">
-                No recent transactions today
-              </div>
-            )}
           </div>
         </div>
-
-        {/* Quick Actions & Top Customers */}
-        <div className="space-y-6">
-          {/* Quick Actions */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-            <h3 className="text-lg font-bold text-slate-800 mb-4">
-              Quick Shortcuts
-            </h3>
-            <div className="space-y-3">
-              <QuickActionBtn
-                icon="mdi:chart-box-outline"
-                title="View Analytics"
-                desc="Detailed insights & reports"
-                onClick={() => setActiveTab("analytics")}
-              />
-              <QuickActionBtn
-                icon="mdi:airplane-plus"
-                title="New Trip"
-                desc="Create a travel package"
-                onClick={() => setActiveTab("trips")}
-              />
-              <QuickActionBtn
-                icon="mdi:ticket-percent"
-                title="Create Coupon"
-                desc="Run a promotion"
-                onClick={() => setActiveTab("coupons")}
-              />
-            </div>
-          </div>
-
-          {/* Top Customer Spotlight */}
-          <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl shadow-lg p-6 text-white text-center relative overflow-hidden">
-            <div className="relative z-10">
-              <h3 className="text-sm font-semibold text-indigo-200 uppercase tracking-widest mb-4">
-                Star Customer
-              </h3>
-              {top_customers && top_customers.length > 0 ? (
-                <>
-                  <div className="w-20 h-20 mx-auto bg-white/20 rounded-full flex items-center justify-center mb-3 backdrop-blur-md text-3xl">
-                    👑
-                  </div>
-                  <h4 className="text-xl font-bold">{top_customers[0].name}</h4>
-                  <p className="text-indigo-200 text-sm mb-4">
-                    {top_customers[0].email}
-                  </p>
-                  <div className="bg-white/10 rounded-lg p-2 inline-block backdrop-blur-sm">
-                    <span className="font-bold text-white">
-                      {formatEGP(top_customers[0].total_spent)}
-                    </span>
-                    <span className="text-indigo-200 text-xs ml-1">
-                      Lifetime
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <p className="text-indigo-200">No customer data yet</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

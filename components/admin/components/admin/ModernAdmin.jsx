@@ -4,7 +4,12 @@ import Input from "@/components/ui/Input";
 import AdminService from "@/services/adminService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Icon } from "@iconify/react";
-import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
+import {
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
@@ -28,11 +33,18 @@ const LoadingSpinner = () => (
 const TableSkeleton = ({ rows = 5 }) => (
   <div className="p-4 space-y-4 animate-pulse">
     {Array.from({ length: rows }).map((_, i) => (
-      <div key={i} className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+      <div
+        key={i}
+        className="bg-white rounded-xl p-6 shadow-sm border border-slate-200"
+      >
         <div className="flex items-start space-x-4">
           <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-200 to-indigo-200"></div>
           <div className="flex-1 space-y-3">
-            <div className={`h-4 rounded bg-slate-200 ${i % 2 === 0 ? "w-3/4" : "w-2/3"}`}></div>
+            <div
+              className={`h-4 rounded bg-slate-200 ${
+                i % 2 === 0 ? "w-3/4" : "w-2/3"
+              }`}
+            ></div>
             <div className="h-3 rounded bg-slate-200 w-1/2"></div>
             <div className="flex space-x-2 pt-2">
               <div className="h-8 w-8 rounded-full bg-slate-200"></div>
@@ -66,14 +78,22 @@ const formatDate = (dateString) => {
 const ModalWrapper = ({ children, onClose, visible }) => {
   if (!visible) return null;
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto"
+      aria-labelledby="modal-title"
+      role="dialog"
+      aria-modal="true"
+    >
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div
           className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
           aria-hidden="true"
           onClick={onClose}
         ></div>
-        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+        <span
+          className="hidden sm:inline-block sm:align-middle sm:h-screen"
+          aria-hidden="true"
+        >
           ​
         </span>
         {children}
@@ -116,6 +136,93 @@ const AdminLevelBadge = ({ level }) => {
     </span>
   );
 };
+
+// Admin Details Modal Component
+const AdminDetailsModal = ({ admin, onClose }) => (
+  <ModalWrapper visible={!!admin} onClose={onClose}>
+    <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full animate-in fade-in-0 zoom-in-95">
+      <div className="relative bg-gradient-to-r from-purple-600 to-indigo-700 text-white p-6">
+        <div className="flex items-center space-x-4">
+          <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+            <Icon icon="mdi:shield-crown" className="w-8 h-8" />
+          </div>
+          <div>
+            <h2 id="modal-title" className="text-2xl font-bold">
+              Administrator Profile
+            </h2>
+            <p className="text-purple-100 mt-1">
+              Detailed information for {admin.full_name}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition-all duration-200"
+        >
+          <Icon icon="mdi:close" className="w-6 h-6" />
+        </button>
+      </div>
+      <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:identifier" className="w-5 h-5 text-slate-400" />
+          <p>
+            <strong>ID:</strong> {admin.id}
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:account-circle" className="w-5 h-5 text-slate-400" />
+          <p>
+            <strong>Full Name:</strong> {admin.full_name}
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:account" className="w-5 h-5 text-slate-400" />
+          <p>
+            <strong>Username:</strong> {admin.username}
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:email" className="w-5 h-5 text-slate-400" />
+          <p>
+            <strong>Email:</strong> {admin.email}
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:shield-star" className="w-5 h-5 text-slate-400" />
+          <p>
+            <strong>Admin Level:</strong>
+            <span className="ml-2">
+              <AdminLevelBadge level={admin.admin_level} />
+            </span>
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:toggle-switch" className="w-5 h-5 text-slate-400" />
+          <p>
+            <strong>Status:</strong>{" "}
+            {admin.is_active ? (
+              <span className="text-green-600 font-semibold ml-2">Active</span>
+            ) : (
+              <span className="text-red-600 font-semibold ml-2">Inactive</span>
+            )}
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:calendar-plus" className="w-5 h-5 text-slate-400" />
+          <p>
+            <strong>Created:</strong> {formatDate(admin.created_at)}
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Icon icon="mdi:calendar-clock" className="w-5 h-5 text-slate-400" />
+          <p>
+            <strong>Last Login:</strong> {formatDate(admin.last_login)}
+          </p>
+        </div>
+      </div>
+    </div>
+  </ModalWrapper>
+);
 
 // Admin Details Modal Component
 const CreateAdminModal = ({ onClose, onSave, visible }) => {
@@ -245,7 +352,9 @@ const CreateAdminModal = ({ onClose, onSave, visible }) => {
             disabled={isLoading}
           />
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-700">Admin Level</label>
+            <label className="block text-sm font-medium text-slate-700">
+              Admin Level
+            </label>
             <select
               name="admin_level"
               value={formData.admin_level} // This will now correctly be "" initially
@@ -383,7 +492,9 @@ const EditAdminModal = ({ admin, onClose, onSave }) => {
             disabled={isLoading}
           />
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-700">Admin Level</label>
+            <label className="block text-sm font-medium text-slate-700">
+              Admin Level
+            </label>
             <select
               name="admin_level"
               value={formData.admin_level}
@@ -631,7 +742,7 @@ export default function AdminManagementPage() {
       (admin) =>
         admin.full_name?.toLowerCase().includes(lowercasedTerm) ||
         admin.username?.toLowerCase().includes(lowercasedTerm) ||
-        admin.email?.toLowerCase().includes(lowercasedTerm),
+        admin.email?.toLowerCase().includes(lowercasedTerm)
     );
   }, [admins, searchTerm]);
 
@@ -655,8 +766,12 @@ export default function AdminManagementPage() {
               {row.original.full_name?.charAt(0).toUpperCase() || "A"}
             </div>
             <div>
-              <div className="font-semibold text-slate-800">{row.original.full_name}</div>
-              <div className="text-xs text-slate-500">@{row.original.username}</div>
+              <div className="font-semibold text-slate-800">
+                {row.original.full_name}
+              </div>
+              <div className="text-xs text-slate-500">
+                @{row.original.username}
+              </div>
             </div>
           </div>
         ),
@@ -669,12 +784,18 @@ export default function AdminManagementPage() {
       {
         accessorKey: "email",
         header: "Contact",
-        cell: ({ row }) => <div className="text-sm text-slate-600">{row.original.email}</div>,
+        cell: ({ row }) => (
+          <div className="text-sm text-slate-600">{row.original.email}</div>
+        ),
       },
       {
         accessorKey: "last_login",
         header: "Last Login",
-        cell: ({ row }) => <div className="text-sm text-slate-600">{formatDate(row.original.last_login)}</div>,
+        cell: ({ row }) => (
+          <div className="text-sm text-slate-600">
+            {formatDate(row.original.last_login)}
+          </div>
+        ),
       },
       {
         id: "actions",
@@ -704,7 +825,9 @@ export default function AdminManagementPage() {
                 <Icon icon="mdi:key-variant" width={20} />
               </button>
               <button
-                onClick={() => handleDeleteAdmin(row.original.id, row.original.full_name)}
+                onClick={() =>
+                  handleDeleteAdmin(row.original.id, row.original.full_name)
+                }
                 className={`p-2 text-slate-500 rounded-full transition-all duration-200 hover:bg-red-100 hover:text-red-600`}
                 title="Delete Admin"
               >
@@ -715,7 +838,7 @@ export default function AdminManagementPage() {
         },
       },
     ],
-    [],
+    []
   );
 
   const table = useReactTable({
@@ -742,7 +865,9 @@ export default function AdminManagementPage() {
                 <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
                   Administrator Management
                 </h1>
-                <p className="text-sm text-slate-500 mt-1">Manage system administrators and their permissions</p>
+                <p className="text-sm text-slate-500 mt-1">
+                  Manage system administrators and their permissions
+                </p>
               </div>
             </div>
             <button
@@ -789,11 +914,18 @@ export default function AdminManagementPage() {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-slate-500 text-sm font-medium">{stat.title}</p>
-                  <p className="text-2xl font-bold text-slate-800 mt-1">{stat.value}</p>
+                  <p className="text-slate-500 text-sm font-medium">
+                    {stat.title}
+                  </p>
+                  <p className="text-2xl font-bold text-slate-800 mt-1">
+                    {stat.value}
+                  </p>
                 </div>
                 <div className={`p-3 rounded-xl bg-${stat.color}-50`}>
-                  <Icon icon={stat.icon} className={`w-6 h-6 text-${stat.color}-700`} />
+                  <Icon
+                    icon={stat.icon}
+                    className={`w-6 h-6 text-${stat.color}-700`}
+                  />
                 </div>
               </div>
             </div>
@@ -825,11 +957,18 @@ export default function AdminManagementPage() {
             ) : filteredAdmins.length === 0 ? (
               <div className="p-12 text-center">
                 <div className="w-20 h-20 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Icon icon="mdi:account-search-outline" className="w-10 h-10 text-purple-500" />
+                  <Icon
+                    icon="mdi:account-search-outline"
+                    className="w-10 h-10 text-purple-500"
+                  />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-2">No Admins Found</h3>
+                <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                  No Admins Found
+                </h3>
                 <p className="text-slate-500 mb-6">
-                  {searchTerm ? "No admins match your search criteria." : "No administrators have been created yet."}
+                  {searchTerm
+                    ? "No admins match your search criteria."
+                    : "No administrators have been created yet."}
                 </p>
                 {!searchTerm && (
                   <button
@@ -853,14 +992,17 @@ export default function AdminManagementPage() {
                           className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider cursor-pointer select-none hover:bg-indigo-100/50 transition-colors"
                         >
                           <div className="flex items-center gap-2">
-                            {flexRender(header.column.columnDef.header, header.getContext())}
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
                             <Icon
                               icon={
                                 header.column.getIsSorted() === "asc"
                                   ? "mdi:arrow-up"
                                   : header.column.getIsSorted() === "desc"
-                                    ? "mdi:arrow-down"
-                                    : "mdi:unfold-more-horizontal"
+                                  ? "mdi:arrow-down"
+                                  : "mdi:unfold-more-horizontal"
                               }
                               className="text-slate-400 w-4 h-4"
                             />
@@ -879,8 +1021,14 @@ export default function AdminManagementPage() {
                       }`}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        <td
+                          key={cell.id}
+                          className="px-6 py-4 whitespace-nowrap text-sm"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
                         </td>
                       ))}
                     </tr>
@@ -897,7 +1045,8 @@ export default function AdminManagementPage() {
                 <div className="flex items-center space-x-2">
                   <Icon icon="mdi:information" className="w-4 h-4" />
                   <span>
-                    Showing {filteredAdmins.length} of {admins.length} administrators
+                    Showing {filteredAdmins.length} of {admins.length}{" "}
+                    administrators
                   </span>
                 </div>
               </div>
@@ -907,16 +1056,32 @@ export default function AdminManagementPage() {
       </div>
 
       {/* Modals */}
-      <CreateAdminModal visible={showCreateModal} onClose={() => setShowCreateModal(false)} onSave={fetchAdmins} />
+      <CreateAdminModal
+        visible={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSave={fetchAdmins}
+      />
 
-      {selectedAdmin && <AdminDetailsModal admin={selectedAdmin} onClose={() => setSelectedAdmin(null)} />}
+      {selectedAdmin && (
+        <AdminDetailsModal
+          admin={selectedAdmin}
+          onClose={() => setSelectedAdmin(null)}
+        />
+      )}
 
       {editingAdmin && (
-        <EditAdminModal admin={editingAdmin} onClose={() => setEditingAdmin(null)} onSave={fetchAdmins} />
+        <EditAdminModal
+          admin={editingAdmin}
+          onClose={() => setEditingAdmin(null)}
+          onSave={fetchAdmins}
+        />
       )}
 
       {changingPasswordAdmin && (
-        <ChangePasswordModal admin={changingPasswordAdmin} onClose={() => setChangingPasswordAdmin(null)} />
+        <ChangePasswordModal
+          admin={changingPasswordAdmin}
+          onClose={() => setChangingPasswordAdmin(null)}
+        />
       )}
     </div>
   );

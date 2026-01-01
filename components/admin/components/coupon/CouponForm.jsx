@@ -117,7 +117,7 @@ const CouponForm = ({ coupon, onSuccess, onCancel }) => {
     <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center space-x-3">
-          <div className="bg-gradient-to-br from-purple-500 to-pink-600 p-3 rounded-xl shadow-lg">
+          <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-3 rounded-xl shadow-lg">
             <Icon icon="mdi:ticket-percent" className="w-8 h-8 text-white" />
           </div>
           <div>
@@ -156,7 +156,7 @@ const CouponForm = ({ coupon, onSuccess, onCancel }) => {
             disabled={loading || !!coupon}
             required
             className="uppercase"
-            color="purple"
+            color="cyan"
           />
           <p className="mt-1 text-xs text-slate-500">
             {coupon
@@ -272,7 +272,7 @@ const CouponForm = ({ coupon, onSuccess, onCancel }) => {
             checked={formData.is_active}
             onChange={handleChange}
             disabled={loading}
-            className="w-5 h-5 text-purple-600 border-slate-300 rounded focus:ring-purple-500"
+            className="w-5 h-5 text-cyan-600 border-slate-300 rounded focus:ring-cyan-500"
           />
           <label
             htmlFor="is_active"
@@ -295,7 +295,7 @@ const CouponForm = ({ coupon, onSuccess, onCancel }) => {
           <Button
             type="submit"
             disabled={loading}
-            className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+            className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
           >
             {loading ? (
               <>

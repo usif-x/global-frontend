@@ -56,12 +56,12 @@ const ProgressBar = ({
 };
 
 const StatCard = ({ title, value, subValue, icon, color }) => (
-  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-    <div className="flex justify-between items-start">
+  <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-6 hover:shadow-xl transition-all duration-200">
+    <div className="flex items-center justify-between">
       <div>
         <p className="text-slate-500 text-sm font-medium mb-1">{title}</p>
-        <h3 className="text-2xl font-bold text-slate-800">{value}</h3>
-        {subValue && <p className="text-sm text-slate-400 mt-1">{subValue}</p>}
+        <h3 className="text-2xl font-bold text-slate-800 mb-1">{value}</h3>
+        {subValue && <p className="text-xs text-slate-500 mt-1">{subValue}</p>}
       </div>
       <div className={`p-3 rounded-xl ${color} bg-opacity-10`}>
         <Icon
@@ -220,531 +220,310 @@ export default function InvoiceAnalyticsDashboard() {
     : "Today";
 
   return (
-    <div className="space-y-8 p-6 bg-slate-50 min-h-screen">
-      {/* Header & Filters */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">
-            Analytics Dashboard
-          </h1>
-          <p className="text-slate-500">
-            Real-time snapshots and historical trends
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {/* Month Filter */}
-          <select
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-cyan-500 focus:outline-none bg-slate-50"
-          >
-            <option value="">Current (Today)</option>
-            {months.map((m) => (
-              <option key={m.value} value={m.value}>
-                {m.label}
-              </option>
-            ))}
-          </select>
-
-          {/* Year Filter (only show if month is selected for better UX, or always show) */}
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
-            disabled={!selectedMonth}
-            className={`px-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-cyan-500 focus:outline-none bg-slate-50 ${
-              !selectedMonth ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            <option value="">Year</option>
-            {years.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
-
-          <button
-            onClick={fetchData}
-            className="p-2 bg-cyan-100 text-cyan-600 rounded-lg hover:bg-cyan-200 transition-colors"
-          >
-            <Icon icon="mdi:refresh" className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
-      {data && (
-        <>
-          {/* Key Metrics - Row 1: Sales Snapshot */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard
-              title={`Sales ${timeLabel}`}
-              value={formatCurrency(data.stats?.revenue)}
-              subValue={`${data.stats?.sales_count} Invoices | Trips: ${data.stats?.trips_booked}`}
-              icon="mdi:cash-register"
-              color="bg-green-500"
-            />
-            <StatCard
-              title={`Pending ${timeLabel}`}
-              value={data.stats?.pending_invoices}
-              subValue="Action Items"
-              icon="mdi:clock-alert-outline"
-              color="bg-yellow-500"
-            />
-            <StatCard
-              title="Avg Order Value"
-              value={formatCurrency(data.stats?.average_order_value)}
-              subValue="Per Paid Invoice"
-              icon="mdi:cart-outline"
-              color="bg-blue-500"
-            />
-            <StatCard
-              title="Total Discounts"
-              value={formatCurrency(data.stats?.total_discount_given)}
-              subValue={`Given ${timeLabel}`}
-              icon="mdi:sale"
-              color="bg-red-400"
-            />
-          </div>
-
-          {/* Row 2: Detailed Invoice Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard
-              title="Total Invoices"
-              value={data.detailed?.total_invoices}
-              subValue={`Confirmed: ${data.detailed?.confirmed_invoices} | Unconfirmed: ${data.detailed?.unconfirmed_invoices}`}
-              icon="mdi:file-document-multiple"
-              color="bg-blue-600"
-            />
-            <StatCard
-              title="Paid Invoices"
-              value={data.detailed?.paid_count}
-              subValue={`Total Revenue: ${formatCurrency(
-                data.detailed?.total_revenue
-              )}`}
-              icon="mdi:check-circle"
-              color="bg-green-600"
-            />
-            <StatCard
-              title="Pending Invoices"
-              value={data.detailed?.pending_count}
-              subValue={`Amount: ${formatCurrency(
-                data.detailed?.pending_amount
-              )}`}
-              icon="mdi:clock-outline"
-              color="bg-yellow-600"
-            />
-            <StatCard
-              title="Failed Invoices"
-              value={data.detailed?.failed_count}
-              subValue={`Amount: ${formatCurrency(
-                data.detailed?.failed_amount
-              )}`}
-              icon="mdi:alert-circle"
-              color="bg-red-600"
-            />
-          </div>
-
-          {/* Row 3: Conversion & Success Rates */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard
-              title="Conversion Rate"
-              value={`${data.detailed?.conversion_rate?.toFixed(1) || 0}%`}
-              subValue="Pending to Paid"
-              icon="mdi:trending-up"
-              color="bg-teal-500"
-            />
-            <StatCard
-              title="Payment Success Rate"
-              value={`${data.detailed?.payment_success_rate?.toFixed(1) || 0}%`}
-              subValue="Overall Success"
-              icon="mdi:check-decagram"
-              color="bg-emerald-500"
-            />
-            <StatCard
-              title="Average Invoice"
-              value={formatCurrency(data.detailed?.average_invoice_amount)}
-              subValue="Per Invoice"
-              icon="mdi:calculator"
-              color="bg-purple-500"
-            />
-            {data.detailed?.picked_up_count !== undefined ? (
-              <StatCard
-                title="Pickup Status"
-                value={`${data.detailed?.picked_up_count || 0}/${
-                  data.detailed?.total_invoices || 0
-                }`}
-                subValue={`Not Picked Up: ${
-                  data.detailed?.not_picked_up_count || 0
-                }`}
-                icon="mdi:package-variant"
-                color="bg-orange-500"
-              />
-            ) : (
-              <StatCard
-                title={
-                  selectedMonth
-                    ? `Month ${selectedMonth}/${selectedYear}`
-                    : "Period"
-                }
-                value={data.detailed?.total_invoices || 0}
-                subValue={`Total Invoices`}
-                icon="mdi:calendar-month"
-                color="bg-orange-500"
-              />
-            )}
-          </div>
-
-          {/* Row 4: Operational & Potential */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard
-              title="Potential Revenue"
-              value={formatCurrency(data.stats?.potential_revenue)}
-              subValue="Locked in Pending"
-              icon="mdi:cash-lock"
-              color="bg-indigo-500"
-            />
-            <StatCard
-              title="Confirmation Rate"
-              value={`${data.stats?.confirmation_rate}%`}
-              subValue="Of Invoices"
-              icon="mdi:check-decagram"
-              color="bg-teal-500"
-            />
-            <StatCard
-              title="Best Selling Month"
-              value={
-                data.stats?.best_selling_month
-                  ? `${data.stats.best_selling_month.month}/${data.stats.best_selling_month.year}`
-                  : "N/A"
-              }
-              subValue={
-                data.stats?.best_selling_month
-                  ? formatCurrency(data.stats.best_selling_month.revenue)
-                  : "All Time"
-              }
-              icon="mdi:trophy"
-              color="bg-yellow-400"
-            />
-          </div>
-
-          {/* Row 5: Users, Testimonials, Content, Invoices breakdowns */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard
-              title="Total Users"
-              value={data.users?.total}
-              subValue={`Active: ${data.users?.active} | Inactive: ${data.users?.inactive}`}
-              icon="mdi:account-group"
-              color="bg-cyan-500"
-            />
-            <StatCard
-              title="Testimonials"
-              value={data.testimonials?.total}
-              subValue={`Accepted: ${data.testimonials?.accepted} | Unaccepted: ${data.testimonials?.unaccepted}`}
-              icon="mdi:comment-quote"
-              color="bg-purple-500"
-            />
-            <StatCard
-              title="Content"
-              value={`Trips: ${data.content?.trips}`}
-              subValue={`Packages: ${data.content?.packages} | Courses: ${data.content?.courses}`}
-              icon="mdi:folder-multiple"
-              color="bg-blue-400"
-            />
-            <StatCard
-              title="Invoices"
-              value={data.invoices?.total}
-              subValue={`Paid: ${data.invoices?.paid} | Pending: ${data.invoices?.pending}`}
-              icon="mdi:file-document"
-              color="bg-green-400"
-            />
-          </div>
-
-          {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Sales Over Time */}
-            <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <Icon
-                  icon="mdi:chart-timeline-variant"
-                  className="text-cyan-600"
-                />
-                Sales Trend ({isFiltered ? `${timeLabel}` : "Last 30 Days"})
-              </h2>
-              <SalesBarChart data={data.charts?.sales_over_time} />
-            </div>
-
-            {/* Distribution Charts */}
-            <div className="space-y-8">
-              {/* Activity Distribution */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <Icon icon="mdi:pie-chart" className="text-purple-600" />
-                  Activity Mix
-                </h2>
-                <DistributionPieChart
-                  data={data.charts?.activity_distribution}
-                  label="Activity"
-                />
+    <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen">
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+        {/* Header Section */}
+        <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/60 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5"></div>
+          <div className="relative">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-xl shadow-lg">
+                  <Icon icon="mdi:chart-line" className="w-8 h-8" />
+                </div>
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                    Analytics Dashboard
+                  </h1>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Real-time insights and financial reports
+                  </p>
+                </div>
               </div>
 
-              {/* Payment Distribution */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+              <div className="flex items-center gap-3">
+                {/* Month Filter */}
+                <select
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all"
+                >
+                  <option value="">Current Period</option>
+                  {months.map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {m.label}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Year Filter */}
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  disabled={!selectedMonth}
+                  className={`px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all ${
+                    !selectedMonth ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                >
+                  <option value="">Year</option>
+                  {years.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  onClick={fetchData}
+                  className="p-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all duration-200"
+                  title="Refresh Data"
+                >
+                  <Icon icon="mdi:refresh" className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {data && (
+          <>
+            {/* Key Metrics - Row 1: Sales Snapshot */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatCard
+                title={`Sales ${timeLabel}`}
+                value={formatCurrency(data.stats?.revenue)}
+                subValue={`${data.stats?.sales_count} Invoices | Trips: ${data.stats?.trips_booked}`}
+                icon="mdi:cash-register"
+                color="bg-green-500"
+              />
+              <StatCard
+                title={`Pending ${timeLabel}`}
+                value={data.stats?.pending_invoices}
+                subValue="Action Items"
+                icon="mdi:clock-alert-outline"
+                color="bg-yellow-500"
+              />
+              <StatCard
+                title="Avg Order Value"
+                value={formatCurrency(data.stats?.average_order_value)}
+                subValue="Per Paid Invoice"
+                icon="mdi:cart-outline"
+                color="bg-blue-500"
+              />
+              <StatCard
+                title="Total Discounts"
+                value={formatCurrency(data.stats?.total_discount_given)}
+                subValue={`Given ${timeLabel}`}
+                icon="mdi:sale"
+                color="bg-red-400"
+              />
+            </div>
+
+            {/* Row 2: Detailed Invoice Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatCard
+                title="Total Invoices"
+                value={data.detailed?.total_invoices}
+                subValue={`Confirmed: ${data.detailed?.confirmed_invoices} | Unconfirmed: ${data.detailed?.unconfirmed_invoices}`}
+                icon="mdi:file-document-multiple"
+                color="bg-blue-600"
+              />
+              <StatCard
+                title="Paid Invoices"
+                value={data.detailed?.paid_count}
+                subValue={`Total Revenue: ${formatCurrency(
+                  data.detailed?.total_revenue
+                )}`}
+                icon="mdi:check-circle"
+                color="bg-green-600"
+              />
+              <StatCard
+                title="Pending Invoices"
+                value={data.detailed?.pending_count}
+                subValue={`Amount: ${formatCurrency(
+                  data.detailed?.pending_amount
+                )}`}
+                icon="mdi:clock-outline"
+                color="bg-yellow-600"
+              />
+              <StatCard
+                title="Failed Invoices"
+                value={data.detailed?.failed_count}
+                subValue={`Amount: ${formatCurrency(
+                  data.detailed?.failed_amount
+                )}`}
+                icon="mdi:alert-circle"
+                color="bg-red-600"
+              />
+            </div>
+
+            {/* Row 3: Conversion & Success Rates */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatCard
+                title="Conversion Rate"
+                value={`${data.detailed?.conversion_rate?.toFixed(1) || 0}%`}
+                subValue="Pending to Paid"
+                icon="mdi:trending-up"
+                color="bg-teal-500"
+              />
+              <StatCard
+                title="Payment Success Rate"
+                value={`${
+                  data.detailed?.payment_success_rate?.toFixed(1) || 0
+                }%`}
+                subValue="Overall Success"
+                icon="mdi:check-decagram"
+                color="bg-emerald-500"
+              />
+              <StatCard
+                title="Average Invoice"
+                value={formatCurrency(data.detailed?.average_invoice_amount)}
+                subValue="Per Invoice"
+                icon="mdi:calculator"
+                color="bg-purple-500"
+              />
+              {data.detailed?.picked_up_count !== undefined ? (
+                <StatCard
+                  title="Pickup Status"
+                  value={`${data.detailed?.picked_up_count || 0}/${
+                    data.detailed?.total_invoices || 0
+                  }`}
+                  subValue={`Not Picked Up: ${
+                    data.detailed?.not_picked_up_count || 0
+                  }`}
+                  icon="mdi:package-variant"
+                  color="bg-orange-500"
+                />
+              ) : (
+                <StatCard
+                  title={
+                    selectedMonth
+                      ? `Month ${selectedMonth}/${selectedYear}`
+                      : "Period"
+                  }
+                  value={data.detailed?.total_invoices || 0}
+                  subValue={`Total Invoices`}
+                  icon="mdi:calendar-month"
+                  color="bg-orange-500"
+                />
+              )}
+            </div>
+
+            {/* Row 4: Operational & Potential */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatCard
+                title="Potential Revenue"
+                value={formatCurrency(data.stats?.potential_revenue)}
+                subValue="Locked in Pending"
+                icon="mdi:cash-lock"
+                color="bg-indigo-500"
+              />
+              <StatCard
+                title="Confirmation Rate"
+                value={`${data.stats?.confirmation_rate}%`}
+                subValue="Of Invoices"
+                icon="mdi:check-decagram"
+                color="bg-teal-500"
+              />
+              <StatCard
+                title="Best Selling Month"
+                value={
+                  data.stats?.best_selling_month
+                    ? `${data.stats.best_selling_month.month}/${data.stats.best_selling_month.year}`
+                    : "N/A"
+                }
+                subValue={
+                  data.stats?.best_selling_month
+                    ? formatCurrency(data.stats.best_selling_month.revenue)
+                    : "All Time"
+                }
+                icon="mdi:trophy"
+                color="bg-yellow-400"
+              />
+            </div>
+
+            {/* Row 5: Users, Testimonials, Content, Invoices breakdowns */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatCard
+                title="Total Users"
+                value={data.users?.total}
+                subValue={`Active: ${data.users?.active} | Inactive: ${data.users?.inactive}`}
+                icon="mdi:account-group"
+                color="bg-cyan-500"
+              />
+              <StatCard
+                title="Testimonials"
+                value={data.testimonials?.total}
+                subValue={`Accepted: ${data.testimonials?.accepted} | Unaccepted: ${data.testimonials?.unaccepted}`}
+                icon="mdi:comment-quote"
+                color="bg-purple-500"
+              />
+              <StatCard
+                title="Content"
+                value={`Trips: ${data.content?.trips}`}
+                subValue={`Packages: ${data.content?.packages} | Courses: ${data.content?.courses}`}
+                icon="mdi:folder-multiple"
+                color="bg-blue-400"
+              />
+              <StatCard
+                title="Invoices"
+                value={data.invoices?.total}
+                subValue={`Paid: ${data.invoices?.paid} | Pending: ${data.invoices?.pending}`}
+                icon="mdi:file-document"
+                color="bg-green-400"
+              />
+            </div>
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Sales Over Time */}
+              <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-slate-200/60">
                 <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
                   <Icon
-                    icon="mdi:credit-card-settings-outline"
-                    className="text-orange-600"
+                    icon="mdi:chart-timeline-variant"
+                    className="text-cyan-600"
                   />
-                  Payment Methods
+                  Sales Trend ({isFiltered ? `${timeLabel}` : "Last 30 Days"})
                 </h2>
-                <DistributionPieChart
-                  data={data.charts?.payment_method_distribution}
-                  label="Payment"
-                />
+                <SalesBarChart data={data.charts?.sales_over_time} />
               </div>
-            </div>
-          </div>
 
-          {/* Activity Breakdown Table - Detailed from Invoice Summary */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <Icon icon="mdi:chart-bar" className="text-indigo-600" />
-              Activity Breakdown (Detailed)
-            </h2>
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead>
-                  <tr className="border-b border-slate-100">
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
-                      Activity
-                    </th>
-                    <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
-                      Total
-                    </th>
-                    <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
-                      Revenue
-                    </th>
-                    <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
-                      Avg Amount
-                    </th>
-                    <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
-                      Paid
-                    </th>
-                    <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
-                      Pending
-                    </th>
-                    <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
-                      Failed
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {data.detailed?.activity_breakdown?.map((activity, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50">
-                      <td className="py-3 px-2">
-                        <span className="font-medium text-sm text-slate-800">
-                          {activity.activity}
-                        </span>
-                      </td>
-                      <td className="py-3 px-2 text-center text-sm">
-                        {activity.count}
-                      </td>
-                      <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
-                        {formatCurrency(activity.total_revenue)}
-                      </td>
-                      <td className="py-3 px-2 text-right text-sm text-slate-600">
-                        {formatCurrency(activity.average_amount)}
-                      </td>
-                      <td className="py-3 px-2 text-center">
-                        <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
-                          {activity.paid_count}
-                        </span>
-                      </td>
-                      <td className="py-3 px-2 text-center">
-                        <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold">
-                          {activity.pending_count}
-                        </span>
-                      </td>
-                      <td className="py-3 px-2 text-center">
-                        <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700 font-semibold">
-                          {activity.failed_count}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+              {/* Distribution Charts */}
+              <div className="space-y-8">
+                {/* Activity Distribution */}
+                <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200/60">
+                  <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <Icon icon="mdi:pie-chart" className="text-purple-600" />
+                    Activity Mix
+                  </h2>
+                  <DistributionPieChart
+                    data={data.charts?.activity_distribution}
+                    label="Activity"
+                  />
+                </div>
 
-          {/* Payment Method & Invoice Type Breakdown */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Payment Method Breakdown */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <Icon
-                  icon="mdi:credit-card-multiple"
-                  className="text-cyan-600"
-                />
-                Payment Method Details
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead>
-                    <tr className="border-b border-slate-100">
-                      <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
-                        Method
-                      </th>
-                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
-                        Count
-                      </th>
-                      <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
-                        Revenue
-                      </th>
-                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
-                        Success Rate
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {data.detailed?.payment_method_breakdown?.map(
-                      (method, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50">
-                          <td className="py-3 px-2">
-                            <span className="font-medium text-sm text-slate-800 capitalize">
-                              {method.payment_method}
-                            </span>
-                          </td>
-                          <td className="py-3 px-2 text-center text-sm">
-                            {method.count}
-                          </td>
-                          <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
-                            {formatCurrency(method.total_revenue)}
-                          </td>
-                          <td className="py-3 px-2 text-center">
-                            <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
-                              {method.success_rate.toFixed(1)}%
-                            </span>
-                          </td>
-                        </tr>
-                      )
-                    )}
-                  </tbody>
-                </table>
+                {/* Payment Distribution */}
+                <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200/60">
+                  <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <Icon
+                      icon="mdi:credit-card-settings-outline"
+                      className="text-orange-600"
+                    />
+                    Payment Methods
+                  </h2>
+                  <DistributionPieChart
+                    data={data.charts?.payment_method_distribution}
+                    label="Payment"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Invoice Type Breakdown */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            {/* Activity Breakdown Table - Detailed from Invoice Summary */}
+            <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200/60">
               <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <Icon
-                  icon="mdi:file-document-edit"
-                  className="text-purple-600"
-                />
-                Invoice Type Breakdown
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead>
-                    <tr className="border-b border-slate-100">
-                      <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
-                        Type
-                      </th>
-                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
-                        Count
-                      </th>
-                      <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
-                        Revenue
-                      </th>
-                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
-                        Paid/Pending
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {data.detailed?.invoice_type_breakdown?.map((type, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50">
-                        <td className="py-3 px-2">
-                          <span className="font-medium text-sm text-slate-800 capitalize">
-                            {type.invoice_type}
-                          </span>
-                        </td>
-                        <td className="py-3 px-2 text-center text-sm">
-                          {type.count}
-                        </td>
-                        <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
-                          {formatCurrency(type.total_revenue)}
-                        </td>
-                        <td className="py-3 px-2 text-center text-xs">
-                          <div className="flex justify-center gap-1">
-                            <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
-                              {type.paid_count}
-                            </span>
-                            <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold">
-                              {type.pending_count}
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          {/* Top Courses & Activities */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Top Courses */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <Icon
-                  icon="mdi:book-open-page-variant"
-                  className="text-blue-600"
-                />
-                Top Courses
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead>
-                    <tr className="border-b border-slate-100">
-                      <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
-                        Course
-                      </th>
-                      <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
-                        Revenue
-                      </th>
-                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
-                        Count
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {data.top_courses?.map((course, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50">
-                        <td className="py-3 px-2">
-                          <span className="font-medium text-sm text-slate-800">
-                            {course.name}
-                          </span>
-                        </td>
-                        <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
-                          {formatCurrency(course.revenue)}
-                        </td>
-                        <td className="py-3 px-2 text-center text-sm">
-                          {course.count}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Top Activities */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <Icon icon="mdi:run-fast" className="text-pink-600" />
-                Top Activities
+                <Icon icon="mdi:chart-bar" className="text-indigo-600" />
+                Activity Breakdown
               </h2>
               <div className="overflow-x-auto">
                 <table className="min-w-full">
@@ -753,132 +532,56 @@ export default function InvoiceAnalyticsDashboard() {
                       <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
                         Activity
                       </th>
+                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                        Total
+                      </th>
                       <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
                         Revenue
                       </th>
+                      <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
+                        Avg Amount
+                      </th>
                       <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
-                        Count
+                        Paid
+                      </th>
+                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                        Pending
+                      </th>
+                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                        Failed
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {data.top_activities?.map((activity, idx) => (
+                    {data.detailed?.activity_breakdown?.map((activity, idx) => (
                       <tr key={idx} className="hover:bg-slate-50">
                         <td className="py-3 px-2">
                           <span className="font-medium text-sm text-slate-800">
-                            {activity.activity || activity.name}
+                            {activity.activity}
                           </span>
                         </td>
-                        <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
-                          {formatCurrency(
-                            activity.total_revenue || activity.revenue
-                          )}
-                        </td>
                         <td className="py-3 px-2 text-center text-sm">
-                          {activity.sales_count || activity.count}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          {/* Tables Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Top Customers */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <Icon icon="mdi:account-star" className="text-yellow-600" />
-                Top Customers
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead>
-                    <tr className="border-b border-slate-100">
-                      <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
-                        Name
-                      </th>
-                      <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
-                        Spent
-                      </th>
-                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
-                        Orders
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {data.top_customers?.map((customer, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50">
-                        <td className="py-3 px-2">
-                          <div className="flex flex-col">
-                            <span className="font-medium text-sm text-slate-800">
-                              {customer.name}
-                            </span>
-                            <span className="text-xs text-slate-500">
-                              {customer.email}
-                            </span>
-                          </div>
+                          {activity.count}
                         </td>
                         <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
-                          {formatCurrency(customer.total_spent)}
+                          {formatCurrency(activity.total_revenue)}
                         </td>
-                        <td className="py-3 px-2 text-center text-sm">
-                          {customer.order_count}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Recent Transactions */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <Icon icon="mdi:history" className="text-blue-600" />
-                Recent Transactions
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead>
-                    <tr className="border-b border-slate-100">
-                      <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
-                        ID
-                      </th>
-                      <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
-                        Buyer
-                      </th>
-                      <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
-                        Amount
-                      </th>
-                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {data.recent_transactions?.map((tx, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50">
-                        <td className="py-3 px-2 text-xs text-slate-500">
-                          #{tx.id}
-                        </td>
-                        <td className="py-3 px-2 text-sm text-slate-800">
-                          {tx.buyer}
-                        </td>
-                        <td className="py-3 px-2 text-right font-medium text-slate-800 text-sm">
-                          {formatCurrency(tx.amount)}
+                        <td className="py-3 px-2 text-right text-sm text-slate-600">
+                          {formatCurrency(activity.average_amount)}
                         </td>
                         <td className="py-3 px-2 text-center">
-                          <span
-                            className={`text-[10px] px-2 py-1 rounded-full font-bold ${
-                              tx.status === "PAID"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-yellow-100 text-yellow-700"
-                            }`}
-                          >
-                            {tx.status}
+                          <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
+                            {activity.paid_count}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 text-center">
+                          <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold">
+                            {activity.pending_count}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 text-center">
+                          <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700 font-semibold">
+                            {activity.failed_count}
                           </span>
                         </td>
                       </tr>
@@ -887,9 +590,323 @@ export default function InvoiceAnalyticsDashboard() {
                 </table>
               </div>
             </div>
-          </div>
-        </>
-      )}
+
+            {/* Payment Method & Invoice Type Breakdown */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Payment Method Breakdown */}
+              <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200/60">
+                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <Icon
+                    icon="mdi:credit-card-multiple"
+                    className="text-cyan-600"
+                  />
+                  Payment Method Details
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr className="border-b border-slate-100">
+                        <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
+                          Method
+                        </th>
+                        <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                          Count
+                        </th>
+                        <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
+                          Revenue
+                        </th>
+                        <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                          Success Rate
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {data.detailed?.payment_method_breakdown?.map(
+                        (method, idx) => (
+                          <tr key={idx} className="hover:bg-slate-50">
+                            <td className="py-3 px-2">
+                              <span className="font-medium text-sm text-slate-800 capitalize">
+                                {method.payment_method}
+                              </span>
+                            </td>
+                            <td className="py-3 px-2 text-center text-sm">
+                              {method.count}
+                            </td>
+                            <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
+                              {formatCurrency(method.total_revenue)}
+                            </td>
+                            <td className="py-3 px-2 text-center">
+                              <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
+                                {method.success_rate.toFixed(1)}%
+                              </span>
+                            </td>
+                          </tr>
+                        )
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Invoice Type Breakdown */}
+              <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200/60">
+                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <Icon
+                    icon="mdi:file-document-edit"
+                    className="text-purple-600"
+                  />
+                  Invoice Type Breakdown
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr className="border-b border-slate-100">
+                        <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
+                          Type
+                        </th>
+                        <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                          Count
+                        </th>
+                        <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
+                          Revenue
+                        </th>
+                        <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                          Paid/Pending
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {data.detailed?.invoice_type_breakdown?.map(
+                        (type, idx) => (
+                          <tr key={idx} className="hover:bg-slate-50">
+                            <td className="py-3 px-2">
+                              <span className="font-medium text-sm text-slate-800 capitalize">
+                                {type.invoice_type}
+                              </span>
+                            </td>
+                            <td className="py-3 px-2 text-center text-sm">
+                              {type.count}
+                            </td>
+                            <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
+                              {formatCurrency(type.total_revenue)}
+                            </td>
+                            <td className="py-3 px-2 text-center text-xs">
+                              <div className="flex justify-center gap-1">
+                                <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
+                                  {type.paid_count}
+                                </span>
+                                <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold">
+                                  {type.pending_count}
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Top Courses & Activities */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Top Courses */}
+              <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200/60">
+                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <Icon
+                    icon="mdi:book-open-page-variant"
+                    className="text-blue-600"
+                  />
+                  Top Courses
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr className="border-b border-slate-100">
+                        <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
+                          Course
+                        </th>
+                        <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
+                          Revenue
+                        </th>
+                        <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                          Count
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {data.top_courses?.map((course, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50">
+                          <td className="py-3 px-2">
+                            <span className="font-medium text-sm text-slate-800">
+                              {course.name}
+                            </span>
+                          </td>
+                          <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
+                            {formatCurrency(course.revenue)}
+                          </td>
+                          <td className="py-3 px-2 text-center text-sm">
+                            {course.count}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Top Activities */}
+              <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200/60">
+                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <Icon icon="mdi:run-fast" className="text-pink-600" />
+                  Top Activities
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr className="border-b border-slate-100">
+                        <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
+                          Activity
+                        </th>
+                        <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
+                          Revenue
+                        </th>
+                        <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                          Count
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {data.top_activities?.map((activity, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50">
+                          <td className="py-3 px-2">
+                            <span className="font-medium text-sm text-slate-800">
+                              {activity.activity || activity.name}
+                            </span>
+                          </td>
+                          <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
+                            {formatCurrency(
+                              activity.total_revenue || activity.revenue
+                            )}
+                          </td>
+                          <td className="py-3 px-2 text-center text-sm">
+                            {activity.sales_count || activity.count}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Tables Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Top Customers */}
+              <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200/60">
+                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <Icon icon="mdi:account-star" className="text-yellow-600" />
+                  Top Customers
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr className="border-b border-slate-100">
+                        <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
+                          Name
+                        </th>
+                        <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
+                          Spent
+                        </th>
+                        <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                          Orders
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {data.top_customers?.map((customer, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50">
+                          <td className="py-3 px-2">
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm text-slate-800">
+                                {customer.name}
+                              </span>
+                              <span className="text-xs text-slate-500">
+                                {customer.email}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
+                            {formatCurrency(customer.total_spent)}
+                          </td>
+                          <td className="py-3 px-2 text-center text-sm">
+                            {customer.order_count}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Recent Transactions */}
+              <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200/60">
+                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <Icon icon="mdi:history" className="text-blue-600" />
+                  Recent Transactions
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr className="border-b border-slate-100">
+                        <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
+                          ID
+                        </th>
+                        <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
+                          Buyer
+                        </th>
+                        <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
+                          Amount
+                        </th>
+                        <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {data.recent_transactions?.map((tx, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50">
+                          <td className="py-3 px-2 text-xs text-slate-500">
+                            #{tx.id}
+                          </td>
+                          <td className="py-3 px-2 text-sm text-slate-800">
+                            {tx.buyer}
+                          </td>
+                          <td className="py-3 px-2 text-right font-medium text-slate-800 text-sm">
+                            {formatCurrency(tx.amount)}
+                          </td>
+                          <td className="py-3 px-2 text-center">
+                            <span
+                              className={`text-[10px] px-2 py-1 rounded-full font-bold ${
+                                tx.status === "PAID"
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-yellow-100 text-yellow-700"
+                              }`}
+                            >
+                              {tx.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
