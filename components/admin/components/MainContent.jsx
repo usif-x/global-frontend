@@ -2,6 +2,7 @@
 
 import AdminService from "@/services/adminService";
 import AnalyticsService from "@/services/analyticsService";
+import InvoiceService from "@/services/invoiceService";
 import { Icon } from "@iconify/react";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -118,9 +119,7 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
           fetch("https://api.topdivers.online/analytics/all").then((r) =>
             r.json()
           ),
-          fetch("https://api.topdivers.online/invoices/admin/summary").then(
-            (r) => r.json()
-          ),
+          InvoiceService.getInvoiceSummaryAdmin(),
           AdminService.getRecentUsers(),
         ]);
 

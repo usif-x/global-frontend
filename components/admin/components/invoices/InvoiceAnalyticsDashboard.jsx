@@ -1,6 +1,6 @@
 "use client";
 
-import AnalyticsService from "@/services/analyticsService";
+import InvoiceService from "@/services/invoiceService";
 import { Icon } from "@iconify/react";
 import {
   ArcElement,
@@ -76,7 +76,7 @@ const StatCard = ({ title, value, subValue, icon, color }) => (
 const SalesBarChart = ({ data }) => {
   if (!data || data.length === 0) return null;
   const chartData = {
-    labels: data.map((d) => d.date),
+    labels: data.map((d) => d.date || `${d.month}/${d.year}`),
     datasets: [
       {
         label: "Revenue",
@@ -147,10 +147,15 @@ export default function InvoiceAnalyticsDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const result = await AnalyticsService.getDashboardSummary(
-        selectedMonth,
-        selectedYear
-      );
+      let result;
+      if (selectedMonth && selectedYear) {
+        result = await InvoiceService.getMonthlyAnalytics(
+          selectedYear,
+          selectedMonth
+        );
+      } else {
+        result = await InvoiceService.getDetailedSummaryAdmin();
+      }
       setData(result);
     } catch (error) {
       console.error("Error fetching analytics dashboard:", error);
