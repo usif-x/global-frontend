@@ -1,4 +1,4 @@
-import { serverAxios } from "@/lib/server-axios";
+import { deleteData, getData, patchData, postData } from "@/lib/axios";
 
 const ActivityAvailabilityService = {
   // Get all closures (with optional filters)
@@ -10,58 +10,44 @@ const ActivityAvailabilityService = {
     if (filters.date_from) params.append("date_from", filters.date_from);
     if (filters.date_to) params.append("date_to", filters.date_to);
 
-    const response = await serverAxios.get(
-      `/activity-availability/?${params.toString()}`
-    );
-    return response.data;
+    return await getData(`/activity-availability/?${params.toString()}`);
   },
 
   // Check if a specific date is available
   checkAvailability: async (activityType, activityId, date) => {
-    const response = await serverAxios.get("/activity-availability/check", {
-      params: {
-        activity_type: activityType,
-        activity_id: activityId,
-        date: date,
-      },
+    const params = new URLSearchParams({
+      activity_type: activityType,
+      activity_id: activityId,
+      date: date,
     });
-    return response.data;
+    return await getData(`/activity-availability/check?${params.toString()}`);
   },
 
   // Close an activity date
   closeDate: async (data) => {
-    const response = await serverAxios.post(
-      "/activity-availability/close",
-      data
-    );
-    return response.data;
+    return await postData("/activity-availability/close", data);
   },
 
   // Reopen an activity date
   reopenDate: async (activityType, activityId, date) => {
-    const response = await serverAxios.delete("/activity-availability/reopen", {
-      params: {
-        activity_type: activityType,
-        activity_id: activityId,
-        date: date,
-      },
+    const params = new URLSearchParams({
+      activity_type: activityType,
+      activity_id: activityId,
+      date: date,
     });
-    return response.data;
+    return await deleteData(
+      `/activity-availability/reopen?${params.toString()}`
+    );
   },
 
   // Update a closure
   update: async (id, data) => {
-    const response = await serverAxios.patch(
-      `/activity-availability/${id}`,
-      data
-    );
-    return response.data;
+    return await patchData(`/activity-availability/${id}`, data);
   },
 
   // Manual cleanup
   cleanup: async () => {
-    const response = await serverAxios.post("/activity-availability/cleanup");
-    return response.data;
+    return await postData("/activity-availability/cleanup");
   },
 };
 
