@@ -207,8 +207,15 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
           </p>
           <div className="flex flex-wrap gap-4">
             <button
+              onClick={() => setActiveTab("analytics")}
+              className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg shadow-cyan-500/30 flex items-center gap-2"
+            >
+              <Icon icon="mdi:chart-line" />
+              View Analytics
+            </button>
+            <button
               onClick={() => setActiveTab("invoices")}
-              className="bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg shadow-cyan-500/30 flex items-center gap-2"
+              className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl font-semibold transition-all backdrop-blur-sm flex items-center gap-2"
             >
               <Icon icon="mdi:file-document-edit-outline" />
               Manage Invoices
@@ -303,6 +310,50 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
           subValue={`Unconfirmed: ${all?.unconfirmed_invoices_count}`}
           icon="mdi:check-decagram"
           color="bg-teal-500"
+        />
+      </div>
+
+      {/* Analytics Insights Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <GeniusStatCard
+          title="Conversion Rate"
+          value={`${(
+            ((invoiceSummary?.paid_count || 0) /
+              (invoiceSummary?.total_invoices || 1)) *
+            100
+          ).toFixed(1)}%`}
+          subValue="Paid vs Total"
+          icon="mdi:trending-up"
+          color="bg-teal-500"
+          trend="up"
+        />
+        <GeniusStatCard
+          title="Confirmation Rate"
+          value={`${stats?.confirmation_rate?.toFixed(1) || 0}%`}
+          subValue="Invoice Confirmations"
+          icon="mdi:shield-check"
+          color="bg-indigo-500"
+          trend="up"
+        />
+        <GeniusStatCard
+          title="Avg Discount Given"
+          value={formatEGP(stats?.total_discount_given)}
+          subValue="Total Discounts"
+          icon="mdi:sale"
+          color="bg-pink-500"
+        />
+        <GeniusStatCard
+          title="Success Rate"
+          value={`${(
+            ((invoiceSummary?.paid_count || 0) /
+              ((invoiceSummary?.paid_count || 0) +
+                (invoiceSummary?.failed_count || 0) || 1)) *
+            100
+          ).toFixed(1)}%`}
+          subValue="Payment Success"
+          icon="mdi:check-circle"
+          color="bg-emerald-500"
+          trend="up"
         />
       </div>
 
@@ -518,6 +569,12 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
               Quick Shortcuts
             </h3>
             <div className="space-y-3">
+              <QuickActionBtn
+                icon="mdi:chart-box-outline"
+                title="View Analytics"
+                desc="Detailed insights & reports"
+                onClick={() => setActiveTab("analytics")}
+              />
               <QuickActionBtn
                 icon="mdi:airplane-plus"
                 title="New Trip"

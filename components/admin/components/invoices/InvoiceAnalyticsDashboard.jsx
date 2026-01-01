@@ -1,5 +1,6 @@
 "use client";
 
+import AnalyticsService from "@/services/analyticsService";
 import InvoiceService from "@/services/invoiceService";
 import { Icon } from "@iconify/react";
 import {
@@ -147,16 +148,29 @@ export default function InvoiceAnalyticsDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      let result;
+      let detailedSummary, dashboardData;
+
       if (selectedMonth && selectedYear) {
-        result = await InvoiceService.getMonthlyAnalytics(
-          selectedYear,
-          selectedMonth
-        );
+        // For monthly view, fetch monthly analytics
+        [detailedSummary, dashboardData] = await Promise.all([
+          InvoiceService.getMonthlyAnalytics(selectedYear, selectedMonth),
+          AnalyticsService.getDashboardSummary(selectedMonth, selectedYear),
+        ]);
       } else {
-        result = await InvoiceService.getDetailedSummaryAdmin();
+        // For overall view, fetch detailed summary
+        [detailedSummary, dashboardData] = await Promise.all([
+          InvoiceService.getDetailedSummaryAdmin(),
+          AnalyticsService.getDashboardSummary(selectedMonth, selectedYear),
+        ]);
       }
-      setData(result);
+
+      // Merge the data
+      const mergedData = {
+        ...dashboardData,
+        detailed: detailedSummary,
+      };
+
+      setData(mergedData);
     } catch (error) {
       console.error("Error fetching analytics dashboard:", error);
       toast.error("Failed to load analytics data");
@@ -293,7 +307,95 @@ export default function InvoiceAnalyticsDashboard() {
             />
           </div>
 
-          {/* Row 2: Operational & Potential */}
+          {/* Row 2: Detailed Invoice Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard
+              title="Total Invoices"
+              value={data.detailed?.total_invoices}
+              subValue={`Confirmed: ${data.detailed?.confirmed_invoices} | Unconfirmed: ${data.detailed?.unconfirmed_invoices}`}
+              icon="mdi:file-document-multiple"
+              color="bg-blue-600"
+            />
+            <StatCard
+              title="Paid Invoices"
+              value={data.detailed?.paid_count}
+              subValue={`Total Revenue: ${formatCurrency(
+                data.detailed?.total_revenue
+              )}`}
+              icon="mdi:check-circle"
+              color="bg-green-600"
+            />
+            <StatCard
+              title="Pending Invoices"
+              value={data.detailed?.pending_count}
+              subValue={`Amount: ${formatCurrency(
+                data.detailed?.pending_amount
+              )}`}
+              icon="mdi:clock-outline"
+              color="bg-yellow-600"
+            />
+            <StatCard
+              title="Failed Invoices"
+              value={data.detailed?.failed_count}
+              subValue={`Amount: ${formatCurrency(
+                data.detailed?.failed_amount
+              )}`}
+              icon="mdi:alert-circle"
+              color="bg-red-600"
+            />
+          </div>
+
+          {/* Row 3: Conversion & Success Rates */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard
+              title="Conversion Rate"
+              value={`${data.detailed?.conversion_rate?.toFixed(1) || 0}%`}
+              subValue="Pending to Paid"
+              icon="mdi:trending-up"
+              color="bg-teal-500"
+            />
+            <StatCard
+              title="Payment Success Rate"
+              value={`${data.detailed?.payment_success_rate?.toFixed(1) || 0}%`}
+              subValue="Overall Success"
+              icon="mdi:check-decagram"
+              color="bg-emerald-500"
+            />
+            <StatCard
+              title="Average Invoice"
+              value={formatCurrency(data.detailed?.average_invoice_amount)}
+              subValue="Per Invoice"
+              icon="mdi:calculator"
+              color="bg-purple-500"
+            />
+            {data.detailed?.picked_up_count !== undefined ? (
+              <StatCard
+                title="Pickup Status"
+                value={`${data.detailed?.picked_up_count || 0}/${
+                  data.detailed?.total_invoices || 0
+                }`}
+                subValue={`Not Picked Up: ${
+                  data.detailed?.not_picked_up_count || 0
+                }`}
+                icon="mdi:package-variant"
+                color="bg-orange-500"
+              />
+            ) : (
+              <StatCard
+                title={
+                  selectedMonth
+                    ? `Month ${selectedMonth}/${selectedYear}`
+                    : "Period"
+                }
+                value={data.detailed?.total_invoices || 0}
+                subValue={`Total Invoices`}
+                icon="mdi:calendar-month"
+                color="bg-orange-500"
+              />
+            )}
+          </div>
+
+          {/* Row 4: Operational & Potential */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard
               title="Potential Revenue"
@@ -311,14 +413,22 @@ export default function InvoiceAnalyticsDashboard() {
             />
             <StatCard
               title="Best Selling Month"
-              value={data.stats?.best_selling_month}
-              subValue="All Time"
+              value={
+                data.stats?.best_selling_month
+                  ? `${data.stats.best_selling_month.month}/${data.stats.best_selling_month.year}`
+                  : "N/A"
+              }
+              subValue={
+                data.stats?.best_selling_month
+                  ? formatCurrency(data.stats.best_selling_month.revenue)
+                  : "All Time"
+              }
               icon="mdi:trophy"
               color="bg-yellow-400"
             />
           </div>
 
-          {/* Row 3: Users, Testimonials, Content, Invoices breakdowns */}
+          {/* Row 5: Users, Testimonials, Content, Invoices breakdowns */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard
               title="Total Users"
@@ -391,6 +501,194 @@ export default function InvoiceAnalyticsDashboard() {
                   data={data.charts?.payment_method_distribution}
                   label="Payment"
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Activity Breakdown Table - Detailed from Invoice Summary */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+              <Icon icon="mdi:chart-bar" className="text-indigo-600" />
+              Activity Breakdown (Detailed)
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
+                      Activity
+                    </th>
+                    <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                      Total
+                    </th>
+                    <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
+                      Revenue
+                    </th>
+                    <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
+                      Avg Amount
+                    </th>
+                    <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                      Paid
+                    </th>
+                    <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                      Pending
+                    </th>
+                    <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                      Failed
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {data.detailed?.activity_breakdown?.map((activity, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50">
+                      <td className="py-3 px-2">
+                        <span className="font-medium text-sm text-slate-800">
+                          {activity.activity}
+                        </span>
+                      </td>
+                      <td className="py-3 px-2 text-center text-sm">
+                        {activity.count}
+                      </td>
+                      <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
+                        {formatCurrency(activity.total_revenue)}
+                      </td>
+                      <td className="py-3 px-2 text-right text-sm text-slate-600">
+                        {formatCurrency(activity.average_amount)}
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
+                          {activity.paid_count}
+                        </span>
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold">
+                          {activity.pending_count}
+                        </span>
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700 font-semibold">
+                          {activity.failed_count}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Payment Method & Invoice Type Breakdown */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Payment Method Breakdown */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <Icon
+                  icon="mdi:credit-card-multiple"
+                  className="text-cyan-600"
+                />
+                Payment Method Details
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
+                        Method
+                      </th>
+                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                        Count
+                      </th>
+                      <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
+                        Revenue
+                      </th>
+                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                        Success Rate
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {data.detailed?.payment_method_breakdown?.map(
+                      (method, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50">
+                          <td className="py-3 px-2">
+                            <span className="font-medium text-sm text-slate-800 capitalize">
+                              {method.payment_method}
+                            </span>
+                          </td>
+                          <td className="py-3 px-2 text-center text-sm">
+                            {method.count}
+                          </td>
+                          <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
+                            {formatCurrency(method.total_revenue)}
+                          </td>
+                          <td className="py-3 px-2 text-center">
+                            <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
+                              {method.success_rate.toFixed(1)}%
+                            </span>
+                          </td>
+                        </tr>
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Invoice Type Breakdown */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <Icon
+                  icon="mdi:file-document-edit"
+                  className="text-purple-600"
+                />
+                Invoice Type Breakdown
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="border-b border-slate-100">
+                      <th className="text-left py-3 px-2 text-xs font-semibold text-slate-600">
+                        Type
+                      </th>
+                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                        Count
+                      </th>
+                      <th className="text-right py-3 px-2 text-xs font-semibold text-slate-600">
+                        Revenue
+                      </th>
+                      <th className="text-center py-3 px-2 text-xs font-semibold text-slate-600">
+                        Paid/Pending
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {data.detailed?.invoice_type_breakdown?.map((type, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50">
+                        <td className="py-3 px-2">
+                          <span className="font-medium text-sm text-slate-800 capitalize">
+                            {type.invoice_type}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 text-center text-sm">
+                          {type.count}
+                        </td>
+                        <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
+                          {formatCurrency(type.total_revenue)}
+                        </td>
+                        <td className="py-3 px-2 text-center text-xs">
+                          <div className="flex justify-center gap-1">
+                            <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
+                              {type.paid_count}
+                            </span>
+                            <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold">
+                              {type.pending_count}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -468,14 +766,16 @@ export default function InvoiceAnalyticsDashboard() {
                       <tr key={idx} className="hover:bg-slate-50">
                         <td className="py-3 px-2">
                           <span className="font-medium text-sm text-slate-800">
-                            {activity.name}
+                            {activity.activity || activity.name}
                           </span>
                         </td>
                         <td className="py-3 px-2 text-right font-bold text-slate-800 text-sm">
-                          {formatCurrency(activity.revenue)}
+                          {formatCurrency(
+                            activity.total_revenue || activity.revenue
+                          )}
                         </td>
                         <td className="py-3 px-2 text-center text-sm">
-                          {activity.count}
+                          {activity.sales_count || activity.count}
                         </td>
                       </tr>
                     ))}
