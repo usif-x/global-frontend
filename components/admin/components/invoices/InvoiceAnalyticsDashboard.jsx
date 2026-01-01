@@ -440,6 +440,21 @@ export default function InvoiceAnalyticsDashboard() {
                 icon="mdi:trophy"
                 color="bg-yellow-400"
               />
+              <StatCard
+                title="Failed Transaction Rate"
+                value={`${
+                  data.detailed?.total_invoices > 0
+                    ? (
+                        (data.detailed?.failed_count /
+                          data.detailed?.total_invoices) *
+                        100
+                      ).toFixed(1)
+                    : 0
+                }%`}
+                subValue={`Failed: ${data.detailed?.failed_count || 0}`}
+                icon="mdi:alert-octagon"
+                color="bg-rose-500"
+              />
             </div>
 
             {/* Row 5: Users, Testimonials, Content, Invoices breakdowns */}
