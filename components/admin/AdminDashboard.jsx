@@ -425,6 +425,13 @@ const AdminDashboard = () => {
     ...(admin?.admin_level === 2
       ? [
           {
+            id: "admins",
+            label: "Admins",
+            icon: "mdi:shield-account",
+            color: "text-red-600",
+            description: "Manage admin accounts and roles",
+          },
+          {
             id: "invoices",
             label: "Invoices",
             icon: "mdi:receipt-text-check-outline",
