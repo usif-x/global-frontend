@@ -442,17 +442,13 @@ const AdminDashboard = () => {
             color: "text-emerald-500",
             description: "Track payments and transactions",
           },
-        ]
-      : []),
-    {
-      id: "analytics",
-      label: "Analytics",
-      icon: "mdi:chart-line",
-      color: "text-pink-600",
-      description: "View platform statistics and reports",
-    },
-    ...(admin?.admin_level === 2
-      ? [
+          {
+            id: "analytics",
+            label: "Analytics",
+            icon: "mdi:chart-line",
+            color: "text-pink-600",
+            description: "View platform statistics and reports",
+          },
           {
             id: "settings",
             label: "Settings",
