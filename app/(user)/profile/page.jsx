@@ -15,32 +15,35 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 
 const SidebarSkeleton = () => (
-  <aside className="py-6 px-2 sm:px-6 lg:py-0 lg:px-0 lg:col-span-3 animate-pulse">
-    <div className="flex flex-col items-center space-y-4">
-      <div className="w-24 h-24 rounded-full bg-gray-200" />
-      <div className="h-6 w-3/5 rounded bg-gray-200" />
-      <div className="h-4 w-4/5 rounded bg-gray-200" />
-      <div className="h-3 w-1/2 rounded bg-gray-200 mt-2" />
+  <aside className="lg:col-span-3 animate-pulse">
+    <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 p-6">
+      <div className="flex flex-col items-center space-y-4">
+        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-cyan-200 to-blue-200" />
+        <div className="h-6 w-3/5 rounded bg-slate-200" />
+        <div className="h-4 w-4/5 rounded bg-slate-200" />
+        <div className="h-3 w-1/2 rounded bg-slate-200 mt-2" />
+      </div>
+      <nav className="mt-8 space-y-2">
+        <div className="h-12 w-full rounded-lg bg-slate-200" />
+        <div className="h-12 w-full rounded-lg bg-slate-200" />
+        <div className="h-12 w-full rounded-lg bg-slate-200" />
+      </nav>
     </div>
-    <nav className="mt-8 space-y-2">
-      <div className="h-10 w-full rounded-md bg-gray-200" />
-      <div className="h-10 w-full rounded-md bg-gray-200" />
-    </nav>
   </aside>
 );
 
 const ContentSkeleton = () => (
   <div className="lg:col-span-9 animate-pulse">
-    <div className="bg-white shadow rounded-lg p-6 space-y-6">
-      <div className="h-8 w-1/3 rounded bg-gray-200" />
-      <div className="border-t border-gray-200 pt-6 space-y-4">
+    <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 p-8 space-y-6">
+      <div className="h-8 w-1/3 rounded bg-slate-200" />
+      <div className="border-t border-slate-200 pt-6 space-y-4">
         <div className="flex items-center gap-4">
-          <div className="w-1/4 h-5 rounded bg-gray-200" />
-          <div className="w-2/4 h-8 rounded bg-gray-200" />
+          <div className="w-1/4 h-5 rounded bg-slate-200" />
+          <div className="w-2/4 h-10 rounded-lg bg-slate-200" />
         </div>
         <div className="flex items-center gap-4">
-          <div className="w-1/4 h-5 rounded bg-gray-200" />
-          <div className="w-2/4 h-8 rounded bg-gray-200" />
+          <div className="w-1/4 h-5 rounded bg-slate-200" />
+          <div className="w-2/4 h-10 rounded-lg bg-slate-200" />
         </div>
       </div>
     </div>
@@ -48,8 +51,8 @@ const ContentSkeleton = () => (
 );
 
 const ProfilePageSkeleton = () => (
-  <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-    <div className="lg:grid lg:grid-cols-12 lg:gap-x-5">
+  <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div className="lg:grid lg:grid-cols-12 lg:gap-8">
       <SidebarSkeleton />
       <ContentSkeleton />
     </div>
@@ -73,73 +76,87 @@ const UserProfileSidebar = ({ user, activeTab, onTabChange }) => {
   const TabButton = ({ tabName, icon, label }) => (
     <button
       onClick={() => onTabChange(tabName)}
-      className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+      className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
         activeTab === tabName
-          ? "bg-cyan-100 text-cyan-700 shadow-inner"
-          : "text-gray-600 hover:bg-gray-100"
+          ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30"
+          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
       }`}
     >
-      <Icon icon={icon} className="mr-3 h-6 w-6 flex-shrink-0" />
+      <Icon icon={icon} className="mr-3 h-5 w-5 flex-shrink-0" />
       <span className="truncate">{label}</span>
     </button>
   );
 
   return (
-    <aside className="py-6 px-2 sm:px-6 lg:py-0 lg:px-0 lg:col-span-3">
-      <div className="flex flex-col items-center space-y-3 text-center">
-        <Image
-          src={user?.avatar_url || "/image/diver.png"} // Use a real avatar if available
-          alt={user?.name || "User"}
-          width={96}
-          height={96}
-          className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"
-        />
-        <div className="mt-2">
-          <h2 className="text-xl font-bold text-gray-800">{user?.full_name}</h2>
-          <p className="text-sm text-gray-500">{user?.email}</p>
+    <aside className="lg:col-span-3">
+      <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 p-6 sticky top-24">
+        <div className="flex flex-col items-center space-y-3 text-center">
+          <div className="relative">
+            <Image
+              src={user?.avatar_url || "/image/diver.png"}
+              alt={user?.name || "User"}
+              width={96}
+              height={96}
+              className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg ring-2 ring-cyan-500/20"
+            />
+            <div className="absolute bottom-0 right-0 w-6 h-6 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full border-2 border-white flex items-center justify-center">
+              <Icon icon="mdi:check" className="text-white text-xs" />
+            </div>
+          </div>
+          <div className="mt-2">
+            <h2 className="text-xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+              {user?.full_name}
+            </h2>
+            <p className="text-sm text-slate-500 mt-1">{user?.email}</p>
+          </div>
         </div>
-        <div className="text-xs text-gray-400 border-t border-gray-200 pt-3 mt-2 w-full">
-          Member since: {formatDate(user?.created_at)}
+
+        <div className="space-y-2 mt-6 pt-6 border-t border-slate-200">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-500">Member since</span>
+            <span className="font-medium text-slate-700">
+              {formatDate(user?.created_at)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-500">Last login</span>
+            <span className="font-medium text-slate-700">
+              {formatDate(user?.last_login)}
+            </span>
+          </div>
         </div>
-        <div className="text-xs text-gray-400 border-t border-gray-200 pt-3 mt-2 w-full">
-          Updated at: {formatDate(user?.updated_at)}
-        </div>
-        <div className="text-xs text-gray-400 border-t border-gray-200 pt-3 mt-2 w-full">
-          Last login: {formatDate(user?.last_login)}
-        </div>
-        <div className="mt-2">
+
+        <nav className="mt-6 space-y-2">
+          <TabButton
+            tabName="details"
+            icon="mdi:account-details"
+            label="Profile Details"
+          />
+          <TabButton
+            tabName="security"
+            icon="mdi:shield-lock"
+            label="Security Settings"
+          />
+          <TabButton tabName="courses" icon="mdi:school" label="My Courses" />
+          <TabButton
+            tabName="notifications"
+            icon="mdi:bell"
+            label="Notifications"
+          />
+          <TabButton
+            tabName="testimonials"
+            icon="mdi:comment-quote"
+            label="Testimonials"
+          />
+        </nav>
+
+        <div className="mt-6 pt-6 border-t border-slate-200">
           <Alert
-            children="If you want to delete your account, please contact us from chatbot."
+            children="Need to delete your account? Contact us via chat."
             type="danger"
           />
         </div>
       </div>
-      <nav className="mt-6 space-y-1">
-        <TabButton
-          tabName="details"
-          icon="mdi:account-details"
-          label="Profile Details"
-        />
-        <TabButton
-          tabName="security"
-          icon="mdi:shield-lock"
-          label="Security Settings"
-        />
-
-        <TabButton tabName="courses" icon="mdi:school" label="My Courses" />
-
-        <TabButton
-          tabName="notifications"
-          icon="mdi:bell"
-          label="Notifications"
-        />
-
-        <TabButton
-          tabName="testimonials"
-          icon="mdi:comment-quote"
-          label="Testimonials"
-        />
-      </nav>
     </aside>
   );
 };
@@ -237,14 +254,21 @@ export default function ProfilePage() {
   // Show skeletons during initial load to prevent layout shift
   if (isLoading) {
     return (
-      <div className="bg-gray-50 min-h-screen pt-20">
-        <header className="bg-white shadow-sm">
-          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <h1 className="text-3xl font-bold leading-tight text-gray-900">
-              My Profile
-            </h1>
+      <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen pt-20">
+        <div className="bg-white shadow-sm border-b border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-xl shadow-lg">
+                <Icon icon="mdi:account-circle" className="w-8 h-8" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                  My Profile
+                </h1>
+              </div>
+            </div>
           </div>
-        </header>
+        </div>
         <ProfilePageSkeleton />
       </div>
     );
@@ -256,26 +280,39 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen pt-20">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold leading-tight text-gray-900">
-            My Profile
-          </h1>
+    <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen pt-20">
+      {/* Modern Header */}
+      <div className="bg-white shadow-sm border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 rounded-2xl"></div>
+            <div className="relative flex items-center space-x-4">
+              <div className="p-3 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-xl shadow-lg">
+                <Icon icon="mdi:account-circle" className="w-8 h-8" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                  My Profile
+                </h1>
+                <p className="text-sm text-slate-500 mt-1">
+                  Manage your account settings and preferences
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="lg:grid lg:grid-cols-12 lg:gap-x-8">
+      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="lg:grid lg:grid-cols-12 lg:gap-8">
           <UserProfileSidebar
             user={localUser}
             activeTab={activeTab}
             onTabChange={setActiveTab}
           />
 
-          <div className="space-y-6 sm:px-6 lg:px-0 lg:col-span-9 mt-6 lg:mt-0">
-            <div className="bg-white shadow-lg rounded-lg transition-all duration-300">
-              {/* Render the active tab's component */}
+          <div className="lg:col-span-9 mt-8 lg:mt-0">
+            <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 transition-all duration-300">
               <div className="p-6 sm:p-8">{tabContent[activeTab]}</div>
             </div>
           </div>

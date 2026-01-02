@@ -182,29 +182,38 @@ const NotificationsTab = () => {
   const renderContent = () => {
     if (loading) {
       return (
-        <div className="flex justify-center items-center py-20">...Loading</div>
+        <div className="flex justify-center items-center py-16">
+          <div className="relative">
+            <div className="h-16 w-16 rounded-full border-t-4 border-b-4 border-slate-200"></div>
+            <div className="absolute top-0 left-0 h-16 w-16 rounded-full border-t-4 border-b-4 border-cyan-500 animate-spin"></div>
+          </div>
+        </div>
       );
     }
     if (error) {
       return (
-        <div className="text-center py-10 bg-red-50 text-red-700 rounded-lg">
-          {error}
+        <div className="text-center py-12 px-6 bg-red-50 border border-red-200 text-red-700 rounded-xl">
+          <Icon
+            icon="mdi:alert-circle"
+            className="mx-auto h-12 w-12 text-red-500 mb-3"
+          />
+          <p className="font-medium">{error}</p>
         </div>
       );
     }
     if (filteredData.length === 0) {
       return (
-        <div className="text-center py-10 bg-gray-50 rounded-lg">
+        <div className="text-center py-16 px-6 bg-gradient-to-br from-slate-50 to-cyan-50 rounded-xl border border-slate-200">
           <Icon
             icon="mdi:bell-check-outline"
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-16 w-16 text-slate-400 mb-4"
           />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">
+          <h3 className="text-lg font-bold text-slate-800 mb-2">
             {filter === "unread"
               ? "No unread notifications"
               : "No notifications yet"}
           </h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="text-sm text-slate-500">
             {filter === "unread"
               ? "You are all caught up!"
               : "We'll notify you here about important updates."}
@@ -213,15 +222,15 @@ const NotificationsTab = () => {
       );
     }
     return (
-      <div className="shadow border-b border-gray-200 sm:rounded-lg">
-        <table className="min-w-full divide-y divide-gray-200">
-          <tbody className="bg-white divide-y divide-gray-200">
+      <div className="shadow-lg border border-slate-200/60 rounded-xl overflow-hidden">
+        <table className="min-w-full divide-y divide-slate-200">
+          <tbody className="bg-white divide-y divide-slate-100">
             {tableInstance.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
                 className={`${
-                  !row.original.is_read ? "bg-cyan-50" : ""
-                } hover:bg-gray-50 transition-colors`}
+                  !row.original.is_read ? "bg-cyan-50/50" : ""
+                } hover:bg-slate-50 transition-all duration-200`}
               >
                 {row.getVisibleCells().map((cell) => (
                   <td
@@ -241,29 +250,46 @@ const NotificationsTab = () => {
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold leading-tight text-gray-900">
-          Notifications
-        </h2>
-        {/* Filter buttons */}
-        <div className="flex p-1 bg-gray-200 rounded-lg">
-          <button
-            onClick={() => setFilter("all")}
-            className={`px-4 py-1 text-sm font-medium rounded-md ${
-              filter === "all" ? "bg-white shadow" : "text-gray-600"
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setFilter("unread")}
-            className={`px-4 py-1 text-sm font-medium rounded-md ${
-              filter === "unread" ? "bg-white shadow" : "text-gray-600"
-            }`}
-          >
-            Unread
-          </button>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="border-b border-slate-200 pb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-lg">
+              <Icon icon="mdi:bell" className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                Notifications
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">
+                Stay updated with your latest activities
+              </p>
+            </div>
+          </div>
+          {/* Filter buttons */}
+          <div className="flex p-1 bg-slate-100 rounded-xl">
+            <button
+              onClick={() => setFilter("all")}
+              className={`px-5 py-2 text-sm font-semibold rounded-lg transition-all ${
+                filter === "all"
+                  ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setFilter("unread")}
+              className={`px-5 py-2 text-sm font-semibold rounded-lg transition-all ${
+                filter === "unread"
+                  ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Unread
+            </button>
+          </div>
         </div>
       </div>
 
@@ -271,10 +297,10 @@ const NotificationsTab = () => {
 
       {/* Pagination */}
       {filteredData.length > 0 && (
-        <div className="flex items-center justify-between mt-4">
-          <span className="text-sm text-gray-700">
+        <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200">
+          <span className="text-sm text-slate-600">
             Page{" "}
-            <strong>
+            <strong className="text-slate-900">
               {tableInstance.getState().pagination.pageIndex + 1} of{" "}
               {tableInstance.getPageCount()}
             </strong>
@@ -283,16 +309,16 @@ const NotificationsTab = () => {
             <button
               onClick={() => tableInstance.previousPage()}
               disabled={!tableInstance.getCanPreviousPage()}
-              className="p-1 border rounded disabled:opacity-50"
+              className="p-2 border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              <Icon icon="mdi:chevron-left" />
+              <Icon icon="mdi:chevron-left" className="w-5 h-5" />
             </button>
             <button
               onClick={() => tableInstance.nextPage()}
               disabled={!tableInstance.getCanNextPage()}
-              className="p-1 border rounded disabled:opacity-50"
+              className="p-2 border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              <Icon icon="mdi:chevron-right" />
+              <Icon icon="mdi:chevron-right" className="w-5 h-5" />
             </button>
           </div>
         </div>

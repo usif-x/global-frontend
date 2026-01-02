@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { putData } from "@/lib/axios";
+import { Icon } from "@iconify/react";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -32,7 +33,7 @@ const ProfileDetails = ({ user, onUpdate }) => {
         true
       );
       const data = await response;
-      onUpdate({ name: data.full_name, updated_at: data.updated_at }); // **UPDATE:** Pass new data to store
+      onUpdate({ name: data.full_name, updated_at: data.updated_at });
       toast.success("Profile updated successfully!");
     } catch (error) {
       toast.error(error.message);
@@ -45,8 +46,25 @@ const ProfileDetails = ({ user, onUpdate }) => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold text-gray-800">Profile Details</h2>
-      <form onSubmit={handleUpdateProfile} className="space-y-4">
+      {/* Header */}
+      <div className="border-b border-slate-200 pb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-lg">
+            <Icon icon="mdi:account-details" className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+              Profile Details
+            </h2>
+            <p className="text-sm text-slate-500 mt-1">
+              Update your personal information
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Form */}
+      <form onSubmit={handleUpdateProfile} className="space-y-6">
         <Input
           dir="ltr"
           placeholder="Full Name"
@@ -54,7 +72,7 @@ const ProfileDetails = ({ user, onUpdate }) => {
           value={formData.fullName}
           onChange={handleInputChange}
           icon="mdi:account-outline"
-          color="turquoise"
+          color="cyan"
           disabled={isLoading}
         />
         <Input
@@ -63,10 +81,10 @@ const ProfileDetails = ({ user, onUpdate }) => {
           name="email"
           value={user.email || ""}
           icon="ic:twotone-email"
-          color="turquoise"
+          color="cyan"
           disabled
         />
-        <div className="pt-2 w-full flex justify-start">
+        <div className="pt-4 flex justify-start">
           <Button
             type="submit"
             color="cyan"

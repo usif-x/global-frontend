@@ -470,15 +470,7 @@ const AdminDashboard = () => {
   const renderContent = () => {
     // Prevent level 1 admins from accessing restricted content
     const isLevel2Admin = admin?.admin_level === 2;
-    const restrictedTabs = [
-      "invoices",
-      "payments",
-      "orders",
-      "admins",
-      "settings",
-      "divecenters",
-      "packages",
-    ];
+    const restrictedTabs = ["admins", "invoices", "analytics", "settings"];
 
     if (!isLevel2Admin && restrictedTabs.includes(activeTab)) {
       return (

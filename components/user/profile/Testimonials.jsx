@@ -45,7 +45,7 @@ const StatusBadge = ({ is_accepted, is_rejected }) => {
 
 // The card for displaying a single testimonial
 const TestimonialItem = ({ testimonial }) => (
-  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+  <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200/60 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
     <div className="flex justify-between items-start mb-4">
       <StarRating rating={testimonial.rating} />
       <StatusBadge
@@ -53,10 +53,11 @@ const TestimonialItem = ({ testimonial }) => (
         is_rejected={testimonial.is_rejected}
       />
     </div>
-    <blockquote className="border-l-4 border-cyan-500 pl-4 italic text-gray-700">
-      <p>"{testimonial.description}"</p>
+    <blockquote className="border-l-4 border-gradient-to-b from-cyan-500 to-blue-600 pl-4 italic text-slate-700 bg-slate-50 p-4 rounded-r-lg">
+      <p className="text-sm">"{testimonial.description}"</p>
     </blockquote>
-    <div className="mt-4 text-right text-xs text-gray-400">
+    <div className="mt-4 flex items-center justify-end gap-2 text-xs text-slate-500">
+      <Icon icon="mdi:calendar" className="w-4 h-4" />
       Submitted on {format(new Date(testimonial.created_at), "MMMM d, yyyy")}
     </div>
   </div>
@@ -101,14 +102,24 @@ const CreateTestimonialModal = ({ isOpen, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-bold text-gray-900">Write a Review</h3>
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4 border border-slate-200">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-lg">
+              <Icon icon="mdi:star" className="w-5 h-5" />
+            </div>
+            <h3 className="text-xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+              Write a Review
+            </h3>
+          </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-slate-400 hover:text-slate-600 transition-colors"
           >
             <Icon icon="mdi:close" className="w-6 h-6" />
           </button>
@@ -139,46 +150,46 @@ const CreateTestimonialModal = ({ isOpen, onClose, onSuccess }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
               Your Review *
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
               placeholder="Share your experience..."
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
               Additional Notes (Optional)
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
               placeholder="Any additional comments or context..."
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+              className="flex-1 px-5 py-3 bg-slate-100 text-slate-700 font-semibold rounded-xl hover:bg-slate-200 transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting || rating === 0 || !description.trim()}
-              className="flex-1 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-5 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-cyan-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              {isSubmitting ? "Submitting..." : "Submit"}
+              {isSubmitting ? "Submitting..." : "Submit Review"}
             </button>
           </div>
         </form>
@@ -212,41 +223,44 @@ const TestimonialsTab = () => {
 
   const renderContent = () => {
     if (loading) {
-      // Skeleton loader
       return (
         <div className="space-y-4 animate-pulse">
-          <div className="h-32 bg-gray-200 rounded-lg"></div>
-          <div className="h-32 bg-gray-200 rounded-lg"></div>
+          <div className="h-32 bg-slate-200 rounded-xl"></div>
+          <div className="h-32 bg-slate-200 rounded-xl"></div>
         </div>
       );
     }
 
     if (error) {
       return (
-        <div className="text-center py-10 px-4 bg-red-50 text-red-700 rounded-lg">
-          <p>{error}</p>
+        <div className="text-center py-12 px-6 bg-red-50 border border-red-200 text-red-700 rounded-xl">
+          <Icon
+            icon="mdi:alert-circle"
+            className="mx-auto h-12 w-12 text-red-500 mb-3"
+          />
+          <p className="font-medium">{error}</p>
         </div>
       );
     }
 
     if (testimonials.length === 0) {
       return (
-        <div className="text-center py-10 px-4 bg-gray-50 rounded-lg">
+        <div className="text-center py-16 px-6 bg-gradient-to-br from-slate-50 to-cyan-50 rounded-xl border border-slate-200">
           <Icon
             icon="mdi:star-plus-outline"
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-16 w-16 text-slate-400 mb-4"
           />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">
+          <h3 className="text-lg font-bold text-slate-800 mb-2">
             No testimonials submitted
           </h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="text-sm text-slate-500 mb-6">
             Share your experience to help others and us improve!
           </p>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-cyan-600 hover:bg-cyan-700"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-cyan-500/30 transition-all"
           >
-            <Icon icon="mdi:star-plus" className="w-5 h-5 mr-2" />
+            <Icon icon="mdi:star-plus" className="w-5 h-5" />
             Submit a Testimonial
           </button>
         </div>
@@ -263,20 +277,33 @@ const TestimonialsTab = () => {
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold leading-tight text-gray-900">
-          My Submitted Testimonials
-        </h2>
-        {!loading && testimonials.length > 0 && (
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-cyan-600 hover:bg-cyan-700 transition-colors"
-          >
-            <Icon icon="mdi:plus" className="w-5 h-5 mr-2" />
-            Add New
-          </button>
-        )}
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="border-b border-slate-200 pb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-lg">
+              <Icon icon="mdi:comment-quote" className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                My Testimonials
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">
+                Share your experience with our services
+              </p>
+            </div>
+          </div>
+          {!loading && testimonials.length > 0 && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-cyan-500/30 transition-all"
+            >
+              <Icon icon="mdi:plus" className="w-5 h-5" />
+              Add New
+            </button>
+          )}
+        </div>
       </div>
       {renderContent()}
 

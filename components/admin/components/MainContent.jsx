@@ -112,35 +112,52 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch all analytics endpoints in parallel
-      const [analytics, all, invoiceSummary, recentUsersData] =
-        await Promise.all([
-          AnalyticsService.getDashboardSummary(),
+      const isLevel2Admin = admin?.admin_level === 2;
+
+      // Level 1 admins only get basic data
+      if (!isLevel2Admin) {
+        const [all, recentUsersData] = await Promise.all([
           fetch("https://api.topdivers.online/analytics/all").then((r) =>
             r.json()
           ),
-          InvoiceService.getInvoiceSummaryAdmin(),
           AdminService.getRecentUsers(),
         ]);
 
-      setDashboardData({
-        ...analytics,
-        all,
-        invoiceSummary,
-        recentUsers: recentUsersData,
-      });
-
-      // Simulate some notifications based on data
-      const notifs = [];
-      if (analytics.stats?.pending_invoices > 0) {
-        notifs.push({
-          id: 1,
-          type: "warning",
-          message: `${analytics.stats.pending_invoices} invoices need review`,
-          time: "Today",
+        setDashboardData({
+          all,
+          recentUsers: recentUsersData,
         });
+      } else {
+        // Level 2 admins get full analytics
+        const [analytics, all, invoiceSummary, recentUsersData] =
+          await Promise.all([
+            AnalyticsService.getDashboardSummary(),
+            fetch("https://api.topdivers.online/analytics/all").then((r) =>
+              r.json()
+            ),
+            InvoiceService.getInvoiceSummaryAdmin(),
+            AdminService.getRecentUsers(),
+          ]);
+
+        setDashboardData({
+          ...analytics,
+          all,
+          invoiceSummary,
+          recentUsers: recentUsersData,
+        });
+
+        // Simulate some notifications based on data
+        const notifs = [];
+        if (analytics.stats?.pending_invoices > 0) {
+          notifs.push({
+            id: 1,
+            type: "warning",
+            message: `${analytics.stats.pending_invoices} invoices need review`,
+            time: "Today",
+          });
+        }
+        setRecentNotifications(notifs);
       }
-      setRecentNotifications(notifs);
     } catch (error) {
       console.error("Error fetching dashboard:", error);
       toast.error("Failed to load dashboard insights");
@@ -174,6 +191,8 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
     invoiceSummary,
   } = dashboardData || {};
 
+  const isLevel2Admin = admin?.admin_level === 2;
+
   return (
     <div className="space-y-8">
       {/* Welcome Header */}
@@ -198,20 +217,24 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
 
       {/* Key Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <GeniusStatCard
-          title="Total Revenue"
-          value={formatEGP(stats?.revenue)}
-          subValue={`${stats?.sales_count || 0} Sales`}
-          icon="mdi:cash-fast"
-          color="bg-emerald-500"
-        />
-        <GeniusStatCard
-          title="Pending Revenue"
-          value={formatEGP(stats?.potential_revenue)}
-          subValue={`${stats?.pending_invoices || 0} Orders`}
-          icon="mdi:cash-clock"
-          color="bg-amber-500"
-        />
+        {isLevel2Admin && (
+          <>
+            <GeniusStatCard
+              title="Total Revenue"
+              value={formatEGP(stats?.revenue)}
+              subValue={`${stats?.sales_count || 0} Sales`}
+              icon="mdi:cash-fast"
+              color="bg-emerald-500"
+            />
+            <GeniusStatCard
+              title="Pending Revenue"
+              value={formatEGP(stats?.potential_revenue)}
+              subValue={`${stats?.pending_invoices || 0} Orders`}
+              icon="mdi:cash-clock"
+              color="bg-amber-500"
+            />
+          </>
+        )}
         <GeniusStatCard
           title="Total Users"
           value={all?.users_count || 0}
@@ -220,11 +243,25 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
           color="bg-cyan-500"
         />
         <GeniusStatCard
-          title="Content"
+          title="Trips"
           value={`${all?.trips_count || 0}`}
-          subValue={`Trips & ${all?.courses_count || 0} Courses`}
-          icon="mdi:folder-multiple"
+          subValue="Available trips"
+          icon="mdi:airplane"
           color="bg-blue-500"
+        />
+        <GeniusStatCard
+          title="Courses"
+          value={`${all?.courses_count || 0}`}
+          subValue="Available courses"
+          icon="mdi:book-open-page-variant"
+          color="bg-purple-500"
+        />
+        <GeniusStatCard
+          title="Testimonials"
+          value={`${all?.testimonials_count || 0}`}
+          subValue="Customer reviews"
+          icon="mdi:comment-quote"
+          color="bg-amber-500"
         />
       </div>
 
@@ -235,18 +272,22 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
           Quick Actions
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <QuickActionBtn
-            icon="mdi:chart-line"
-            title="View Analytics"
-            desc="Detailed insights & reports"
-            onClick={() => setActiveTab("analytics")}
-          />
-          <QuickActionBtn
-            icon="mdi:file-document-edit"
-            title="Manage Invoices"
-            desc="Track payments & billing"
-            onClick={() => setActiveTab("invoices")}
-          />
+          {isLevel2Admin && (
+            <>
+              <QuickActionBtn
+                icon="mdi:chart-line"
+                title="View Analytics"
+                desc="Detailed insights & reports"
+                onClick={() => setActiveTab("analytics")}
+              />
+              <QuickActionBtn
+                icon="mdi:file-document-edit"
+                title="Manage Invoices"
+                desc="Track payments & billing"
+                onClick={() => setActiveTab("invoices")}
+              />
+            </>
+          )}
           <QuickActionBtn
             icon="mdi:account-group"
             title="View Users"
@@ -260,81 +301,99 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
             onClick={() => setActiveTab("trips")}
           />
           <QuickActionBtn
+            icon="mdi:package-variant"
+            title="Manage Packages"
+            desc="Create travel packages"
+            onClick={() => setActiveTab("packages")}
+          />
+          <QuickActionBtn
             icon="mdi:ticket-percent"
             title="Create Coupon"
             desc="Run a promotion"
             onClick={() => setActiveTab("coupons")}
           />
           <QuickActionBtn
-            icon="mdi:cog"
-            title="Settings"
-            desc="Configure platform"
-            onClick={() => setActiveTab("settings")}
+            icon="mdi:comment-quote"
+            title="Testimonials"
+            desc="Review customer feedback"
+            onClick={() => setActiveTab("testimonials")}
           />
+          {isLevel2Admin && (
+            <QuickActionBtn
+              icon="mdi:cog"
+              title="Settings"
+              desc="Configure platform"
+              onClick={() => setActiveTab("settings")}
+            />
+          )}
         </div>
       </div>
 
-      {/* Recent Activity */}
-      {recent_transactions && recent_transactions.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-              <Icon icon="mdi:pulse" className="text-cyan-500" />
-              Recent Activity
-            </h3>
-            <button
-              onClick={() => setActiveTab("invoices")}
-              className="text-sm text-cyan-600 hover:underline font-medium"
-            >
-              View All →
-            </button>
-          </div>
-          <div className="space-y-3">
-            {recent_transactions.slice(0, 3).map((tx) => (
-              <div
-                key={tx.id}
-                className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+      {/* Recent Activity - Only for Level 2 Admins */}
+      {isLevel2Admin &&
+        recent_transactions &&
+        recent_transactions.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <Icon icon="mdi:pulse" className="text-cyan-500" />
+                Recent Activity
+              </h3>
+              <button
+                onClick={() => setActiveTab("invoices")}
+                className="text-sm text-cyan-600 hover:underline font-medium"
               >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
-                      tx.status === "PAID"
-                        ? "bg-green-100 text-green-600"
-                        : "bg-yellow-100 text-yellow-600"
-                    }`}
-                  >
-                    <Icon
-                      icon={
-                        tx.status === "PAID" ? "mdi:check" : "mdi:clock-outline"
-                      }
-                    />
+                View All →
+              </button>
+            </div>
+            <div className="space-y-3">
+              {recent_transactions.slice(0, 3).map((tx) => (
+                <div
+                  key={tx.id}
+                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+                        tx.status === "PAID"
+                          ? "bg-green-100 text-green-600"
+                          : "bg-yellow-100 text-yellow-600"
+                      }`}
+                    >
+                      <Icon
+                        icon={
+                          tx.status === "PAID"
+                            ? "mdi:check"
+                            : "mdi:clock-outline"
+                        }
+                      />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm text-slate-800">
+                        {tx.buyer}
+                      </p>
+                      <p className="text-xs text-slate-500">Invoice #{tx.id}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-sm text-slate-800">
-                      {tx.buyer}
+                  <div className="text-right">
+                    <p className="font-bold text-sm text-slate-800">
+                      {formatEGP(tx.amount)}
                     </p>
-                    <p className="text-xs text-slate-500">Invoice #{tx.id}</p>
+                    <span
+                      className={`text-[10px] uppercase font-semibold ${
+                        tx.status === "PAID"
+                          ? "text-green-600"
+                          : "text-yellow-600"
+                      }`}
+                    >
+                      {tx.status}
+                    </span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-sm text-slate-800">
-                    {formatEGP(tx.amount)}
-                  </p>
-                  <span
-                    className={`text-[10px] uppercase font-semibold ${
-                      tx.status === "PAID"
-                        ? "text-green-600"
-                        : "text-yellow-600"
-                    }`}
-                  >
-                    {tx.status}
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 };

@@ -2,8 +2,10 @@
 import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { putData } from "@/lib/axios";
+import { Icon } from "@iconify/react";
 import { useState } from "react";
 import { toast } from "react-toastify";
+
 const SecuritySettings = ({ onPasswordChangeSuccess }) => {
   const [passwords, setPasswords] = useState({
     currentPassword: "",
@@ -43,8 +45,6 @@ const SecuritySettings = ({ onPasswordChangeSuccess }) => {
       toast.success(
         "Password changed successfully! You have been logged out for security. Please log in again."
       );
-
-      // **FIX:** Call the logout function passed from the parent
       onPasswordChangeSuccess();
     } catch (error) {
       toast.error(error.message);
@@ -55,8 +55,25 @@ const SecuritySettings = ({ onPasswordChangeSuccess }) => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold text-gray-800">Change Password</h2>
-      <form onSubmit={handleChangePassword} className="space-y-4">
+      {/* Header */}
+      <div className="border-b border-slate-200 pb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-lg">
+            <Icon icon="mdi:shield-lock" className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+              Security Settings
+            </h2>
+            <p className="text-sm text-slate-500 mt-1">
+              Update your password and security preferences
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Form */}
+      <form onSubmit={handleChangePassword} className="space-y-6">
         <Input
           dir="ltr"
           placeholder="Current Password"
@@ -65,7 +82,7 @@ const SecuritySettings = ({ onPasswordChangeSuccess }) => {
           value={passwords.currentPassword}
           onChange={handleInputChange}
           icon="solar:password-bold-duotone"
-          color="turquoise"
+          color="cyan"
           disabled={isLoading}
         />
         <Input
@@ -76,7 +93,7 @@ const SecuritySettings = ({ onPasswordChangeSuccess }) => {
           value={passwords.newPassword}
           onChange={handleInputChange}
           icon="ph:password-duotone"
-          color="turquoise"
+          color="cyan"
           disabled={isLoading}
         />
         <Input
@@ -87,10 +104,10 @@ const SecuritySettings = ({ onPasswordChangeSuccess }) => {
           value={passwords.confirmPassword}
           onChange={handleInputChange}
           icon="ph:password-duotone"
-          color="turquoise"
+          color="cyan"
           disabled={isLoading}
         />
-        <div className="pt-2">
+        <div className="pt-4">
           <Button
             type="submit"
             color="cyan"
