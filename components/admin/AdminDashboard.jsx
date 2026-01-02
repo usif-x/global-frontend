@@ -404,24 +404,6 @@ const AdminDashboard = () => {
           },
         ]
       : []),
-    ...(admin?.admin_level === 2
-      ? [
-          {
-            id: "orders",
-            label: "Orders",
-            icon: "mdi:receipt-text-check-outline",
-            color: "text-lime-500",
-            description: "View and manage customer orders",
-          },
-          {
-            id: "admins",
-            label: "Admins",
-            icon: "mdi:shield-account",
-            color: "text-red-700",
-            description: "Manage other admin accounts",
-          },
-        ]
-      : []),
     {
       id: "testimonials",
       label: "Testimonials",
@@ -445,7 +427,7 @@ const AdminDashboard = () => {
           {
             id: "invoices",
             label: "Invoices",
-            icon: "mdi:calendar-check",
+            icon: "mdi:receipt-text-check-outline",
             color: "text-indigo-700",
             description: "Manage invoices and billing",
             badge:
