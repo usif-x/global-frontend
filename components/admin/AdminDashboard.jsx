@@ -21,7 +21,6 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import BlogManagement from "./components/blog/Blog";
 import CourseManagement from "./components/course/Course";
-import InvoiceAnalyticsDashboard from "./components/invoices/InvoiceAnalyticsDashboard";
 import InvoiceManagementPage from "./components/invoices/Invoices";
 import HeroDashboard from "./components/MainContent";
 import OrderManagement from "./components/order/Order";
@@ -455,13 +454,6 @@ const AdminDashboard = () => {
                 : null,
           },
           {
-            id: "invoice_analytics",
-            label: "Invoice Reports",
-            icon: "mdi:chart-box",
-            color: "text-blue-600",
-            description: "Detailed financial reports",
-          },
-          {
             id: "payments",
             label: "Payments",
             icon: "mdi:credit-card",
@@ -495,7 +487,6 @@ const AdminDashboard = () => {
     const isLevel2Admin = admin?.admin_level === 2;
     const restrictedTabs = [
       "invoices",
-      "invoice_analytics",
       "payments",
       "orders",
       "admins",
@@ -562,8 +553,6 @@ const AdminDashboard = () => {
         return <PublicNotificationManagement />;
       case "invoices":
         return <InvoiceManagementPage />;
-      case "invoice_analytics":
-        return <InvoiceAnalyticsDashboard />;
       case "payments":
         return <PaymentsContent />;
       case "analytics":
