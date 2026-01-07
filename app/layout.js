@@ -64,21 +64,25 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${IBM.className}`}>
-        {/* Crisp Chat */}
+        {/* Chatwoot Chat */}
         <Script
-          id="crisp-chat"
+          id="chatwoot-chat"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
-              window.$crisp=[];
-              window.CRISP_WEBSITE_ID="9310f094-a5b3-4690-b191-622288632438";
-              (function(){
-                d=document;
-                s=d.createElement("script");
-                s.src="https://client.crisp.chat/l.js";
-                s.async=1;
-                d.getElementsByTagName("head")[0].appendChild(s);
-              })();
+              (function(d,t) {
+                var BASE_URL="https://chatwoot.usif.space";
+                var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+                g.src=BASE_URL+"/packs/js/sdk.js";
+                g.async = true;
+                s.parentNode.insertBefore(g,s);
+                g.onload=function(){
+                  window.chatwootSDK.run({
+                    websiteToken: '9EdMLbvtgyHG66Kz7wnczvdt',
+                    baseUrl: BASE_URL
+                  })
+                }
+              })(document,"script");
             `,
           }}
         />
