@@ -142,15 +142,6 @@ const SuccessDisplay = ({ invoice }) => (
             )}
             <div className="flex flex-wrap gap-3">
               <a
-                href="https://www.facebook.com/profile.php?id=61579625321316"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-              >
-                <Icon icon="mdi:facebook" className="w-5 h-5" />
-                <span>Message on Facebook</span>
-              </a>
-              <a
                 href="https://www.instagram.com/topdivers.hurghada"
                 target="_blank"
                 rel="noopener noreferrer"

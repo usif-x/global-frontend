@@ -44,14 +44,6 @@ export default function Home() {
                 </p>
                 <div className="flex space-x-4">
                   <a
-                    href="https://www.facebook.com/profile.php?id=61579625321316"
-                    className="text-white/60 hover:text-white transition-colors"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Icon icon="mdi:facebook" width={24} height={24} />
-                  </a>
-                  <a
                     href="https://www.instagram.com/topdivers.hurghada"
                     className="text-white/60 hover:text-white transition-colors"
                     target="_blank"

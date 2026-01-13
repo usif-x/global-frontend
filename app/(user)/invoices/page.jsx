@@ -561,9 +561,8 @@ export default function MyInvoicesPage() {
         cell: ({ row }) => (
           <div className="font-medium text-slate-700">
             {row.original.activity_details
-  .map(activity => activity.name)
-  .join(", ")}
-
+              .map((activity) => activity.name)
+              .join(", ")}
           </div>
         ),
       },
@@ -746,12 +745,16 @@ export default function MyInvoicesPage() {
                 </h3>
 
                 {/* Check if there are any cash invoices in the action required list */}
-                {actionRequiredInvoices.some((inv) => inv.invoice_type === "cash") ? (
+                {actionRequiredInvoices.some(
+                  (inv) => inv.invoice_type === "cash"
+                ) ? (
                   <div className="text-blue-800 mb-4">
                     <p className="font-semibold mb-3">
                       You have {actionRequiredInvoices.length} invoice
-                      {actionRequiredInvoices.length > 1 ? "s" : ""} that require
-                      {actionRequiredInvoices.length === 1 ? "s" : ""} your attention:
+                      {actionRequiredInvoices.length > 1 ? "s" : ""} that
+                      require
+                      {actionRequiredInvoices.length === 1 ? "s" : ""} your
+                      attention:
                     </p>
                     <div className="bg-white/60 rounded-lg p-4 mb-3">
                       <div className="space-y-2">
@@ -790,9 +793,9 @@ export default function MyInvoicesPage() {
                   <p className="text-blue-800 mb-4">
                     You have {actionRequiredInvoices.length} paid invoice
                     {actionRequiredInvoices.length > 1 ? "s" : ""} that need
-                    {actionRequiredInvoices.length === 1 ? "s" : ""} confirmation.
-                    Please contact us to finalize your trip details and provide
-                    any additional important information.
+                    {actionRequiredInvoices.length === 1 ? "s" : ""}{" "}
+                    confirmation. Please contact us to finalize your trip
+                    details and provide any additional important information.
                   </p>
                 )}
 
@@ -814,8 +817,8 @@ export default function MyInvoicesPage() {
                           {inv.customer_reference}
                         </a>
                         <span className="text-slate-600 ml-3">
-{inv.activity_details
-                            .map(activity => activity.name)
+                          {inv.activity_details
+                            .map((activity) => activity.name)
                             .join(", ")}
                         </span>
                         <span
@@ -853,15 +856,6 @@ export default function MyInvoicesPage() {
 
                 {/* Contact options */}
                 <div className="flex flex-wrap gap-3">
-                  <a
-                    href="https://www.facebook.com/profile.php?id=61579625321316"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold shadow-md hover:shadow-lg"
-                  >
-                    <Icon icon="mdi:facebook" className="w-5 h-5" />
-                    <span>Message on Facebook</span>
-                  </a>
                   <a
                     href="https://www.instagram.com/topdivers.hurghada"
                     target="_blank"
@@ -909,35 +903,40 @@ export default function MyInvoicesPage() {
                 <h3 className="text-xl font-bold text-green-900 mb-3">
                   Your Booking is Confirmed!
                 </h3>
-                
+
                 {confirmedWaitingInvoices.map((inv) => (
                   <div key={inv.id} className="mb-4 last:mb-0">
-                     <p className="text-green-800 font-medium text-lg">
-                        Please wait at {inv.activity_details?.hotel_name || "(your hotel)"} reception at 8 AM.
-                     </p>
-                     <div className="mt-2 text-sm text-green-700 bg-white/60 p-3 rounded-lg inline-block">
-                        <span className="font-semibold">Invoice Ref:</span> {inv.customer_reference} | 
-                        <span className="font-semibold ml-2">Activity:</span> {inv.activity}
-                     </div>
+                    <p className="text-green-800 font-medium text-lg">
+                      Please wait at{" "}
+                      {inv.activity_details?.hotel_name || "(your hotel)"}{" "}
+                      reception at 8 AM.
+                    </p>
+                    <div className="mt-2 text-sm text-green-700 bg-white/60 p-3 rounded-lg inline-block">
+                      <span className="font-semibold">Invoice Ref:</span>{" "}
+                      {inv.customer_reference} |
+                      <span className="font-semibold ml-2">Activity:</span>{" "}
+                      {inv.activity}
+                    </div>
                   </div>
                 ))}
 
-                 <div className="mt-4 text-green-800/80 text-sm">
-                    We look forward to seeing you! If you have any questions, feel free to contact us below.
-                 </div>
+                <div className="mt-4 text-green-800/80 text-sm">
+                  We look forward to seeing you! If you have any questions, feel
+                  free to contact us below.
+                </div>
 
-                 {/* Contact options (Simplified for confirmed) */}
-                 <div className="flex flex-wrap gap-2 mt-4">
-                    <a
-                      href="https://api.whatsapp.com/send?phone=201070440861"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 bg-green-100 text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-200 transition-colors text-sm font-medium"
-                    >
-                      <Icon icon="mdi:whatsapp" className="w-4 h-4" />
-                      <span>WhatsApp</span>
-                    </a>
-                 </div>
+                {/* Contact options (Simplified for confirmed) */}
+                <div className="flex flex-wrap gap-2 mt-4">
+                  <a
+                    href="https://api.whatsapp.com/send?phone=201070440861"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 bg-green-100 text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-200 transition-colors text-sm font-medium"
+                  >
+                    <Icon icon="mdi:whatsapp" className="w-4 h-4" />
+                    <span>WhatsApp</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>

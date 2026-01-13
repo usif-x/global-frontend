@@ -49,13 +49,13 @@ const formatPrice = (courseData) => {
     const discountedPrice =
       basePrice * (1 - courseData.discount_percentage / 100);
     return {
-      original: `EGP${Math.round(basePrice)}`,
-      discounted: `EGP${Math.round(discountedPrice)}`,
+      original: `EGP ${Math.round(basePrice)}`,
+      discounted: `EGP ${Math.round(discountedPrice)}`,
       discount: courseData.discount_percentage,
     };
   }
 
-  return `EGP${Math.round(basePrice)}`;
+  return `EGP ${Math.round(basePrice)}`;
 };
 
 const formatDuration = (duration) => {

@@ -206,10 +206,10 @@ const CourseCard = ({ course }) => {
             {typeof priceDisplay === "object" ? (
               <div className="flex items-baseline gap-2">
                 <span className="text-sm line-through text-gray-400">
-                  EGP{priceDisplay.original}
+                  EGP {priceDisplay.original}
                 </span>
                 <span className="text-2xl font-bold text-green-600">
-                  EGP{priceDisplay.discounted}
+                  EGP {priceDisplay.discounted}
                 </span>
               </div>
             ) : (

@@ -115,19 +115,35 @@ const TripsPage = async ({ searchParams }) => {
       const price = priceDetails.discounted || priceDetails.original;
 
       let matchesPrice = true;
+      // Calculate price quartiles for filtering
+      let prices = trips
+        .map((trip) => {
+          const priceDetails = formatPrice(
+            trip.adult_price,
+            trip.has_discount,
+            trip.discount_percentage,
+            trip.discount_always_available
+          );
+          return parseFloat(priceDetails.discounted || priceDetails.original);
+        })
+        .filter((p) => !isNaN(p));
+      prices.sort((a, b) => a - b);
+      const min = prices[0] || 0;
+      const max = prices[prices.length - 1] || 0;
+      const q1 = prices[Math.floor(prices.length / 3)] || min;
+      const q2 = prices[Math.floor((2 * prices.length) / 3)] || max;
+
       switch (priceRange) {
-        case "under-25":
-          matchesPrice = parseFloat(price) < 25;
+        case `min-${q1}`:
+          matchesPrice = price >= min && price <= q1;
           break;
-        case "25-50":
-          matchesPrice = parseFloat(price) >= 25 && parseFloat(price) <= 50;
+        case `q1-${q2}`:
+          matchesPrice = price > q1 && price <= q2;
           break;
-        case "50-100":
-          matchesPrice = parseFloat(price) > 50 && parseFloat(price) <= 100;
+        case `q2-max`:
+          matchesPrice = price > q2 && price <= max;
           break;
-        case "over-100":
-          matchesPrice = parseFloat(price) > 100;
-          break;
+        case "all":
         default:
           matchesPrice = true;
       }
@@ -288,17 +304,46 @@ const TripsPage = async ({ searchParams }) => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Price Range
               </label>
-              <select
-                name="price"
-                defaultValue={priceRange}
-                className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-              >
-                <option value="all">All Prices</option>
-                <option value="under-25">Under EGP25</option>
-                <option value="25-50">EGP25 - EGP50</option>
-                <option value="50-100">EGP50 - EGP100</option>
-                <option value="over-100">Over EGP100</option>
-              </select>
+              {/* Dynamic price range calculation */}
+              {(() => {
+                // Calculate min, max, and two averages (quartiles) from trips
+                let prices = trips
+                  .map((trip) => {
+                    const priceDetails = formatPrice(
+                      trip.adult_price,
+                      trip.has_discount,
+                      trip.discount_percentage,
+                      trip.discount_always_available
+                    );
+                    return parseFloat(
+                      priceDetails.discounted || priceDetails.original
+                    );
+                  })
+                  .filter((p) => !isNaN(p));
+                prices.sort((a, b) => a - b);
+                const min = prices[0] || 0;
+                const max = prices[prices.length - 1] || 0;
+                const q1 = prices[Math.floor(prices.length / 3)] || min;
+                const q2 = prices[Math.floor((2 * prices.length) / 3)] || max;
+                return (
+                  <select
+                    name="price"
+                    defaultValue={priceRange}
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                  >
+                    <option value="all">All Prices</option>
+                    <option
+                      value={`min-${q1}`}
+                    >{`EGP ${min} - EGP ${q1}`}</option>
+                    <option value={`q1-${q2}`}>{`EGP ${
+                      q1 + 1
+                    } - EGP ${q2}`}</option>
+                    <option value={`q2-max`}>{`EGP ${
+                      q2 + 1
+                    } - EGP ${max}`}</option>
+                  </select>
+                );
+              })()}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

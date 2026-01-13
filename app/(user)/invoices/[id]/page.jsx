@@ -242,15 +242,6 @@ export default function InvoiceDetailPage() {
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
-                  href="https://www.facebook.com/profile.php?id=61579625321316"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                >
-                  <Icon icon="mdi:facebook" className="w-5 h-5" />
-                  <span>Message on Facebook</span>
-                </a>
-                <a
                   href="https://www.instagram.com/topdivers.hurghada"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -307,14 +298,18 @@ export default function InvoiceDetailPage() {
               <div className="bg-green-50 border-l-4 border-green-500 p-6 rounded-lg">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-green-100 rounded-full">
-                    <Icon icon="mdi:emoticon-happy-outline" className="w-8 h-8 text-green-600" />
+                    <Icon
+                      icon="mdi:emoticon-happy-outline"
+                      className="w-8 h-8 text-green-600"
+                    />
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-green-800">
                       Activity Completed Successfully
                     </h3>
                     <p className="text-green-700">
-                      Your activity is successfully done. We wish you enjoyed it!
+                      Your activity is successfully done. We wish you enjoyed
+                      it!
                     </p>
                   </div>
                 </div>
@@ -323,14 +318,21 @@ export default function InvoiceDetailPage() {
               <div className="bg-cyan-50 border-l-4 border-cyan-500 p-6 rounded-lg">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-cyan-100 rounded-full">
-                    <Icon icon="mdi:calendar-check" className="w-8 h-8 text-cyan-600" />
+                    <Icon
+                      icon="mdi:calendar-check"
+                      className="w-8 h-8 text-cyan-600"
+                    />
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-cyan-800">
                       Booking Confirmed
                     </h3>
                     <p className="text-cyan-700">
-                      Your booking is confirmed. Please wait in {invoice.hotel_name ? `your hotel (${invoice.hotel_name})` : "your hotel"} reception at 8:00 AM.
+                      Your booking is confirmed. Please wait in{" "}
+                      {invoice.hotel_name
+                        ? `your hotel (${invoice.hotel_name})`
+                        : "your hotel"}{" "}
+                      reception at 8:00 AM.
                     </p>
                   </div>
                 </div>
@@ -368,7 +370,9 @@ export default function InvoiceDetailPage() {
                               2
                             </div>
                             <div>
-                              <p className="font-bold">SECOND: Pay Using Cash</p>
+                              <p className="font-bold">
+                                SECOND: Pay Using Cash
+                              </p>
                               <p className="text-sm mt-1">
                                 Pay{" "}
                                 <strong>
@@ -396,15 +400,6 @@ export default function InvoiceDetailPage() {
                       </>
                     )}
                     <div className="flex flex-wrap gap-3">
-                      <a
-                        href="https://www.facebook.com/profile.php?id=61579625321316"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                      >
-                        <Icon icon="mdi:facebook" className="w-5 h-5" />
-                        <span>Message on Facebook</span>
-                      </a>
                       <a
                         href="https://www.instagram.com/topdivers.hurghada"
                         target="_blank"
