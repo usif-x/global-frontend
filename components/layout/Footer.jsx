@@ -196,7 +196,7 @@ export default function Home() {
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors"
                 >
-                  Built by <strong>Joe</strong>
+                  Builded by <strong>Joe</strong>
                 </a>
               </div>
             </div>
