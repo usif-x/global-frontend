@@ -37,10 +37,11 @@ export default function Home() {
                   About Top Divers Hurghada
                 </h3>
                 <p className="text-white/80 mb-4 leading-relaxed">
-                  Our dive base is managed and supervised by a professional team
-                  of egyptain crew, toghether with english and german speaking
-                  instructors. We have made it to our mission to meet the
-                  requirements and the expectations of our guests needs
+                  Our dive base is managed and supervised by a highly
+                  professional Egyptian team with extensive experience in the
+                  diving industry. Our mission is to meet — and exceed — the
+                  needs and expectations of our guests by delivering safe,
+                  high-quality services and unforgettable diving experiences.
                 </p>
                 <div className="flex space-x-4">
                   <a
@@ -50,6 +51,14 @@ export default function Home() {
                     rel="noopener noreferrer"
                   >
                     <Icon icon="mdi:instagram" width={24} height={24} />
+                  </a>
+                  <a
+                    href="https://api.whatsapp.com/send?phone=201070440861"
+                    className="text-white/60 hover:text-white transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Icon icon="mdi:whatsapp" width={24} height={24} />
                   </a>
                 </div>
               </div>
@@ -95,45 +104,6 @@ export default function Home() {
                       +20 107 044 0861
                     </span>
                   </div>
-                </div>
-              </div>
-
-              {/* Quick Links */}
-              <div>
-                <h4 className="text-lg font-semibold mb-4 text-white">
-                  Quick Links
-                </h4>
-                <div className="space-y-2">
-                  <Link
-                    href="/packages"
-                    className="block text-white/80 hover:text-white transition-colors text-sm"
-                  >
-                    Dive Packages
-                  </Link>
-                  <Link
-                    href="/trips"
-                    className="block text-white/80 hover:text-white transition-colors text-sm"
-                  >
-                    Daily Trips
-                  </Link>
-                  <Link
-                    href="/courses"
-                    className="block text-white/80 hover:text-white transition-colors text-sm"
-                  >
-                    Diving Courses
-                  </Link>
-                  <Link
-                    href="/destinations"
-                    className="block text-white/80 hover:text-white transition-colors text-sm"
-                  >
-                    Destinations
-                  </Link>
-                  <Link
-                    href="/contact"
-                    className="block text-white/80 hover:text-white transition-colors text-sm"
-                  >
-                    Contact Us
-                  </Link>
                 </div>
               </div>
 
@@ -195,7 +165,8 @@ export default function Home() {
             {/* Bottom Bar */}
             <div className="pt-6 flex flex-col md:flex-row justify-between items-center">
               <p className="text-white/60 text-sm mb-2 md:mb-0">
-                © {new Date().getFullYear()} Top Divers. All rights reserved.
+                © {new Date().getFullYear()} Top Divers Hurghada. All rights
+                reserved.
               </p>
               <div className="flex flex-col md:flex-row md:items-center md:space-x-6 text-sm text-white/60">
                 <div className="flex space-x-6 mb-2 md:mb-0">
@@ -220,12 +191,12 @@ export default function Home() {
                 </div>
                 <span className="text-white/40">|</span>
                 <a
-                  href="https://api.whatsapp.com/send?phone=201070440861&text=Hello!"
+                  href="https://showjoe.social"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors"
                 >
-                  Built by <strong>Yousseif</strong>
+                  Built by <strong>USiF</strong>
                 </a>
               </div>
             </div>
