@@ -3,7 +3,7 @@ import ConditionalLayout from "@/components/layout/ConditionalLayout.jsx";
 import LoadingOverlay from "@/components/layout/Loading";
 import GoogleTranslateButton from "@/components/layout/TranslateButton";
 import LoadingProvider from "@/providers/loadingProvider";
-import { IBM_Plex_Sans_Arabic } from "next/font/google";
+import { Roboto } from "next/font/google";
 import { Suspense } from "react";
 import { ToastContainer } from "react-toastify";
 import "./globals.css";
@@ -11,7 +11,7 @@ import "./globals.css";
 // add crisp chat script
 import Script from "next/script";
 
-const IBM = IBM_Plex_Sans_Arabic({
+const roboto = Roboto({
   subsets: ["latin", "arabic"],
   weight: ["100", "200", "300", "400", "500", "600", "700"],
 });
@@ -63,7 +63,7 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${IBM.className}`}>
+      <body className={`${roboto.className}`}>
         {/* Chatwoot Chat */}
         <Script
           id="chatwoot-chat"
