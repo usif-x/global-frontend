@@ -4,25 +4,16 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "http",
+        protocol: "https",
         hostname: "0.0.0.0",
         port: "8000",
         pathname: "/storage/**",
       },
       {
-        protocol: "https",
-        hostname: "0.0.0.0:8000",
-        pathname: "/storage/**",
-      },
-      {
         protocol: "http",
-        hostname: "localhost:8000",
+        hostname: "localhost",
+        port: "8000",
         pathname: "/storage/**",
-      },
-      {
-        protocol: "https",
-        hostname: "timeforkids.com",
-        pathname: "/wp-content/**",
       },
       {
         protocol: "https",
