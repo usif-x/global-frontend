@@ -94,7 +94,7 @@ export default function Home() {
                       className="text-white/60 mt-1 flex-shrink-0"
                     />
                     <span className="text-white/80 text-sm">
-                      Sunrise Aqua Joy
+                      Sunrise Alma Resort
                       <br />
                       Egypt Hurghada
                     </span>

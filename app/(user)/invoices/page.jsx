@@ -37,7 +37,7 @@ const generateInvoicePDF = async (invoice, user) => {
     doc.setFont("helvetica", "normal");
     doc.setTextColor(123, 136, 151);
     doc.text("Top Divers Hurghada", 20, 25);
-    doc.text("Aqua Joy sunrise resort, hurghada - egypt", 20, 30);
+    doc.text("Sunrise Alma resort, hurghada - egypt", 20, 30);
     doc.text("Website: topdivers.online", 20, 35);
 
     // --- Invoice Details ---
@@ -53,7 +53,7 @@ const generateInvoicePDF = async (invoice, user) => {
       `Date Issued: ${formatDate(invoice.created_at)}`,
       pageWidth - 20,
       50,
-      { align: "right" }
+      { align: "right" },
     );
     doc.text(
       `Status: ${
@@ -61,7 +61,7 @@ const generateInvoicePDF = async (invoice, user) => {
       }`,
       pageWidth - 20,
       55,
-      { align: "right" }
+      { align: "right" },
     );
 
     // --- Billed To Section ---
@@ -118,7 +118,7 @@ const generateInvoicePDF = async (invoice, user) => {
         "A payment link is available. Click here to pay.",
         20,
         finalY + 10,
-        { url: invoice.pay_url }
+        { url: invoice.pay_url },
       );
     }
 
@@ -344,7 +344,7 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
                         <span className="font-bold text-green-700">
                           - EGP{" "}
                           {invoice.discount_breakdown.group_discount.amount?.toFixed(
-                            2
+                            2,
                           )}
                         </span>
                       </div>
@@ -372,7 +372,7 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
                         <span className="font-bold text-purple-700">
                           - EGP{" "}
                           {invoice.discount_breakdown.promo_discount.amount?.toFixed(
-                            2
+                            2,
                           )}
                         </span>
                       </div>
@@ -499,7 +499,7 @@ export default function MyInvoicesPage() {
     let invoicesToProcess = [...allInvoices];
     if (statusFilter !== "all") {
       invoicesToProcess = invoicesToProcess.filter(
-        (invoice) => invoice.status.toLowerCase() === statusFilter
+        (invoice) => invoice.status.toLowerCase() === statusFilter,
       );
     }
     setFilteredInvoices(invoicesToProcess);
@@ -668,7 +668,7 @@ export default function MyInvoicesPage() {
         ),
       },
     ],
-    [user]
+    [user],
   );
 
   const table = useReactTable({
@@ -693,7 +693,7 @@ export default function MyInvoicesPage() {
         !inv.is_confirmed &&
         (inv.status.toLowerCase() === "paid" ||
           (inv.status.toLowerCase() === "pending" &&
-            inv.invoice_type === "cash"))
+            inv.invoice_type === "cash")),
     );
   }, [allInvoices]);
 
@@ -705,7 +705,7 @@ export default function MyInvoicesPage() {
         inv.is_confirmed === true &&
         (inv.status.toLowerCase() === "paid" ||
           (inv.status.toLowerCase() === "pending" &&
-            inv.invoice_type === "cash"))
+            inv.invoice_type === "cash")),
     );
   }, [allInvoices]);
 
@@ -746,7 +746,7 @@ export default function MyInvoicesPage() {
 
                 {/* Check if there are any cash invoices in the action required list */}
                 {actionRequiredInvoices.some(
-                  (inv) => inv.invoice_type === "cash"
+                  (inv) => inv.invoice_type === "cash",
                 ) ? (
                   <div className="text-blue-800 mb-4">
                     <p className="font-semibold mb-3">
@@ -1043,7 +1043,7 @@ export default function MyInvoicesPage() {
                         >
                           {flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                         </th>
                       ))}
@@ -1060,7 +1060,7 @@ export default function MyInvoicesPage() {
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </td>
                       ))}

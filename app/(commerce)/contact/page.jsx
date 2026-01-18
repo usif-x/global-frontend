@@ -383,7 +383,7 @@ const ContactPage = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Visit Us
             </h3>
-            <p className="text-gray-600">Sunrise Aquajoy resort</p>
+            <p className="text-gray-600">Sunrise Alma resort</p>
             <p className="text-sm text-gray-500 mt-1">
               Egypt, Red Sea, Hurghada
             </p>
