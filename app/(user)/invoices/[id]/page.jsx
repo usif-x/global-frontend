@@ -378,7 +378,7 @@ export default function InvoiceDetailPage() {
                                 <strong>
                                   {formatCurrency(
                                     invoice.amount,
-                                    invoice.currency
+                                    invoice.currency,
                                   )}
                                 </strong>{" "}
                                 in cash when you arrive at the diving center.
@@ -559,7 +559,7 @@ export default function InvoiceDetailPage() {
                       Total Amount
                     </p>
                     <p className="text-2xl font-bold text-slate-900">
-                      EGP {invoice.amount}
+                      {formatCurrency(invoice.amount, invoice.currency)}
                     </p>
                     <p className="text-sm font-medium text-slate-500">
                       Pay Currency
@@ -584,7 +584,7 @@ export default function InvoiceDetailPage() {
                 {invoice.discount_breakdown && (
                   <div>
                     <h2 className="text-xl font-bold text-slate-800 mb-3 border-b pb-2">
-                      Price Breakdown
+                      Price Breakdown (EGP)
                     </h2>
                     <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-6 space-y-4">
                       <div className="flex justify-between">
@@ -613,7 +613,7 @@ export default function InvoiceDetailPage() {
                             <span className="font-bold text-green-700 text-lg">
                               - EGP{" "}
                               {invoice.discount_breakdown.group_discount.amount?.toFixed(
-                                2
+                                2,
                               )}
                             </span>
                           </div>
@@ -644,7 +644,7 @@ export default function InvoiceDetailPage() {
                             <span className="font-bold text-purple-700 text-lg">
                               - EGP{" "}
                               {invoice.discount_breakdown.promo_discount.amount?.toFixed(
-                                2
+                                2,
                               )}
                             </span>
                           </div>
@@ -664,7 +664,7 @@ export default function InvoiceDetailPage() {
                           <span className="font-bold text-green-600 text-xl">
                             EGP{" "}
                             {invoice.discount_breakdown.total_discount?.toFixed(
-                              2
+                              2,
                             )}
                           </span>
                         </div>
@@ -679,7 +679,7 @@ export default function InvoiceDetailPage() {
                             <p className="font-black text-3xl">
                               EGP{" "}
                               {invoice.discount_breakdown.final_price?.toFixed(
-                                2
+                                2,
                               )}
                             </p>
                           </div>
@@ -689,7 +689,7 @@ export default function InvoiceDetailPage() {
                               <p className="font-bold text-lg">
                                 EGP{" "}
                                 {invoice.discount_breakdown.total_discount?.toFixed(
-                                  2
+                                  2,
                                 )}
                               </p>
                             </div>
@@ -705,7 +705,7 @@ export default function InvoiceDetailPage() {
                             {Math.round(
                               (invoice.discount_breakdown.total_discount /
                                 invoice.discount_breakdown.base_price) *
-                                100
+                                100,
                             )}
                             % on this booking!
                           </p>
