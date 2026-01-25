@@ -1126,10 +1126,13 @@ const TripPage = ({ params }) => {
                           <div className="text-blue-800">
                             <strong>Converted Price:</strong>{" "}
                             {conversionLoading ? (
-                              <span>Loading...</span>
+                              <span className="flex items-center">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+                                Fetching conversion rate...
+                              </span>
                             ) : conversionError ? (
                               <span className="text-red-600">
-                                {conversionError}
+                                Failed to fetch rate - {conversionError}
                               </span>
                             ) : convertedPrice ? (
                               <span>
@@ -1365,7 +1368,26 @@ const TripPage = ({ params }) => {
                       <h4 className="font-semibold text-gray-800 flex items-center">
                         <Icon icon="mdi:calculator" className="w-4 h-4 mr-2" />
                         Price Summary ({formData.currency})
+                        {formData.currency !== "EGP" && conversionLoading && (
+                          <span className="ml-2 text-sm text-blue-600 font-normal">
+                            - Fetching new price...
+                          </span>
+                        )}
                       </h4>
+                      {formData.currency !== "EGP" && conversionError && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm">
+                          <div className="flex items-start">
+                            <Icon
+                              icon="lucide:alert-circle"
+                              className="w-5 h-5 mr-2 mt-0.5 text-red-600 flex-shrink-0"
+                            />
+                            <div className="text-red-800">
+                              <strong>Price fetch failed:</strong> Please
+                              refresh the page and try again.
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       <div className="space-y-1 text-sm">
                         {/* Display itemized breakdown */}
                         <div className="flex justify-between text-gray-600">
@@ -1534,18 +1556,27 @@ const TripPage = ({ params }) => {
                   {/* --- CHANGE: Book Now button now shows payment options --- */}
                   <button
                     type="submit"
-                    disabled={isSubmitting || currentPricing.adult <= 0}
+                    disabled={
+                      isSubmitting ||
+                      currentPricing.adult <= 0 ||
+                      (formData.currency !== "EGP" &&
+                        (conversionLoading || conversionError))
+                    }
                     className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:from-gray-400 disabled:to-gray-500 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 disabled:scale-100 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
                   >
                     {isSubmitting
                       ? "Processing..."
-                      : `Continue - ${getCurrencySymbol(formData.currency)} ${
-                          formData.currency === "EGP"
-                            ? formatPrice(finalTotalPrice)
-                            : convertedPrice
-                              ? formatPrice(convertedPrice)
-                              : formatPrice(finalTotalPrice)
-                        }`}
+                      : formData.currency !== "EGP" && conversionLoading
+                        ? "Fetching price..."
+                        : formData.currency !== "EGP" && conversionError
+                          ? "Price fetch failed - Refresh page"
+                          : `Continue - ${getCurrencySymbol(formData.currency)} ${
+                              formData.currency === "EGP"
+                                ? formatPrice(finalTotalPrice)
+                                : convertedPrice
+                                  ? formatPrice(convertedPrice)
+                                  : formatPrice(finalTotalPrice)
+                            }`}
                   </button>
                 </form>
 
