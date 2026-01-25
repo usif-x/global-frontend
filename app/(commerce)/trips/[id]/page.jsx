@@ -7,6 +7,7 @@ import Input from "@/components/ui/Input";
 import MarkdownRenderer from "@/components/ui/MarkdownRender";
 import Select from "@/components/ui/Select";
 import { getData, postData } from "@/lib/axios";
+import { fetchCurrencyConversion } from "@/lib/currency";
 import ActivityAvailabilityService from "@/services/activityAvailabilityService";
 import CouponService from "@/services/couponService";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -100,6 +101,9 @@ const TripPage = ({ params }) => {
     specialRequests: "",
   });
   const [formErrors, setFormErrors] = useState({});
+  const [convertedPrice, setConvertedPrice] = useState(null);
+  const [conversionLoading, setConversionLoading] = useState(false);
+  const [conversionError, setConversionError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentType, setPaymentType] = useState("online");
@@ -145,7 +149,7 @@ const TripPage = ({ params }) => {
             setPackageData(pkg);
             // Then, get other trips from that same package
             const tripsInPackage = await getData(
-              `/packages/${trip.package_id}/trips`
+              `/packages/${trip.package_id}/trips`,
             );
             otherTrips = (tripsInPackage?.data || [])
               .filter((t) => t.id.toString() !== id.toString())
@@ -153,7 +157,7 @@ const TripPage = ({ params }) => {
           } catch (err) {
             console.warn(
               "Failed to load package data or trips from package:",
-              err
+              err,
             );
           }
         }
@@ -194,6 +198,37 @@ const TripPage = ({ params }) => {
       setFormData((prev) => ({ ...prev, children: 0 }));
     }
   }, [tripData, formData.children]);
+
+  // Fetch conversion when currency changes and not EGP
+  useEffect(() => {
+    const fetchConversion = async () => {
+      setConvertedPrice(null);
+      setConversionError(null);
+      if (formData.currency === "EGP" || !formData.currency) return;
+      setConversionLoading(true);
+      try {
+        const { final } = calculateTotalPrice();
+        const res = await fetchCurrencyConversion({
+          from: "EGP",
+          to: formData.currency,
+          amount: final,
+        });
+        setConvertedPrice(res.result?.[formData.currency]);
+      } catch (err) {
+        setConversionError("Failed to fetch conversion rate");
+      } finally {
+        setConversionLoading(false);
+      }
+    };
+    fetchConversion();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    formData.currency,
+    formData.adults,
+    formData.children,
+    appliedCoupon,
+    tripData,
+  ]);
 
   const validateForm = () => {
     const errors = {};
@@ -259,7 +294,7 @@ const TripPage = ({ params }) => {
 
     const pricing = getCurrentPricing();
     const originalPrice = Math.round(
-      formData.adults * pricing.adult + formData.children * pricing.child
+      formData.adults * pricing.adult + formData.children * pricing.child,
     );
 
     const discount = calculateDiscount();
@@ -274,7 +309,7 @@ const TripPage = ({ params }) => {
     let couponDiscount = 0;
     if (appliedCoupon && appliedCoupon.discount_percentage) {
       couponDiscount = Math.round(
-        finalPrice * (appliedCoupon.discount_percentage / 100)
+        finalPrice * (appliedCoupon.discount_percentage / 100),
       );
       finalPrice = finalPrice - couponDiscount;
     }
@@ -308,7 +343,7 @@ const TripPage = ({ params }) => {
       const response = await ActivityAvailabilityService.checkAvailability(
         "trip",
         tripData.id,
-        date
+        date,
       );
 
       setDateAvailability(response);
@@ -336,13 +371,13 @@ const TripPage = ({ params }) => {
 
   const goToNextImage = () => {
     setCurrentImageIndex((prev) =>
-      prev === tripData.images.length - 1 ? 0 : prev + 1
+      prev === tripData.images.length - 1 ? 0 : prev + 1,
     );
   };
 
   const goToPrevImage = () => {
     setCurrentImageIndex((prev) =>
-      prev === 0 ? tripData.images.length - 1 : prev - 1
+      prev === 0 ? tripData.images.length - 1 : prev - 1,
     );
   };
 
@@ -386,7 +421,7 @@ const TripPage = ({ params }) => {
 
         setAppliedCoupon(result.coupon);
         toast.success(
-          `Coupon applied! ${result.coupon.discount_percentage}% discount`
+          `Coupon applied! ${result.coupon.discount_percentage}% discount`,
         );
       } else {
         toast.error(result.message || "Failed to apply coupon");
@@ -436,6 +471,21 @@ const TripPage = ({ params }) => {
 
       // Calculate the final price on frontend for display/validation
       const { final: finalPrice } = calculateTotalPrice();
+      let converted = null;
+      let amountToSend = finalPrice; // Default to EGP
+      if (formData.currency !== "EGP") {
+        try {
+          const res = await fetchCurrencyConversion({
+            from: "EGP",
+            to: formData.currency,
+            amount: finalPrice,
+          });
+          converted = res.result?.[formData.currency];
+          amountToSend = parseFloat(converted.toFixed(1)); // Round to 1 decimal place
+        } catch {
+          // fallback: let backend handle conversion if needed
+        }
+      }
 
       // Use helper utility to create properly formatted invoice payload
       const invoicePayload = createTripInvoicePayload({
@@ -456,20 +506,20 @@ const TripPage = ({ params }) => {
           specialRequests: formData.specialRequests,
         },
         paymentDetails: {
-          amount: finalPrice,
+          amount: amountToSend,
           currency: formData.currency,
           invoiceType: selectedPaymentType,
           couponCode: appliedCoupon ? appliedCoupon.code : null,
+          convertedAmount: converted,
         },
       });
 
       const invoiceResponse = await postData(
         "/invoices/",
         invoicePayload,
-        true
+        true,
       );
 
-      // Log discount breakdown for debugging (optional)
       if (invoiceResponse.discount_breakdown) {
         console.log("Discount Breakdown:", invoiceResponse.discount_breakdown);
       }
@@ -487,12 +537,9 @@ const TripPage = ({ params }) => {
         router.push(`/invoices/${invoiceResponse.id}`);
       }
     } catch (error) {
-      // Use helper utility for error handling
       const errorMessage = handleInvoiceError(error);
       setError(errorMessage);
       toast.error(errorMessage);
-
-      // Special handling for amount mismatch errors
       if (isAmountMismatchError(errorMessage)) {
         toast.info("Please refresh the page and try booking again.", {
           autoClose: 5000,
@@ -607,16 +654,6 @@ const TripPage = ({ params }) => {
               </div>
             )}
           </div>
-          <div className="mt-4 flex items-center gap-2">
-            <Icon
-              icon="mdi:information-outline"
-              className="w-4 h-4 text-white/70"
-            />
-            <span className="text-white/70 text-sm">
-              Prices are charged in EGP. Your bank will handle currency
-              conversion.
-            </span>
-          </div>
         </div>
       </div>
 
@@ -702,7 +739,7 @@ const TripPage = ({ params }) => {
                           items = data.filter(
                             (item) =>
                               item &&
-                              (typeof item === "string" ? item.trim() : item)
+                              (typeof item === "string" ? item.trim() : item),
                           );
                           break;
                         }
@@ -715,7 +752,7 @@ const TripPage = ({ params }) => {
                         items = data.filter(
                           (item) =>
                             item &&
-                            (typeof item === "string" ? item.trim() : item)
+                            (typeof item === "string" ? item.trim() : item),
                         );
                         break;
                       }
@@ -842,7 +879,7 @@ const TripPage = ({ params }) => {
                           items = data.filter(
                             (item) =>
                               item &&
-                              (typeof item === "string" ? item.trim() : item)
+                              (typeof item === "string" ? item.trim() : item),
                           );
                           break;
                         }
@@ -855,7 +892,7 @@ const TripPage = ({ params }) => {
                         items = data.filter(
                           (item) =>
                             item &&
-                            (typeof item === "string" ? item.trim() : item)
+                            (typeof item === "string" ? item.trim() : item),
                         );
                         break;
                       }
@@ -879,7 +916,7 @@ const TripPage = ({ params }) => {
                 };
 
                 const termsItems = parseFieldData(
-                  tripData.terms_and_conditions
+                  tripData.terms_and_conditions,
                 );
 
                 return termsItems.length > 0 ? (
@@ -953,7 +990,7 @@ const TripPage = ({ params }) => {
                           />
                           {formatDuration(
                             otherTrip.duration,
-                            otherTrip.duration_unit
+                            otherTrip.duration_unit,
                           )}
                         </p>
                       </div>
@@ -1079,20 +1116,28 @@ const TripPage = ({ params }) => {
                       required
                       error={formErrors.currency}
                     />
-
-                    {/* --- CHANGE: Add conditional info box --- */}
                     {formData.currency !== "EGP" && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm mt-2">
                         <div className="flex items-start">
                           <Icon
                             icon="mdi:information-outline"
                             className="w-5 h-5 mr-2 mt-0.5 text-blue-600 flex-shrink-0"
                           />
                           <div className="text-blue-800">
-                            <strong>Please Note:</strong> All prices are in EGP.
-                            The final amount in{" "}
-                            <strong>{formData.currency}</strong> will be
-                            calculated by payment provider on the payment page.
+                            <strong>Converted Price:</strong>{" "}
+                            {conversionLoading ? (
+                              <span>Loading...</span>
+                            ) : conversionError ? (
+                              <span className="text-red-600">
+                                {conversionError}
+                              </span>
+                            ) : convertedPrice ? (
+                              <span>
+                                {formData.currency} {convertedPrice.toFixed(2)}
+                              </span>
+                            ) : (
+                              <span>--</span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1314,32 +1359,54 @@ const TripPage = ({ params }) => {
                     </div>
                   </div>
 
-                  {/* --- CHANGE: Price summary now always shows EGP --- */}
+                  {/* --- CHANGE: Price summary shows selected currency --- */}
                   {(formData.adults > 0 || formData.children > 0) && (
                     <div className="bg-gray-50 rounded-xl p-4 space-y-2">
                       <h4 className="font-semibold text-gray-800 flex items-center">
                         <Icon icon="mdi:calculator" className="w-4 h-4 mr-2" />
-                        Price Summary (EGP)
+                        Price Summary ({formData.currency})
                       </h4>
                       <div className="space-y-1 text-sm">
                         {/* Display itemized breakdown */}
                         <div className="flex justify-between text-gray-600">
                           <span>Adults ({formData.adults}x):</span>
                           <span>
-                            EGP{" "}
-                            {formatPrice(
-                              currentPricing.adult * formData.adults
-                            )}
+                            {getCurrencySymbol(formData.currency)}{" "}
+                            {formData.currency === "EGP"
+                              ? formatPrice(
+                                  currentPricing.adult * formData.adults,
+                                )
+                              : convertedPrice
+                                ? formatPrice(
+                                    (currentPricing.adult *
+                                      formData.adults *
+                                      convertedPrice) /
+                                      finalTotalPrice,
+                                  )
+                                : formatPrice(
+                                    currentPricing.adult * formData.adults,
+                                  )}
                           </span>
                         </div>
                         {formData.children > 0 && tripData.child_allowed && (
                           <div className="flex justify-between text-gray-600">
                             <span>Children ({formData.children}x):</span>
                             <span>
-                              EGP{" "}
-                              {formatPrice(
-                                currentPricing.child * formData.children
-                              )}
+                              {getCurrencySymbol(formData.currency)}{" "}
+                              {formData.currency === "EGP"
+                                ? formatPrice(
+                                    currentPricing.child * formData.children,
+                                  )
+                                : convertedPrice
+                                  ? formatPrice(
+                                      (currentPricing.child *
+                                        formData.children *
+                                        convertedPrice) /
+                                        finalTotalPrice,
+                                    )
+                                  : formatPrice(
+                                      currentPricing.child * formData.children,
+                                    )}
                             </span>
                           </div>
                         )}
@@ -1351,12 +1418,28 @@ const TripPage = ({ params }) => {
                               Trip Discount ({appliedDiscount.percentage}%):
                             </span>
                             <span>
-                              - EGP{" "}
-                              {formatPrice(
-                                originalTotalPrice -
-                                  originalTotalPrice *
-                                    (1 - appliedDiscount.percentage / 100)
-                              )}
+                              - {getCurrencySymbol(formData.currency)}{" "}
+                              {formData.currency === "EGP"
+                                ? formatPrice(
+                                    originalTotalPrice -
+                                      originalTotalPrice *
+                                        (1 - appliedDiscount.percentage / 100),
+                                  )
+                                : convertedPrice
+                                  ? formatPrice(
+                                      ((originalTotalPrice -
+                                        originalTotalPrice *
+                                          (1 -
+                                            appliedDiscount.percentage / 100)) *
+                                        convertedPrice) /
+                                        finalTotalPrice,
+                                    )
+                                  : formatPrice(
+                                      originalTotalPrice -
+                                        originalTotalPrice *
+                                          (1 -
+                                            appliedDiscount.percentage / 100),
+                                    )}
                             </span>
                           </div>
                         )}
@@ -1372,7 +1455,16 @@ const TripPage = ({ params }) => {
                                   {appliedCoupon.discount_percentage}%):
                                 </span>
                                 <span>
-                                  - EGP {formatPrice(calc.couponDiscount)}
+                                  - {getCurrencySymbol(formData.currency)}{" "}
+                                  {formData.currency === "EGP"
+                                    ? formatPrice(calc.couponDiscount)
+                                    : convertedPrice
+                                      ? formatPrice(
+                                          (calc.couponDiscount *
+                                            convertedPrice) /
+                                            finalTotalPrice,
+                                        )
+                                      : formatPrice(calc.couponDiscount)}
                                 </span>
                               </div>
                             )
@@ -1385,11 +1477,24 @@ const TripPage = ({ params }) => {
                           <div className="text-right">
                             {(appliedDiscount.isApplied || appliedCoupon) && (
                               <span className="text-gray-400 line-through text-sm mr-2">
-                                EGP {formatPrice(originalTotalPrice)}
+                                {getCurrencySymbol(formData.currency)}{" "}
+                                {formData.currency === "EGP"
+                                  ? formatPrice(originalTotalPrice)
+                                  : convertedPrice
+                                    ? formatPrice(
+                                        (originalTotalPrice * convertedPrice) /
+                                          finalTotalPrice,
+                                      )
+                                    : formatPrice(originalTotalPrice)}
                               </span>
                             )}
                             <span className="text-blue-600">
-                              EGP {formatPrice(finalTotalPrice)}
+                              {getCurrencySymbol(formData.currency)}{" "}
+                              {formData.currency === "EGP"
+                                ? formatPrice(finalTotalPrice)
+                                : convertedPrice
+                                  ? formatPrice(convertedPrice)
+                                  : formatPrice(finalTotalPrice)}
                             </span>
                           </div>
                         </div>
@@ -1434,7 +1539,13 @@ const TripPage = ({ params }) => {
                   >
                     {isSubmitting
                       ? "Processing..."
-                      : `Continue - EGP ${formatPrice(finalTotalPrice)}`}
+                      : `Continue - ${getCurrencySymbol(formData.currency)} ${
+                          formData.currency === "EGP"
+                            ? formatPrice(finalTotalPrice)
+                            : convertedPrice
+                              ? formatPrice(convertedPrice)
+                              : formatPrice(finalTotalPrice)
+                        }`}
                   </button>
                 </form>
 
@@ -1527,7 +1638,12 @@ const TripPage = ({ params }) => {
                     <div className="flex justify-between border-t pt-2 mt-2">
                       <span className="text-gray-600">Total Amount:</span>
                       <span className="font-bold text-lg text-blue-600">
-                        EGP {formatPrice(calculateTotalPrice().final)}
+                        {getCurrencySymbol(formData.currency)}{" "}
+                        {formData.currency === "EGP"
+                          ? formatPrice(calculateTotalPrice().final)
+                          : convertedPrice
+                            ? formatPrice(convertedPrice)
+                            : formatPrice(calculateTotalPrice().final)}
                       </span>
                     </div>
                   </div>
