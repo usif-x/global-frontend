@@ -12,7 +12,7 @@ export async function generateMetadata({ params }) {
 
   try {
     const blog = await getData(
-      `/blogs/title/${encodeURIComponent(decodedTitle)}`
+      `/blogs/title/${encodeURIComponent(decodedTitle)}`,
     );
 
     return {
@@ -89,7 +89,7 @@ const BlogDetailPage = async ({ params }) => {
     if (blog.tags && blog.tags.length > 0) {
       try {
         const relatedByTag = await getData(
-          `/blogs/tag/${blog.tags[0]}?limit=4`
+          `/blogs/tag/${blog.tags[0]}?limit=4`,
         );
         // Filter out the current blog
         relatedBlogs = relatedByTag.filter((b) => b.id !== blog.id).slice(0, 3);
@@ -109,27 +109,14 @@ const BlogDetailPage = async ({ params }) => {
     blog.content?.filter((block) => block.type === "image") || [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section with Featured Image */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white">
-        <div className="absolute inset-0 bg-black/30"></div>
-        {blog.featured_image && (
-          <div className="absolute inset-0">
-            <Image
-              src={blog.featured_image}
-              alt={blog.title}
-              fill
-              className="object-cover opacity-40"
-              priority
-            />
-          </div>
-        )}
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-          {/* Back Button */}
-          <div className="flex items-center mb-6">
+    <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen pt-20">
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+        {/* Header Section */}
+        <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/60 mb-8">
+          <div className="flex items-center space-x-4 mb-6">
             <Link
               href="/blog"
-              className="flex items-center text-white/80 hover:text-white transition-colors duration-200"
+              className="flex items-center text-slate-600 hover:text-cyan-600 transition-colors duration-200"
             >
               <Icon icon="mdi:arrow-left" className="w-5 h-5 mr-2" />
               Back to Blog
@@ -138,12 +125,12 @@ const BlogDetailPage = async ({ params }) => {
 
           {/* Tags */}
           {blog.tags && blog.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-2 mb-4">
               {blog.tags.map((tag) => (
                 <Link
                   key={tag}
                   href={`/blog?tag=${encodeURIComponent(tag)}`}
-                  className="flex items-center space-x-1 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-3 py-1 rounded-full text-sm font-medium transition-all duration-200"
+                  className="flex items-center space-x-1 bg-gradient-to-r from-cyan-100 to-blue-100 hover:from-cyan-200 hover:to-blue-200 text-cyan-800 px-3 py-1 rounded-full text-sm font-medium transition-all duration-200"
                 >
                   <Icon icon="mdi:tag" className="w-3 h-3" />
                   <span>{tag}</span>
@@ -153,20 +140,15 @@ const BlogDetailPage = async ({ params }) => {
           )}
 
           {/* Title */}
-          <h1
-            className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 text-white leading-tight"
-            style={{ textShadow: "2px 2px 8px rgba(0,0,0,0.5)" }}
-          >
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4">
             {blog.title}
           </h1>
 
-          {/* Subject/Excerpt */}
-          <p className="text-xl md:text-2xl text-indigo-100 mb-8 leading-relaxed">
-            {blog.subject}
-          </p>
+          {/* Subject */}
+          <p className="text-lg text-slate-600 mb-6">{blog.subject}</p>
 
           {/* Meta Info */}
-          <div className="flex flex-wrap items-center gap-6 text-white/90">
+          <div className="flex flex-wrap items-center gap-6 text-slate-500">
             <div className="flex items-center space-x-2">
               <Icon icon="mdi:calendar" className="w-5 h-5" />
               <span>{formatDate(blog.created_at)}</span>
@@ -185,11 +167,9 @@ const BlogDetailPage = async ({ params }) => {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <article className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+        {/* Main Content */}
+        <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/60 mb-8">
           {/* Content Blocks */}
           <div className="space-y-8">
             {blog.content?.map((block, index) => {
@@ -197,7 +177,7 @@ const BlogDetailPage = async ({ params }) => {
                 return (
                   <div
                     key={index}
-                    className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-indigo-600 prose-strong:text-gray-900 prose-code:text-purple-600 prose-pre:bg-gray-900"
+                    className="prose prose-lg max-w-none prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-cyan-600 prose-strong:text-slate-900 prose-code:text-purple-600 prose-pre:bg-slate-900"
                   >
                     <MarkdownRenderer content={block.content} />
                   </div>
@@ -217,7 +197,7 @@ const BlogDetailPage = async ({ params }) => {
                       />
                     </div>
                     {block.caption && (
-                      <p className="text-sm text-gray-600 text-center mt-3 italic">
+                      <p className="text-sm text-slate-600 text-center mt-3 italic">
                         {block.caption}
                       </p>
                     )}
@@ -230,16 +210,16 @@ const BlogDetailPage = async ({ params }) => {
           </div>
 
           {/* Share Section */}
-          <div className="mt-12 pt-8 border-t border-gray-200">
+          <div className="mt-12 pt-8 border-t border-slate-200">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                <h3 className="text-lg font-semibold text-slate-800 mb-2">
                   Share this post
                 </h3>
                 <div className="flex items-center space-x-3">
                   <a
                     href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-                      typeof window !== "undefined" ? window.location.href : ""
+                      typeof window !== "undefined" ? window.location.href : "",
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -250,9 +230,9 @@ const BlogDetailPage = async ({ params }) => {
                   </a>
                   <a
                     href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                      blog.title
+                      blog.title,
                     )}&url=${encodeURIComponent(
-                      typeof window !== "undefined" ? window.location.href : ""
+                      typeof window !== "undefined" ? window.location.href : "",
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -263,7 +243,7 @@ const BlogDetailPage = async ({ params }) => {
                   </a>
                   <a
                     href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-                      typeof window !== "undefined" ? window.location.href : ""
+                      typeof window !== "undefined" ? window.location.href : "",
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -278,22 +258,22 @@ const BlogDetailPage = async ({ params }) => {
               {/* Back to Blog */}
               <Link
                 href="/blog"
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
               >
                 <Icon icon="mdi:arrow-left" className="w-5 h-5" />
                 <span>Back to Blog</span>
               </Link>
             </div>
           </div>
-        </article>
+        </div>
 
         {/* Related Blogs */}
         {relatedBlogs.length > 0 && (
-          <div className="mt-16">
-            <h2 className="text-3xl font-bold text-gray-800 mb-8 flex items-center">
+          <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/60">
+            <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center">
               <Icon
                 icon="mdi:post-outline"
-                className="w-8 h-8 mr-3 text-indigo-600"
+                className="w-6 h-6 mr-2 text-cyan-600"
               />
               Related Posts
             </h2>
@@ -308,7 +288,7 @@ const BlogDetailPage = async ({ params }) => {
                   <Link
                     key={relatedBlog.id}
                     href={`/blog/${encodeURIComponent(relatedBlog.title)}`}
-                    className="group bg-white rounded-xl shadow-lg hover:shadow-xl border border-gray-200 overflow-hidden transition-all duration-300 hover:scale-[1.02]"
+                    className="group bg-slate-50 rounded-xl shadow-lg hover:shadow-xl border border-slate-200 overflow-hidden transition-all duration-300 hover:scale-[1.02]"
                   >
                     <div className="relative h-40 overflow-hidden">
                       {firstImage ? (
@@ -319,7 +299,7 @@ const BlogDetailPage = async ({ params }) => {
                           className="object-cover transition-transform duration-300 group-hover:scale-110"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                        <div className="w-full h-full bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-500 flex items-center justify-center">
                           <Icon
                             icon="mdi:post"
                             className="w-12 h-12 text-white/80"
@@ -328,13 +308,13 @@ const BlogDetailPage = async ({ params }) => {
                       )}
                     </div>
                     <div className="p-4">
-                      <h3 className="font-bold text-gray-800 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors">
+                      <h3 className="font-bold text-slate-800 mb-2 line-clamp-2 group-hover:text-cyan-600 transition-colors">
                         {relatedBlog.title}
                       </h3>
-                      <p className="text-sm text-gray-600 line-clamp-2">
+                      <p className="text-sm text-slate-600 line-clamp-2">
                         {relatedBlog.subject}
                       </p>
-                      <div className="flex items-center text-indigo-600 font-medium mt-3 text-sm">
+                      <div className="flex items-center text-cyan-600 font-medium mt-3 text-sm">
                         <span>Read More</span>
                         <Icon
                           icon="mdi:arrow-right"
