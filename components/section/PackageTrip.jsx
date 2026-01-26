@@ -5,7 +5,7 @@ import PackageTripClientWrapper from "./PackageTripWrapper";
 
 // Error State Component
 const ErrorState = () => (
-  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+  <div className="min-h-screen flex items-center justify-center">
     <div className="text-center p-8 max-w-md">
       <div className="bg-red-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
         <Icon icon="lucide:waves" className="w-10 h-10 text-red-500" />
@@ -23,7 +23,7 @@ const ErrorState = () => (
 
 // Empty State Component
 const EmptyState = () => (
-  <div className="min-h-screen bg-gray-50">
+  <div className="min-h-screen">
     <div className="relative overflow-hidden bg-sky-500 text-white">
       <div className="absolute inset-0 bg-black opacity-10"></div>
       <WavesArea backgroundColor="#20A7DB">
@@ -92,7 +92,7 @@ const PackageTripDisplay = async () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <div className="relative overflow-hidden bg-sky-500 text-white">
         <div className="absolute inset-0 bg-black opacity-10"></div>
         <WavesArea backgroundColor="#20A7DB">

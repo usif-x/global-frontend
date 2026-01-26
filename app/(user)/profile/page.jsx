@@ -230,7 +230,7 @@ export default function ProfilePage() {
       updateUser(updatedUserData); // Update global store
       toast.success("Profile updated successfully!");
     },
-    [updateUser]
+    [updateUser],
   );
 
   // Use memoization to define tab content for scalability
@@ -248,13 +248,13 @@ export default function ProfilePage() {
       notifications: <NotificationsTab />,
       testimonials: <TestimonialTab />,
     }),
-    [localUser, handleProfileUpdate, handlePasswordChangeSuccess]
+    [localUser, handleProfileUpdate, handlePasswordChangeSuccess],
   );
 
   // Show skeletons during initial load to prevent layout shift
   if (isLoading) {
     return (
-      <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen pt-20">
+      <div className=" min-h-screen pt-20">
         <div className="bg-white shadow-sm border-b border-slate-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center space-x-4">
@@ -280,30 +280,27 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen pt-20">
+    <div className=" min-h-screen pt-20">
       {/* Modern Header */}
-      <div className="bg-white shadow-sm border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 rounded-2xl"></div>
-            <div className="relative flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-xl shadow-lg">
-                <Icon icon="mdi:account-circle" className="w-8 h-8" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
-                  My Profile
-                </h1>
-                <p className="text-sm text-slate-500 mt-1">
-                  Manage your account settings and preferences
-                </p>
-              </div>
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+        <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/60 mb-8">
+          <div className="relative flex items-center space-x-4">
+            <div className="p-3 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-xl shadow-lg">
+              <Icon icon="mdi:account-circle" className="w-8 h-8" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">
+                My Profile
+              </h1>
+              <p className="text-sm text-slate-500 mt-1">
+                Manage your account settings, courses and more.
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main className="container mx-auto p-4 sm:p-6 lg:p-8">
         <div className="lg:grid lg:grid-cols-12 lg:gap-8">
           <UserProfileSidebar
             user={localUser}

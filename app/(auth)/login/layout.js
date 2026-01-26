@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Login ",
+  title: "Login",
   description: "Login to your account",
   keywords: "login, account, user",
   robots: "index, follow",

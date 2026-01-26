@@ -487,7 +487,7 @@ export default function InvoiceDetailPage() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen flex items-center justify-center py-12 px-4">
+    <div className=" min-h-screen flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-4xl">
         <div className="bg-white rounded-2xl shadow-2xl border border-slate-200/60 overflow-hidden p-8 md:p-12">
           {loading ? (

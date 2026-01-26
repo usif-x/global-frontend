@@ -162,7 +162,7 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
       } catch (error) {
         toast.error(
           "Failed to fetch invoice details. " +
-            (error.response?.data?.detail || error.message)
+            (error.response?.data?.detail || error.message),
         );
         onClose();
       } finally {
@@ -185,7 +185,7 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
     } catch (error) {
       toast.error(
         "Failed to update notes. " +
-          (error.response?.data?.detail || error.message)
+          (error.response?.data?.detail || error.message),
       );
     } finally {
       setSavingNotes(false);
@@ -264,7 +264,7 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
                 <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                   <div className="flex items-center gap-3">
                     <span className="text-slate-600 font-medium">Status:</span>
-                    {invoice.is_confirmed ?? true ? (
+                    {(invoice.is_confirmed ?? true) ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                         <Icon icon="mdi:check-circle" className="w-4 h-4" />
                         Confirmed
@@ -519,7 +519,7 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
                           <span className="font-black text-green-700 text-lg">
                             - EGP{" "}
                             {invoice.discount_breakdown.group_discount.amount?.toFixed(
-                              2
+                              2,
                             )}
                           </span>
                         </div>
@@ -559,7 +559,7 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
                           <span className="font-black text-purple-700 text-lg">
                             - EGP{" "}
                             {invoice.discount_breakdown.promo_discount.amount?.toFixed(
-                              2
+                              2,
                             )}
                           </span>
                         </div>
@@ -579,7 +579,7 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
                         <span className="font-black text-green-600 text-lg">
                           EGP{" "}
                           {invoice.discount_breakdown.total_discount?.toFixed(
-                            2
+                            2,
                           )}
                         </span>
                       </div>
@@ -807,7 +807,7 @@ export default function InvoiceManagementPage() {
       } catch (error) {
         toast.error(
           "Failed to fetch invoices. " +
-            (error.response?.data?.detail || error.message)
+            (error.response?.data?.detail || error.message),
         );
         setAllInvoices([]);
       } finally {
@@ -817,7 +817,7 @@ export default function InvoiceManagementPage() {
     // --- FIX: The dependency array is now empty. ---
     // This makes the fetchData function "stable" and prevents it from
     // being recreated on every render, thus stopping the infinite loop.
-    []
+    [],
   );
 
   // Effect for client-side filtering
@@ -825,7 +825,7 @@ export default function InvoiceManagementPage() {
     let invoicesToDisplay = [...allInvoices];
     if (statusFilter !== "all") {
       invoicesToDisplay = invoicesToDisplay.filter(
-        (invoice) => invoice.status.toLowerCase() === statusFilter
+        (invoice) => invoice.status.toLowerCase() === statusFilter,
       );
     }
     if (confirmationFilter !== "all") {
@@ -880,7 +880,7 @@ export default function InvoiceManagementPage() {
       } catch (error) {
         toast.error(
           "Failed to update status. " +
-            (error.response?.data?.detail || error.message)
+            (error.response?.data?.detail || error.message),
         );
       }
     }
@@ -905,7 +905,7 @@ export default function InvoiceManagementPage() {
       } catch (error) {
         toast.error(
           "Failed to delete invoice. " +
-            (error.response?.data?.detail || error.message)
+            (error.response?.data?.detail || error.message),
         );
       }
     }
@@ -917,8 +917,8 @@ export default function InvoiceManagementPage() {
     // Optimistically update the UI for a faster user experience
     setAllInvoices((prevInvoices) =>
       prevInvoices.map((inv) =>
-        inv.id === invoiceId ? { ...inv, picked_up: newPickedUpStatus } : inv
-      )
+        inv.id === invoiceId ? { ...inv, picked_up: newPickedUpStatus } : inv,
+      ),
     );
 
     try {
@@ -926,7 +926,7 @@ export default function InvoiceManagementPage() {
       toast.success(
         `Invoice #${invoiceId} marked as ${
           newPickedUpStatus ? "Picked Up" : "Not Picked Up"
-        }.`
+        }.`,
       );
       // No need to refetch, the UI is already updated.
     } catch (error) {
@@ -936,8 +936,8 @@ export default function InvoiceManagementPage() {
         prevInvoices.map((inv) =>
           inv.id === invoiceId
             ? { ...inv, picked_up: currentPickedUpStatus }
-            : inv
-        )
+            : inv,
+        ),
       );
     }
   };
@@ -950,8 +950,8 @@ export default function InvoiceManagementPage() {
       prevInvoices.map((inv) =>
         inv.id === invoiceId
           ? { ...inv, is_confirmed: newConfirmedStatus }
-          : inv
-      )
+          : inv,
+      ),
     );
 
     try {
@@ -961,7 +961,7 @@ export default function InvoiceManagementPage() {
       toast.success(
         `Invoice #${invoiceId} marked as ${
           newConfirmedStatus ? "Confirmed" : "Unconfirmed"
-        }.`
+        }.`,
       );
     } catch (error) {
       toast.error("Failed to update confirmation status. Reverting change.");
@@ -970,8 +970,8 @@ export default function InvoiceManagementPage() {
         prevInvoices.map((inv) =>
           inv.id === invoiceId
             ? { ...inv, is_confirmed: currentConfirmedStatus }
-            : inv
-        )
+            : inv,
+        ),
       );
     }
   };
@@ -1135,7 +1135,7 @@ export default function InvoiceManagementPage() {
               onClick={() =>
                 handleDeleteInvoice(
                   row.original.id,
-                  row.original.customer_reference
+                  row.original.customer_reference,
                 )
               }
               className="p-2 text-slate-500 rounded-full hover:bg-red-100 hover:text-red-600"
@@ -1147,7 +1147,7 @@ export default function InvoiceManagementPage() {
         ),
       },
     ],
-    []
+    [],
   );
 
   const table = useReactTable({
@@ -1162,7 +1162,7 @@ export default function InvoiceManagementPage() {
   });
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen">
+    <div className=" min-h-screen">
       <div className="container mx-auto p-4 sm:p-6 lg:p-8">
         {/* Header Section */}
         <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/60 mb-8 relative overflow-hidden">
@@ -1311,15 +1311,15 @@ export default function InvoiceManagementPage() {
                           <div className="flex items-center gap-2">
                             {flexRender(
                               header.column.columnDef.header,
-                              header.getContext()
+                              header.getContext(),
                             )}
                             <Icon
                               icon={
                                 header.column.getIsSorted() === "asc"
                                   ? "mdi:arrow-up"
                                   : header.column.getIsSorted() === "desc"
-                                  ? "mdi:arrow-down"
-                                  : "mdi:unfold-more-horizontal"
+                                    ? "mdi:arrow-down"
+                                    : "mdi:unfold-more-horizontal"
                               }
                               className="text-slate-400 w-4 h-4"
                             />
@@ -1342,7 +1342,7 @@ export default function InvoiceManagementPage() {
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </td>
                       ))}

@@ -117,7 +117,7 @@ const OrderManagement = () => {
           }
           return acc;
         },
-        {}
+        {},
       );
 
       const response = await OrderService.filterOrders(nonEmptyFilters);
@@ -255,7 +255,7 @@ const OrderManagement = () => {
         ),
       },
     ],
-    []
+    [],
   );
 
   const table = useReactTable({
@@ -268,7 +268,7 @@ const OrderManagement = () => {
   });
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen">
+    <div className=" min-h-screen">
       <div className="container mx-auto p-4 sm:p-6 lg:p-8">
         {/* Header Section */}
         <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/60 mb-8 relative overflow-hidden">
@@ -457,15 +457,15 @@ const OrderManagement = () => {
                           <div className="flex items-center gap-2">
                             {flexRender(
                               header.column.columnDef.header,
-                              header.getContext()
+                              header.getContext(),
                             )}
                             <Icon
                               icon={
                                 header.column.getIsSorted() === "asc"
                                   ? "mdi:arrow-up"
                                   : header.column.getIsSorted() === "desc"
-                                  ? "mdi:arrow-down"
-                                  : "mdi:unfold-more-horizontal"
+                                    ? "mdi:arrow-down"
+                                    : "mdi:unfold-more-horizontal"
                               }
                               className="text-slate-400 w-4 h-4"
                             />
@@ -488,7 +488,7 @@ const OrderManagement = () => {
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </td>
                       ))}

@@ -4,7 +4,12 @@ import Input from "@/components/ui/Input";
 import DiveCenterService from "@/services/divecenterService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Icon } from "@iconify/react";
-import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
+import {
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
@@ -64,7 +69,11 @@ const TableSkeleton = memo(({ rows = 5, cols = 6 }) => (
     {Array.from({ length: rows }).map((_, i) => (
       <div key={i} className="flex items-center space-x-4 p-4">
         {Array.from({ length: cols }).map((_, j) => (
-          <div key={j} className="h-5 bg-gray-200 rounded" style={{ width: `${100 / cols}%` }}></div>
+          <div
+            key={j}
+            className="h-5 bg-gray-200 rounded"
+            style={{ width: `${100 / cols}%` }}
+          ></div>
         ))}
       </div>
     ))}
@@ -94,7 +103,9 @@ const ModalWrapper = memo(({ children, onClose, visible }) => {
       aria-modal="true"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="flex items-center justify-center min-h-screen p-4">{children}</div>
+      <div className="flex items-center justify-center min-h-screen p-4">
+        {children}
+      </div>
     </div>
   );
 });
@@ -105,14 +116,19 @@ const ImageCarousel = memo(({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imageErrors, setImageErrors] = useState(new Set());
 
-  const validImages = useMemo(() => images?.filter((_, index) => !imageErrors.has(index)) || [], [images, imageErrors]);
+  const validImages = useMemo(
+    () => images?.filter((_, index) => !imageErrors.has(index)) || [],
+    [images, imageErrors],
+  );
 
   const nextImage = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % validImages.length);
   }, [validImages.length]);
 
   const prevImage = useCallback(() => {
-    setCurrentIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
+    setCurrentIndex(
+      (prev) => (prev - 1 + validImages.length) % validImages.length,
+    );
   }, [validImages.length]);
 
   const handleImageError = useCallback(
@@ -258,7 +274,11 @@ const WorkingHoursEditor = memo(({ workingHours, onChange }) => {
 
       <div className="space-y-3">
         {daysOfWeek.map(({ key, label }) => {
-          const dayData = workingHours?.[key] || { start: "", end: "", is_open: false };
+          const dayData = workingHours?.[key] || {
+            start: "",
+            end: "",
+            is_open: false,
+          };
 
           return (
             <div key={key} className="bg-gray-50 rounded-lg p-4">
@@ -292,7 +312,9 @@ const WorkingHoursEditor = memo(({ workingHours, onChange }) => {
               {dayData.is_open && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Start Time</label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">
+                      Start Time
+                    </label>
                     <input
                       type="time"
                       value={dayData.start || ""}
@@ -306,7 +328,9 @@ const WorkingHoursEditor = memo(({ workingHours, onChange }) => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">End Time</label>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">
+                      End Time
+                    </label>
                     <input
                       type="time"
                       value={dayData.end || ""}
@@ -324,7 +348,9 @@ const WorkingHoursEditor = memo(({ workingHours, onChange }) => {
 
               {!dayData.is_open && (
                 <div className="text-center py-2">
-                  <span className="text-sm text-gray-500 font-medium">Closed</span>
+                  <span className="text-sm text-gray-500 font-medium">
+                    Closed
+                  </span>
                 </div>
               )}
             </div>
@@ -373,32 +399,59 @@ const DiveCenterDetailsModal = memo(({ diveCenter, onClose }) => {
         <div className="p-8 max-h-[80vh] overflow-y-auto">
           {diveCenter.images && diveCenter.images.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Gallery</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                Gallery
+              </h3>
               <ImageCarousel images={diveCenter.images} />
             </div>
           )}
 
-          {diveCenter.coordinates?.latitude && diveCenter.coordinates?.longitude && (
+          {diveCenter.video && (
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Location</h3>
-              <div className="h-64 rounded-xl overflow-hidden shadow-md">
-                <iframe
-                  src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3558.985143178028!2d${diveCenter.coordinates.longitude}!3d${diveCenter.coordinates.latitude}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z${diveCenter.coordinates.latitude}N+${diveCenter.coordinates.longitude}E!5e0!3m2!1sen!2sus!4v1635788491234!5m2!1sen!2sus`}
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen=""
-                  loading="lazy"
-                  title={`${diveCenter.name} Map`}
-                ></iframe>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                Video
+              </h3>
+              <div className="rounded-xl overflow-hidden shadow-md">
+                <video
+                  src={diveCenter.video}
+                  controls
+                  className="w-full h-auto"
+                  poster={diveCenter.images?.[0]}
+                >
+                  Your browser does not support the video tag.
+                </video>
               </div>
             </div>
           )}
 
+          {diveCenter.coordinates?.latitude &&
+            diveCenter.coordinates?.longitude && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                  Location
+                </h3>
+                <div className="h-64 rounded-xl overflow-hidden shadow-md">
+                  <iframe
+                    src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3558.985143178028!2d${diveCenter.coordinates.longitude}!3d${diveCenter.coordinates.latitude}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z${diveCenter.coordinates.latitude}N+${diveCenter.coordinates.longitude}E!5e0!3m2!1sen!2sus!4v1635788491234!5m2!1sen!2sus`}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen=""
+                    loading="lazy"
+                    title={`${diveCenter.name} Map`}
+                  ></iframe>
+                </div>
+              </div>
+            )}
+
           {diveCenter.description && (
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Description</h3>
-              <p className="text-gray-600 whitespace-pre-wrap">{diveCenter.description}</p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                Description
+              </h3>
+              <p className="text-gray-600 whitespace-pre-wrap">
+                {diveCenter.description}
+              </p>
             </div>
           )}
 
@@ -418,19 +471,30 @@ const DiveCenterDetailsModal = memo(({ diveCenter, onClose }) => {
               </div>
             )}
             <div className="flex items-center space-x-3">
-              <Icon icon="mdi:calendar-plus" className="w-5 h-5 text-cyan-600" />
-              <p className="text-gray-700">{formatDate(diveCenter.created_at)}</p>
+              <Icon
+                icon="mdi:calendar-plus"
+                className="w-5 h-5 text-cyan-600"
+              />
+              <p className="text-gray-700">
+                {formatDate(diveCenter.created_at)}
+              </p>
             </div>
           </div>
 
           {workingHoursDisplay && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Working Hours</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                Working Hours
+              </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                 {workingHoursDisplay.map(({ day, hours }) => (
                   <div key={day} className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-sm font-medium text-gray-600">{day}</div>
-                    <div className="text-sm text-gray-800 font-mono">{hours}</div>
+                    <div className="text-sm font-medium text-gray-600">
+                      {day}
+                    </div>
+                    <div className="text-sm text-gray-800 font-mono">
+                      {hours}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -447,7 +511,8 @@ DiveCenterDetailsModal.displayName = "DiveCenterDetailsModal";
 const DiveCenterFormModal = memo(({ diveCenter, onClose, onSave }) => {
   const isEditMode = Boolean(diveCenter?.id);
   const [formData, setFormData] = useState({});
-  const [imagePreviews, setImagePreviews] = useState([]);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [selectedVideo, setSelectedVideo] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const defaultWorkingHours = useMemo(
@@ -471,12 +536,12 @@ const DiveCenterFormModal = memo(({ diveCenter, onClose, onSave }) => {
       hotel_name: diveCenter?.hotel_name || "",
       phone: diveCenter?.phone || "",
       email: diveCenter?.email || "",
-      images: diveCenter?.images?.join("\n") || "",
       coordinates: diveCenter?.coordinates || { latitude: "", longitude: "" },
       working_hours: diveCenter?.working_hours || defaultWorkingHours,
     };
     setFormData(initialData);
-    setImagePreviews(diveCenter?.images || []);
+    setSelectedImages([]);
+    setSelectedVideo(null);
   }, [diveCenter, defaultWorkingHours]);
 
   const handleChange = useCallback((e) => {
@@ -498,9 +563,13 @@ const DiveCenterFormModal = memo(({ diveCenter, onClose, onSave }) => {
   }, []);
 
   const handleImagesChange = useCallback((e) => {
-    const urls = e.target.value.split("\n").filter((url) => url.trim() !== "");
-    setFormData((prev) => ({ ...prev, images: e.target.value }));
-    setImagePreviews(urls.filter(isValidUrl));
+    const files = Array.from(e.target.files);
+    setSelectedImages(files);
+  }, []);
+
+  const handleVideoChange = useCallback((e) => {
+    const file = e.target.files[0];
+    setSelectedVideo(file);
   }, []);
 
   const handleSubmit = async (e) => {
@@ -512,7 +581,10 @@ const DiveCenterFormModal = memo(({ diveCenter, onClose, onSave }) => {
 
       // Validate working hours
       Object.entries(formData.working_hours).forEach(([day, hours]) => {
-        if (hours.is_open && (!isValidTime(hours.start) || !isValidTime(hours.end))) {
+        if (
+          hours.is_open &&
+          (!isValidTime(hours.start) || !isValidTime(hours.end))
+        ) {
           errors.push(`Invalid time format for ${day}. Use HH:MM (24-hour).`);
         }
 
@@ -521,17 +593,12 @@ const DiveCenterFormModal = memo(({ diveCenter, onClose, onSave }) => {
         }
       });
 
-      // Validate image URLs
-      const imageUrls = formData.images.split("\n").filter((url) => url.trim() !== "");
-      if (imageUrls.some((url) => !isValidUrl(url))) {
-        errors.push("One or more image URLs are invalid.");
-      }
-
       // Validate coordinates
       if (
         formData.coordinates.latitude &&
         formData.coordinates.longitude &&
-        (isNaN(formData.coordinates.latitude) || isNaN(formData.coordinates.longitude))
+        (isNaN(formData.coordinates.latitude) ||
+          isNaN(formData.coordinates.longitude))
       ) {
         errors.push("Coordinates must be valid numbers.");
       }
@@ -541,16 +608,37 @@ const DiveCenterFormModal = memo(({ diveCenter, onClose, onSave }) => {
         return;
       }
 
-      const finalData = {
-        ...formData,
-        images: imageUrls,
-        coordinates: {
+      // Create FormData for multipart upload
+      const submitData = new FormData();
+      submitData.append("name", formData.name);
+      submitData.append("description", formData.description);
+      submitData.append("location", formData.location);
+      submitData.append("hotel_name", formData.hotel_name || "");
+      submitData.append("phone", formData.phone);
+      submitData.append("email", formData.email);
+      submitData.append(
+        "coordinates",
+        JSON.stringify({
           latitude: parseFloat(formData.coordinates.latitude) || 0,
           longitude: parseFloat(formData.coordinates.longitude) || 0,
-        },
-      };
+        }),
+      );
+      submitData.append(
+        "working_hours",
+        JSON.stringify(formData.working_hours),
+      );
 
-      await onSave(finalData, diveCenter?.id);
+      // Append images
+      selectedImages.forEach((file) => {
+        submitData.append("images", file);
+      });
+
+      // Append video if selected
+      if (selectedVideo) {
+        submitData.append("video", selectedVideo);
+      }
+
+      await onSave(submitData, diveCenter?.id);
     } finally {
       setIsSubmitting(false);
     }
@@ -560,7 +648,9 @@ const DiveCenterFormModal = memo(({ diveCenter, onClose, onSave }) => {
     <ModalWrapper visible={true} onClose={onClose}>
       <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full animate-in fade-in-0 zoom-in-95">
         <div className="relative bg-gradient-to-r from-cyan-600 to-blue-800 text-white p-6">
-          <h2 className="text-2xl font-bold">{isEditMode ? "Edit Dive Center" : "Create Dive Center"}</h2>
+          <h2 className="text-2xl font-bold">
+            {isEditMode ? "Edit Dive Center" : "Create Dive Center"}
+          </h2>
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors"
@@ -625,7 +715,9 @@ const DiveCenterFormModal = memo(({ diveCenter, onClose, onSave }) => {
                     type="number"
                     step="any"
                     value={formData.coordinates?.latitude || ""}
-                    onChange={(e) => handleCoordinatesChange("latitude", e.target.value)}
+                    onChange={(e) =>
+                      handleCoordinatesChange("latitude", e.target.value)
+                    }
                     className="bg-white"
                   />
                   <Input
@@ -634,12 +726,16 @@ const DiveCenterFormModal = memo(({ diveCenter, onClose, onSave }) => {
                     type="number"
                     step="any"
                     value={formData.coordinates?.longitude || ""}
-                    onChange={(e) => handleCoordinatesChange("longitude", e.target.value)}
+                    onChange={(e) =>
+                      handleCoordinatesChange("longitude", e.target.value)
+                    }
                     className="bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
                   <textarea
                     name="description"
                     value={formData.description || ""}
@@ -652,42 +748,76 @@ const DiveCenterFormModal = memo(({ diveCenter, onClose, onSave }) => {
 
               {/* Column 2: Working Hours */}
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-800 pb-2 border-b border-gray-200">Working Hours</h3>
+                <h3 className="text-lg font-semibold text-gray-800 pb-2 border-b border-gray-200">
+                  Working Hours
+                </h3>
                 <WorkingHoursEditor
                   workingHours={formData.working_hours || defaultWorkingHours}
                   onChange={handleWorkingHoursChange}
                 />
               </div>
 
-              {/* Column 3: Images */}
+              {/* Column 3: Media Files */}
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-800 pb-2 border-b border-gray-200">Images</h3>
+                <h3 className="text-lg font-semibold text-gray-800 pb-2 border-b border-gray-200">
+                  Media Files
+                </h3>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Image URLs (one per line)</label>
-                  <textarea
-                    name="images"
-                    value={formData.images || ""}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Images (multiple, max 10)
+                  </label>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
                     onChange={handleImagesChange}
-                    rows={8}
-                    className="w-full border border-gray-300 rounded-lg p-3 font-mono text-sm focus:ring-2 focus:ring-cyan-500 bg-white"
-                    placeholder="https://example.com/image1.jpg
-https://example.com/image2.jpg"
+                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 bg-white"
                   />
-                  {imagePreviews.length > 0 && (
+                  {selectedImages.length > 0 && (
                     <div className="mt-3 grid grid-cols-2 gap-2">
-                      {imagePreviews.map((url, index) => (
-                        <img
-                          key={index}
-                          src={url}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-20 object-cover rounded-lg shadow-sm"
-                          onError={() => {
-                            setImagePreviews((prev) => prev.filter((_, i) => i !== index));
-                            toast.error(`Invalid image URL: ${url}`);
-                          }}
-                          loading="lazy"
-                        />
+                      {selectedImages.map((file, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-20 object-cover rounded-lg shadow-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setSelectedImages((prev) =>
+                                prev.filter((_, i) => i !== index),
+                              )
+                            }
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                          >
+                            ×
+                          </button>
+                        </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Video (optional)
+                  </label>
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoChange}
+                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-cyan-500 bg-white"
+                  />
+                  {selectedVideo && (
+                    <div className="mt-2 text-sm text-gray-600">
+                      Selected: {selectedVideo.name}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedVideo(null)}
+                        className="ml-2 text-red-500 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
                     </div>
                   )}
                 </div>
@@ -709,7 +839,9 @@ https://example.com/image2.jpg"
               disabled={isSubmitting}
               className="px-6 py-2 bg-gradient-to-r from-cyan-600 to-blue-800 text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 flex items-center space-x-2"
             >
-              {isSubmitting && <Icon icon="mdi:loading" className="w-4 h-4 animate-spin" />}
+              {isSubmitting && (
+                <Icon icon="mdi:loading" className="w-4 h-4 animate-spin" />
+              )}
               <span>{isEditMode ? "Save Changes" : "Create Center"}</span>
             </button>
           </div>
@@ -806,7 +938,8 @@ export default function DiveCenterManagementPage() {
       }
     } catch (error) {
       console.error("Failed to fetch dive centers:", error);
-      const errorMessage = error.response?.data?.detail || error.message || "Unknown error";
+      const errorMessage =
+        error.response?.data?.detail || error.message || "Unknown error";
       toast.error(`Failed to fetch dive centers: ${errorMessage}`);
       setDiveCenters([]);
       setPagination((prev) => ({ ...prev, total: 0, total_pages: 1 }));
@@ -826,11 +959,21 @@ export default function DiveCenterManagementPage() {
   // Pagination handler
   const handlePageChange = useCallback(
     (newPage) => {
-      if (newPage >= 1 && newPage <= pagination.total_pages && newPage !== pagination.page) {
+      if (
+        newPage >= 1 &&
+        newPage <= pagination.total_pages &&
+        newPage !== pagination.page
+      ) {
         fetchData(newPage, pagination.per_page, searchTerm);
       }
     },
-    [pagination.total_pages, pagination.page, pagination.per_page, searchTerm, fetchData],
+    [
+      pagination.total_pages,
+      pagination.page,
+      pagination.per_page,
+      searchTerm,
+      fetchData,
+    ],
   );
 
   // Modal handlers
@@ -860,11 +1003,18 @@ export default function DiveCenterManagementPage() {
         await fetchData(pagination.page, pagination.per_page, searchTerm);
       } catch (error) {
         console.error(`Failed to ${action} dive center:`, error);
-        const errorMessage = error.response?.data?.detail || error.message || "Unknown error";
+        const errorMessage =
+          error.response?.data?.detail || error.message || "Unknown error";
         toast.error(`Failed to ${action} dive center: ${errorMessage}`);
       }
     },
-    [handleCloseForm, fetchData, pagination.page, pagination.per_page, searchTerm],
+    [
+      handleCloseForm,
+      fetchData,
+      pagination.page,
+      pagination.per_page,
+      searchTerm,
+    ],
   );
 
   // Delete handler with confirmation
@@ -888,7 +1038,8 @@ export default function DiveCenterManagementPage() {
           await fetchData(pagination.page, pagination.per_page, searchTerm);
         } catch (error) {
           console.error("Failed to delete dive center:", error);
-          const errorMessage = error.response?.data?.detail || error.message || "Unknown error";
+          const errorMessage =
+            error.response?.data?.detail || error.message || "Unknown error";
           toast.error(`Failed to delete dive center: ${errorMessage}`);
         }
       }
@@ -904,10 +1055,16 @@ export default function DiveCenterManagementPage() {
         header: "Name & Location",
         cell: ({ row }) => (
           <div>
-            <div className="font-bold text-gray-800 truncate max-w-48" title={row.original.name}>
+            <div
+              className="font-bold text-gray-800 truncate max-w-48"
+              title={row.original.name}
+            >
               {row.original.name}
             </div>
-            <div className="text-xs text-gray-500 truncate max-w-48" title={row.original.location}>
+            <div
+              className="text-xs text-gray-500 truncate max-w-48"
+              title={row.original.location}
+            >
               {row.original.location}
             </div>
           </div>
@@ -918,7 +1075,10 @@ export default function DiveCenterManagementPage() {
         header: "Contact",
         cell: ({ row }) => (
           <div>
-            <div className="text-sm text-gray-800 truncate max-w-48" title={row.original.email}>
+            <div
+              className="text-sm text-gray-800 truncate max-w-48"
+              title={row.original.email}
+            >
               {row.original.email}
             </div>
             <div className="text-xs text-gray-500">{row.original.phone}</div>
@@ -929,7 +1089,10 @@ export default function DiveCenterManagementPage() {
         accessorKey: "hotel_name",
         header: "Hotel",
         cell: ({ row }) => (
-          <div className="text-sm text-gray-600 truncate max-w-32" title={row.original.hotel_name}>
+          <div
+            className="text-sm text-gray-600 truncate max-w-32"
+            title={row.original.hotel_name}
+          >
             {row.original.hotel_name || "N/A"}
           </div>
         ),
@@ -938,7 +1101,10 @@ export default function DiveCenterManagementPage() {
         accessorKey: "created_at",
         header: "Date Added",
         cell: ({ row }) => (
-          <div className="text-sm text-gray-600" title={new Date(row.original.created_at).toLocaleString()}>
+          <div
+            className="text-sm text-gray-600"
+            title={new Date(row.original.created_at).toLocaleString()}
+          >
             {formatDate(row.original.created_at)}
           </div>
         ),
@@ -947,7 +1113,12 @@ export default function DiveCenterManagementPage() {
         id: "actions",
         header: "Actions",
         cell: ({ row }) => (
-          <ActionButtons row={row} onView={setViewingCenter} onEdit={handleOpenForm} onDelete={handleDelete} />
+          <ActionButtons
+            row={row}
+            onView={setViewingCenter}
+            onEdit={handleOpenForm}
+            onDelete={handleDelete}
+          />
         ),
       },
     ],
@@ -975,13 +1146,18 @@ export default function DiveCenterManagementPage() {
           <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-xl shadow-lg">
-                <Icon icon="mdi:scuba-diving" className="w-8 h-8" />
+                <Icon
+                  icon="mdi:office-building-location-outline"
+                  className="w-8 h-8"
+                />
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 bg-gradient-to-r from-cyan-600 to-blue-800 bg-clip-text text-transparent">
                   Dive Center Management
                 </h1>
-                <p className="text-sm text-gray-500 mt-1">Manage dive centers with ease and precision.</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Manage dive centers with ease and precision.
+                </p>
               </div>
             </div>
             <button
@@ -1003,7 +1179,9 @@ export default function DiveCenterManagementPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm text-gray-500">Total Centers</p>
-                <p className="text-2xl font-bold text-gray-800">{pagination.total}</p>
+                <p className="text-2xl font-bold text-gray-800">
+                  {pagination.total}
+                </p>
               </div>
             </div>
           </div>
@@ -1011,14 +1189,19 @@ export default function DiveCenterManagementPage() {
           <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200/50">
             <div className="flex items-center">
               <div className="p-2 bg-green-100 rounded-lg">
-                <Icon icon="mdi:check-circle" className="w-6 h-6 text-green-600" />
+                <Icon
+                  icon="mdi:check-circle"
+                  className="w-6 h-6 text-green-600"
+                />
               </div>
               <div className="ml-4">
                 <p className="text-sm text-gray-500">Active Today</p>
                 <p className="text-2xl font-bold text-gray-800">
                   {
                     diveCenters.filter((center) => {
-                      const today = new Date().toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+                      const today = new Date()
+                        .toLocaleDateString("en-US", { weekday: "long" })
+                        .toLowerCase();
                       return center.working_hours?.[today]?.is_open;
                     }).length
                   }
@@ -1049,7 +1232,13 @@ export default function DiveCenterManagementPage() {
               <div className="ml-4">
                 <p className="text-sm text-gray-500">With Coordinates</p>
                 <p className="text-2xl font-bold text-gray-800">
-                  {diveCenters.filter((center) => center.coordinates?.latitude && center.coordinates?.longitude).length}
+                  {
+                    diveCenters.filter(
+                      (center) =>
+                        center.coordinates?.latitude &&
+                        center.coordinates?.longitude,
+                    ).length
+                  }
                 </p>
               </div>
             </div>
@@ -1080,9 +1269,14 @@ export default function DiveCenterManagementPage() {
             ) : table.getRowModel().rows.length === 0 ? (
               <div className="p-12 text-center">
                 <div className="w-20 h-20 mx-auto mb-4 bg-cyan-100 rounded-full flex items-center justify-center">
-                  <Icon icon="mdi:map-marker-off-outline" className="w-10 h-10 text-cyan-500" />
+                  <Icon
+                    icon="mdi:map-marker-off-outline"
+                    className="w-10 h-10 text-cyan-500"
+                  />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">No Dive Centers Found</h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  No Dive Centers Found
+                </h3>
                 <p className="text-gray-500 mb-4">
                   {searchTerm
                     ? `No dive centers match "${searchTerm}". Try adjusting your search.`
@@ -1109,7 +1303,10 @@ export default function DiveCenterManagementPage() {
                           className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-cyan-100/50 transition-colors"
                         >
                           <div className="flex items-center gap-2">
-                            {flexRender(header.column.columnDef.header, header.getContext())}
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
                             <Icon
                               icon={
                                 header.column.getIsSorted() === "asc"
@@ -1135,8 +1332,14 @@ export default function DiveCenterManagementPage() {
                       }`}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        <td
+                          key={cell.id}
+                          className="px-6 py-4 whitespace-nowrap text-sm text-gray-600"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
                         </td>
                       ))}
                     </tr>
@@ -1146,53 +1349,67 @@ export default function DiveCenterManagementPage() {
             )}
           </div>
 
-          {!isLoading && diveCenters.length > 0 && pagination.total_pages > 1 && (
-            <div className="p-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-cyan-50">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">
-                  Page <strong>{pagination.page}</strong> of <strong>{pagination.total_pages}</strong> (
-                  <strong>{pagination.total}</strong> items)
-                </span>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handlePageChange(1)}
-                    disabled={pagination.page === 1}
-                    className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    title="First page"
-                  >
-                    <Icon icon="mdi:chevron-double-left" width={16} />
-                  </button>
-                  <button
-                    onClick={() => handlePageChange(pagination.page - 1)}
-                    disabled={pagination.page === 1}
-                    className="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={() => handlePageChange(pagination.page + 1)}
-                    disabled={pagination.page === pagination.total_pages}
-                    className="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Next
-                  </button>
-                  <button
-                    onClick={() => handlePageChange(pagination.total_pages)}
-                    disabled={pagination.page === pagination.total_pages}
-                    className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    title="Last page"
-                  >
-                    <Icon icon="mdi:chevron-double-right" width={16} />
-                  </button>
+          {!isLoading &&
+            diveCenters.length > 0 &&
+            pagination.total_pages > 1 && (
+              <div className="p-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-cyan-50">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">
+                    Page <strong>{pagination.page}</strong> of{" "}
+                    <strong>{pagination.total_pages}</strong> (
+                    <strong>{pagination.total}</strong> items)
+                  </span>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handlePageChange(1)}
+                      disabled={pagination.page === 1}
+                      className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      title="First page"
+                    >
+                      <Icon icon="mdi:chevron-double-left" width={16} />
+                    </button>
+                    <button
+                      onClick={() => handlePageChange(pagination.page - 1)}
+                      disabled={pagination.page === 1}
+                      className="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => handlePageChange(pagination.page + 1)}
+                      disabled={pagination.page === pagination.total_pages}
+                      className="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Next
+                    </button>
+                    <button
+                      onClick={() => handlePageChange(pagination.total_pages)}
+                      disabled={pagination.page === pagination.total_pages}
+                      className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      title="Last page"
+                    >
+                      <Icon icon="mdi:chevron-double-right" width={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
 
         {/* Modals */}
-        {viewingCenter && <DiveCenterDetailsModal diveCenter={viewingCenter} onClose={() => setViewingCenter(null)} />}
-        {isFormOpen && <DiveCenterFormModal diveCenter={editingCenter} onClose={handleCloseForm} onSave={handleSave} />}
+        {viewingCenter && (
+          <DiveCenterDetailsModal
+            diveCenter={viewingCenter}
+            onClose={() => setViewingCenter(null)}
+          />
+        )}
+        {isFormOpen && (
+          <DiveCenterFormModal
+            diveCenter={editingCenter}
+            onClose={handleCloseForm}
+            onSave={handleSave}
+          />
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,5 @@
 "use client";
 
-import { fetchCurrencyConversion } from "@/lib/currency";
 import InvoiceService from "@/services/invoiceService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Icon } from "@iconify/react";
@@ -463,8 +462,6 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
 export default function MyInvoicesPage() {
   const [allInvoices, setAllInvoices] = useState([]);
   const [filteredInvoices, setFilteredInvoices] = useState([]);
-  const [summary, setSummary] = useState(null);
-  const [convertedSummary, setConvertedSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sorting, setSorting] = useState([{ id: "created_at", desc: true }]);
@@ -472,9 +469,45 @@ export default function MyInvoicesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [statusFilter, setStatusFilter] = useState("all");
-  const [summaryCurrency, setSummaryCurrency] = useState("EGP");
 
   const { isAuthenticated, user } = useAuthStore();
+
+  const summaryByCurrency = useMemo(() => {
+    const currencies = {};
+    allInvoices.forEach((invoice) => {
+      const curr = invoice.currency;
+      if (!currencies[curr]) {
+        currencies[curr] = {
+          paid: 0,
+          pending: 0,
+          failed: 0,
+          total: 0,
+          paid_count: 0,
+          pending_count: 0,
+          failed_count: 0,
+          total_count: 0,
+        };
+      }
+      const status = invoice.status.toLowerCase();
+      if (status === "paid") {
+        currencies[curr].paid += invoice.amount;
+        currencies[curr].paid_count += 1;
+      } else if (status === "pending") {
+        currencies[curr].pending += invoice.amount;
+        currencies[curr].pending_count += 1;
+      } else if (
+        status === "failed" ||
+        status === "cancelled" ||
+        status === "expired"
+      ) {
+        currencies[curr].failed += invoice.amount;
+        currencies[curr].failed_count += 1;
+      }
+      currencies[curr].total += invoice.amount;
+      currencies[curr].total_count += 1;
+    });
+    return currencies;
+  }, [allInvoices]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -482,11 +515,7 @@ export default function MyInvoicesPage() {
       setLoading(true);
       setError(null);
       try {
-        const [summaryData, invoiceData] = await Promise.all([
-          InvoiceService.getMyInvoiceSummary(),
-          InvoiceService.getMyInvoices(),
-        ]);
-        setSummary(summaryData);
+        const invoiceData = await InvoiceService.getMyInvoices();
         setAllInvoices(invoiceData || []);
       } catch (err) {
         setError("Could not load your invoices. Please try again later.");
@@ -508,48 +537,6 @@ export default function MyInvoicesPage() {
     setFilteredInvoices(invoicesToProcess);
     setCurrentPage(1);
   }, [allInvoices, statusFilter]);
-
-  useEffect(() => {
-    const convertSummary = async () => {
-      if (!summary || summaryCurrency === "EGP") {
-        setConvertedSummary(summary);
-        return;
-      }
-
-      try {
-        const [paidConverted, pendingConverted, failedConverted] =
-          await Promise.all([
-            fetchCurrencyConversion({
-              from: "EGP",
-              to: summaryCurrency,
-              amount: summary.paid_amount_total,
-            }),
-            fetchCurrencyConversion({
-              from: "EGP",
-              to: summaryCurrency,
-              amount: summary.pending_amount_total,
-            }),
-            fetchCurrencyConversion({
-              from: "EGP",
-              to: summaryCurrency,
-              amount: summary.failed_amount_total,
-            }),
-          ]);
-
-        setConvertedSummary({
-          ...summary,
-          paid_amount_total: paidConverted.convertedAmount,
-          pending_amount_total: pendingConverted.convertedAmount,
-          failed_amount_total: failedConverted.convertedAmount,
-        });
-      } catch (error) {
-        console.error("Error converting summary:", error);
-        setConvertedSummary(summary); // fallback to original
-      }
-    };
-
-    convertSummary();
-  }, [summary, summaryCurrency]);
 
   const paginatedInvoices = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -728,7 +715,7 @@ export default function MyInvoicesPage() {
   });
 
   const currencyNote =
-    "Please note: All summary totals on this page are shown in Egyptian Pounds (EGP) for consistency. When you proceed to payment for a pending invoice, you will be charged in the currency you originally selected during booking (e.g., USD, EUR). The payment provider will handle the final conversion.";
+    "Please note: Summary totals are shown in their original booking currencies for accuracy. When you proceed to payment for a pending invoice, you will be charged in the currency you originally selected during booking. The payment provider will handle the final conversion.";
 
   // Check for paid/cash but unpicked invoices that NEED CONFIRMATION
   const actionRequiredInvoices = useMemo(() => {
@@ -755,7 +742,7 @@ export default function MyInvoicesPage() {
   }, [allInvoices]);
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen pt-20">
+    <div className=" min-h-screen pt-20">
       <div className="container mx-auto p-4 sm:p-6 lg:p-8">
         <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/60 mb-8">
           <div className="relative flex items-center space-x-4">
@@ -985,78 +972,61 @@ export default function MyInvoicesPage() {
           </div>
         )}
 
-        {summary && !loading && (
+        {Object.keys(summaryByCurrency).length > 0 && !loading && (
           <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-800">Summary</h2>
-              <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-slate-600">
-                  Currency:
-                </label>
-                <select
-                  value={summaryCurrency}
-                  onChange={(e) => setSummaryCurrency(e.target.value)}
-                  className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-500"
-                >
-                  <option value="EGP">EGP (Egyptian Pound)</option>
-                  <option value="USD">USD (US Dollar)</option>
-                  <option value="EUR">EUR (Euro)</option>
-                </select>
+            {Object.entries(summaryByCurrency).map(([currency, data]) => (
+              <div key={currency} className="mb-6">
+                <h3 className="text-lg font-semibold text-slate-800 mb-4">
+                  Summary for {currency}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="bg-white rounded-2xl shadow-lg border p-6">
+                    <p className="text-slate-500 text-sm font-medium">
+                      Total Paid
+                    </p>
+                    <p className="text-2xl font-bold text-green-600 mt-1">
+                      {formatCurrency(data.paid, currency)}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-2">
+                      {data.paid_count || 0} Paid Invoices
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-2xl shadow-lg border p-6">
+                    <p className="text-slate-500 text-sm font-medium">
+                      Pending Amount
+                    </p>
+                    <p className="text-2xl font-bold text-yellow-600 mt-1">
+                      {formatCurrency(data.pending, currency)}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-2">
+                      {data.pending_count || 0} Pending Invoices
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-2xl shadow-lg border p-6">
+                    <p className="text-slate-500 text-sm font-medium">
+                      Failed/Cancelled
+                    </p>
+                    <p className="text-2xl font-bold text-red-600 mt-1">
+                      {formatCurrency(data.failed, currency)}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-2">
+                      {data.failed_count || 0} Failed Invoices
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-2xl shadow-lg border p-6">
+                    <p className="text-slate-500 text-sm font-medium">
+                      Total Invoices
+                    </p>
+                    <p className="text-2xl font-bold text-blue-600 mt-1">
+                      {data.total_count || 0}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-2">
+                      Across all statuses
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-2xl shadow-lg border p-6">
-                <p className="text-slate-500 text-sm font-medium">Total Paid</p>
-                <p className="text-2xl font-bold text-green-600 mt-1">
-                  {formatCurrency(
-                    (convertedSummary || summary)?.paid_amount_total || 0,
-                    summaryCurrency,
-                  )}
-                </p>
-                <p className="text-xs text-slate-400 mt-2">
-                  {summary.paid_invoices_count} Paid Invoices
-                </p>
-              </div>
-              <div className="bg-white rounded-2xl shadow-lg border p-6">
-                <p className="text-slate-500 text-sm font-medium">
-                  Pending Amount
-                </p>
-                <p className="text-2xl font-bold text-yellow-600 mt-1">
-                  {formatCurrency(
-                    (convertedSummary || summary)?.pending_amount_total || 0,
-                    summaryCurrency,
-                  )}
-                </p>
-                <p className="text-xs text-slate-400 mt-2">
-                  {summary.pending_invoices_count} Pending Invoices
-                </p>
-              </div>
-              <div className="bg-white rounded-2xl shadow-lg border p-6">
-                <p className="text-slate-500 text-sm font-medium">
-                  Failed/Cancelled
-                </p>
-                <p className="text-2xl font-bold text-red-600 mt-1">
-                  {formatCurrency(
-                    (convertedSummary || summary)?.failed_amount_total || 0,
-                    summaryCurrency,
-                  )}
-                </p>
-                <p className="text-xs text-slate-400 mt-2">
-                  {summary.failed_invoices_count} Failed Invoices
-                </p>
-              </div>
-              <div className="bg-white rounded-2xl shadow-lg border p-6">
-                <p className="text-slate-500 text-sm font-medium">
-                  Total Invoices
-                </p>
-                <p className="text-2xl font-bold text-blue-600 mt-1">
-                  {summary.total_invoices}
-                </p>
-                <p className="text-xs text-slate-400 mt-2">
-                  Across all statuses
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         )}
 

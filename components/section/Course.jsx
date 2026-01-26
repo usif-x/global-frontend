@@ -97,53 +97,6 @@ const getCertificateIcon = (certificateType) => {
   }
 };
 
-const levelConfig = {
-  beginner: { value: 1, color: "text-green-600", bgColor: "bg-green-100" },
-  intermediate: { value: 2, color: "text-sky-600", bgColor: "bg-sky-100" },
-  advanced: { value: 3, color: "text-orange-600", bgColor: "bg-orange-100" },
-  professional: {
-    value: 4,
-    color: "text-indigo-600",
-    bgColor: "bg-indigo-100",
-  },
-};
-const TOTAL_LEVEL_STEPS = 4;
-
-const LevelIndicator = ({ level = "beginner" }) => {
-  const normalizedLevel = level.toLowerCase();
-  const {
-    value: activeSteps,
-    color,
-    bgColor,
-  } = levelConfig[normalizedLevel] || levelConfig["beginner"];
-
-  return (
-    <div className="mb-4">
-      <div className="flex justify-between items-center mb-2">
-        <h4 className="text-sm font-semibold text-gray-600">Difficulty</h4>
-        <span className={`text-sm font-bold ${color} capitalize`}>{level}</span>
-      </div>
-      <div className="flex gap-1.5" title={`Level: ${level}`}>
-        {Array.from({ length: TOTAL_LEVEL_STEPS }).map((_, index) => (
-          <div
-            key={index}
-            className={`h-2 rounded-full flex-1 transition-colors ${
-              index < activeSteps ? "bg-blue-500" : "bg-gray-200"
-            }`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// Waves icon component
-const Waves = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1L13.5 2.5L16.17 5.17L13.24 8.1C12.45 8.9 12.45 10.15 13.24 10.95L14.83 12.54L16.24 11.13L14.65 9.54L17.58 6.61L20.25 9.28L21 9ZM1 9L2.5 7.5L5.17 10.17L8.1 7.24C8.9 6.45 10.15 6.45 10.95 7.24L12.54 8.83L11.13 10.24L9.54 8.65L6.61 11.58L9.28 14.25L7.5 16.5L1 9Z" />
-  </svg>
-);
-
 // --- Enhanced CourseCard Component ---
 const CourseCard = ({ course }) => {
   const imageUrl = course.images?.[0];
@@ -270,117 +223,6 @@ const CourseCard = ({ course }) => {
   );
 };
 
-// --- Featured Course Card (for highlighting special courses) ---
-const FeaturedCourseCard = ({ course }) => {
-  const imageUrl = course.images?.[0];
-  const priceDisplay = formatPrice(course);
-
-  return (
-    <Link href={`/courses/${course.id}`}>
-      <div className="group relative bg-gradient-to-br from-blue-600 to-cyan-600 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 text-white">
-        {/* Background Image Overlay */}
-        {imageUrl && (
-          <div className="absolute inset-0 opacity-30">
-            <img
-              src={imageUrl}
-              alt={course.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          </div>
-        )}
-
-        <div className="relative p-8">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold mb-4 inline-block">
-                ⭐ FEATURED COURSE
-              </div>
-              <h3 className="text-2xl font-bold mb-2 group-hover:text-blue-200 transition-colors">
-                {course.name}
-              </h3>
-              <p className="text-blue-100 text-sm capitalize mb-4">
-                {course.course_level} • {course.provider}
-              </p>
-            </div>
-
-            {/* Price Display */}
-            <div className="text-right">
-              {typeof priceDisplay === "object" ? (
-                <div>
-                  <span className="text-lg line-through text-white/60">
-                    EGP{priceDisplay.original}
-                  </span>
-                  <div className="text-2xl font-bold text-green-300">
-                    EGP{priceDisplay.discounted}
-                  </div>
-                  <span className="text-xs bg-red-500 px-2 py-1 rounded-full">
-                    -{priceDisplay.discount}% OFF
-                  </span>
-                </div>
-              ) : (
-                <div className="text-2xl font-bold text-white">
-                  {priceDisplay}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Course Features */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            <div className="flex items-center bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-xs">
-              <Icon icon="lucide:clock" className="w-3 h-3 mr-1" />
-              <span>{formatDuration(course.course_duration)}</span>
-            </div>
-            {course.has_certificate && (
-              <div className="flex items-center bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-xs">
-                <Icon
-                  icon={getCertificateIcon(course.certificate_type)}
-                  className="w-3 h-3 mr-1"
-                />
-                <span>Certificate</span>
-              </div>
-            )}
-            {course.has_online_content && (
-              <div className="flex items-center bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-xs">
-                <Icon icon="lucide:wifi" className="w-3 h-3 mr-1" />
-                <span>Online Content</span>
-              </div>
-            )}
-            <div className="flex items-center bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-xs capitalize">
-              <Icon
-                icon={getCourseTypeIcon(course.course_type)}
-                className="w-3 h-3 mr-1"
-              />
-              <span>{course.course_type}</span>
-            </div>
-          </div>
-
-          {/* CTA Button */}
-          <button className="w-full bg-white text-blue-600 font-bold py-3 px-6 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center justify-center gap-2 group-hover:shadow-lg">
-            {course.price_available ? (
-              <>
-                <Icon icon="lucide:credit-card" className="w-5 h-5" />
-                <span>Enroll Now</span>
-              </>
-            ) : (
-              <>
-                <Icon icon="lucide:mail" className="w-5 h-5" />
-                <span>Get Pricing</span>
-              </>
-            )}
-            <Icon
-              icon="lucide:arrow-right"
-              className="w-4 h-4 transition-transform group-hover:translate-x-1"
-            />
-          </button>
-        </div>
-      </div>
-    </Link>
-  );
-};
-
 // --- Main Server Component ---
 const DivingCourses = () => {
   const [courses, setCourses] = useState([]);
@@ -409,7 +251,7 @@ const DivingCourses = () => {
     .slice(0, 2);
 
   const regularCourses = courses.filter(
-    (course) => !featuredCourses.includes(course)
+    (course) => !featuredCourses.includes(course),
   );
 
   const visibleCourses = showAll ? regularCourses : regularCourses.slice(0, 3);
@@ -417,13 +259,7 @@ const DivingCourses = () => {
   return (
     <section className="relative py-20 overflow-hidden">
       {/* Modern Background with Gradient Mesh */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-cyan-50"></div>
-
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-200/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
+      <div className="absolute inset-0"></div>
 
       <div className="relative container mx-auto px-4">
         {/* Section Header */}

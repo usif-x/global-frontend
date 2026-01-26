@@ -262,7 +262,7 @@ const UploadModal = ({ visible, onClose, onUpload }) => {
     e.stopPropagation();
     setDragActive(false);
     const files = Array.from(e.dataTransfer.files).filter((file) =>
-      file.type.startsWith("image/")
+      file.type.startsWith("image/"),
     );
     setSelectedFiles(files);
   };
@@ -288,7 +288,7 @@ const UploadModal = ({ visible, onClose, onUpload }) => {
           "Size:",
           file.size,
           "Type:",
-          file.type
+          file.type,
         );
         await onUpload(file);
       }
@@ -446,7 +446,7 @@ export default function GalleryManagementPage() {
     } catch (error) {
       toast.error(
         "Failed to fetch images. " +
-          (error.response?.data?.detail || error.message)
+          (error.response?.data?.detail || error.message),
       );
       setImages([]);
     } finally {
@@ -508,7 +508,7 @@ export default function GalleryManagementPage() {
       } catch (error) {
         toast.error(
           "Failed to update image name. " +
-            (error.response?.data?.detail || error.message)
+            (error.response?.data?.detail || error.message),
         );
       }
     }
@@ -533,7 +533,7 @@ export default function GalleryManagementPage() {
       } catch (error) {
         toast.error(
           "Failed to delete image. " +
-            (error.response?.data?.detail || error.message)
+            (error.response?.data?.detail || error.message),
         );
       }
     }
@@ -561,13 +561,13 @@ export default function GalleryManagementPage() {
       try {
         const response = await GalleryService.deleteAllImages();
         toast.success(
-          `Successfully deleted ${response.message || "all images"}.`
+          `Successfully deleted ${response.message || "all images"}.`,
         );
         fetchImages(1, pagination.per_page, searchTerm);
       } catch (error) {
         toast.error(
           "Failed to delete all images. " +
-            (error.response?.data?.detail || error.message)
+            (error.response?.data?.detail || error.message),
         );
       }
     }
@@ -623,7 +623,7 @@ export default function GalleryManagementPage() {
                 navigator.clipboard.writeText(
                   `${
                     process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-                  }${row.original.url}`
+                  }${row.original.url}`,
                 )
               }
               className="p-1 text-slate-400 hover:text-cyan-600 transition-colors"
@@ -688,7 +688,7 @@ export default function GalleryManagementPage() {
         ),
       },
     ],
-    []
+    [],
   );
 
   const table = useReactTable({
@@ -703,7 +703,7 @@ export default function GalleryManagementPage() {
   });
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen">
+    <div className=" min-h-screen">
       <div className="container mx-auto p-4 sm:p-6 lg:p-8">
         {/* Header Section */}
         <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/60 mb-8 relative overflow-hidden">
@@ -862,15 +862,15 @@ export default function GalleryManagementPage() {
                           <div className="flex items-center gap-2">
                             {flexRender(
                               header.column.columnDef.header,
-                              header.getContext()
+                              header.getContext(),
                             )}
                             <Icon
                               icon={
                                 header.column.getIsSorted() === "asc"
                                   ? "mdi:arrow-up"
                                   : header.column.getIsSorted() === "desc"
-                                  ? "mdi:arrow-down"
-                                  : "mdi:unfold-more-horizontal"
+                                    ? "mdi:arrow-down"
+                                    : "mdi:unfold-more-horizontal"
                               }
                               className="text-slate-400 w-4 h-4"
                             />
@@ -893,7 +893,7 @@ export default function GalleryManagementPage() {
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </td>
                       ))}

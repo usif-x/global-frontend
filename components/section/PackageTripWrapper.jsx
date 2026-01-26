@@ -15,7 +15,7 @@ const formatPrice = (
   price,
   hasDiscount,
   discountPercentage,
-  discountAlwaysAvailable
+  discountAlwaysAvailable,
 ) => {
   // Only apply discount if it's always available.
   // The card doesn't know the number of people, so we can't check for min_people here.
@@ -49,7 +49,7 @@ const TripCard = ({ trip, packages }) => {
     trip.adult_price,
     trip.has_discount,
     trip.discount_percentage,
-    trip.discount_always_available
+    trip.discount_always_available,
   );
   const packageInfo = packages.find((p) => p.id === trip.package_id);
   const discountBadgeText = getDiscountBadgeText(trip);
@@ -276,185 +276,6 @@ const PackageCard = ({ pkg, trips }) => {
     </Link>
   );
 };
-
-// --- Enhanced View All Trips Section Component ---
-const EnhancedViewAllTrips = ({ tripsCount, displayedCount }) => (
-  <div className="mt-16">
-    <div className="relative bg-gradient-to-r from-sky-50 via-cyan-50 to-blue-50 rounded-3xl p-6 sm:p-8 md:p-12 border border-sky-100 shadow-lg overflow-hidden">
-      {/* Decorative elements - hidden on mobile, visible on larger screens */}
-      <div className="hidden md:block absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-sky-200/30 to-cyan-200/30 rounded-full -translate-y-16 translate-x-16"></div>
-      <div className="hidden md:block absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-200/30 to-sky-200/30 rounded-full translate-y-12 -translate-x-12"></div>
-
-      <div className="relative text-center">
-        {/* Icon and stats */}
-        <div className="mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-sky-500 to-cyan-500 rounded-full mb-4 shadow-lg">
-            <Icon
-              icon="lucide:compass"
-              className="w-7 h-7 sm:w-8 sm:h-8 text-white"
-            />
-          </div>
-          <div className="flex items-center justify-center space-x-3 sm:space-x-6 text-xs sm:text-sm text-gray-600 flex-wrap gap-y-2 px-2">
-            <div className="flex items-center space-x-1 sm:space-x-2">
-              <Icon
-                icon="lucide:map-pin"
-                className="w-3 h-3 sm:w-4 sm:h-4 text-sky-500 flex-shrink-0"
-              />
-              <span>Multiple Destinations</span>
-            </div>
-            <div className="flex items-center space-x-1 sm:space-x-2">
-              <Icon
-                icon="lucide:calendar"
-                className="w-3 h-3 sm:w-4 sm:h-4 text-sky-500 flex-shrink-0"
-              />
-              <span>Year-round Adventures</span>
-            </div>
-            <div className="flex items-center space-x-1 sm:space-x-2">
-              <Icon
-                icon="lucide:users"
-                className="w-3 h-3 sm:w-4 sm:h-4 text-sky-500 flex-shrink-0"
-              />
-              <span>All Experience Levels</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="max-w-2xl mx-auto mb-6 sm:mb-8 px-2">
-          <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">
-            Discover More Adventures
-          </h3>
-          <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-            You've seen {displayedCount} of our incredible diving trips. Explore
-            our complete collection of {tripsCount}+ adventures, from day trips
-            to multi-day expeditions across the Red Sea's most spectacular dive
-            sites.
-          </p>
-        </div>
-
-        {/* Enhanced CTA Button */}
-        <Link
-          href="/trips"
-          className="group relative inline-flex items-center justify-center px-6 sm:px-10 py-3 sm:py-4 text-base sm:text-lg font-bold text-white bg-gradient-to-r from-sky-600 via-cyan-600 to-blue-600 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 overflow-hidden"
-        >
-          {/* Button shine effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-
-          {/* Button content */}
-          <div className="relative flex items-center space-x-2 sm:space-x-3">
-            <Icon
-              icon="lucide:waves"
-              className="w-5 h-5 sm:w-6 sm:h-6 group-hover:rotate-12 transition-transform duration-300"
-            />
-            <span>Explore All Trips</span>
-            <div className="flex items-center">
-              <Icon
-                icon="lucide:arrow-right"
-                className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-300"
-              />
-            </div>
-          </div>
-        </Link>
-
-        {/* Additional info */}
-        <div className="mt-4 sm:mt-6 text-xs sm:text-sm text-gray-500 px-2">
-          <span className="block sm:inline">
-            ✨ Best price guarantee • Expert guides • All equipment included
-          </span>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-// --- Enhanced View All Packages Section Component ---
-const EnhancedViewAllPackages = ({ packagesCount, displayedCount }) => (
-  <div className="mt-16">
-    <div className="relative bg-gradient-to-r from-purple-50 via-pink-50 to-blue-50 rounded-3xl p-6 sm:p-8 md:p-12 border border-purple-100 shadow-lg overflow-hidden">
-      {/* Decorative elements - hidden on mobile, visible on larger screens */}
-      <div className="hidden md:block absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-200/30 to-pink-200/30 rounded-full -translate-y-16 translate-x-16"></div>
-      <div className="hidden md:block absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-200/30 to-purple-200/30 rounded-full translate-y-12 -translate-x-12"></div>
-
-      <div className="relative text-center">
-        {/* Icon and stats */}
-        <div className="mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mb-4 shadow-lg">
-            <Icon
-              icon="lucide:package"
-              className="w-7 h-7 sm:w-8 sm:h-8 text-white"
-            />
-          </div>
-          <div className="flex items-center justify-center space-x-3 sm:space-x-6 text-xs sm:text-sm text-gray-600 flex-wrap gap-y-2 px-2">
-            <div className="flex items-center space-x-1 sm:space-x-2">
-              <Icon
-                icon="lucide:gift"
-                className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500 flex-shrink-0"
-              />
-              <span>Special Offers</span>
-            </div>
-            <div className="flex items-center space-x-1 sm:space-x-2">
-              <Icon
-                icon="lucide:sparkles"
-                className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500 flex-shrink-0"
-              />
-              <span>Curated Experiences</span>
-            </div>
-            <div className="flex items-center space-x-1 sm:space-x-2">
-              <Icon
-                icon="lucide:check-circle"
-                className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500 flex-shrink-0"
-              />
-              <span>Best Value</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="max-w-2xl mx-auto mb-6 sm:mb-8 px-2">
-          <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">
-            Explore More Packages
-          </h3>
-          <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-            You've seen {displayedCount} of our {packagesCount} curated
-            packages. Discover more bundled adventures designed to give you the
-            best diving experience at incredible value.
-          </p>
-        </div>
-
-        {/* Enhanced CTA Button */}
-        <Link
-          href="/packages"
-          className="group relative inline-flex items-center justify-center px-6 sm:px-10 py-3 sm:py-4 text-base sm:text-lg font-bold text-white bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 overflow-hidden"
-        >
-          {/* Button shine effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-
-          {/* Button content */}
-          <div className="relative flex items-center space-x-2 sm:space-x-3">
-            <Icon
-              icon="lucide:package"
-              className="w-5 h-5 sm:w-6 sm:h-6 group-hover:rotate-12 transition-transform duration-300"
-            />
-            <span>View All Packages</span>
-            <div className="flex items-center">
-              <Icon
-                icon="lucide:arrow-right"
-                className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-300"
-              />
-            </div>
-          </div>
-        </Link>
-
-        {/* Additional info */}
-        <div className="mt-4 sm:mt-6 text-xs sm:text-sm text-gray-500 px-2">
-          <span className="block sm:inline">
-            🎁 Bundled savings • Complete experiences • Everything included
-          </span>
-        </div>
-      </div>
-    </div>
-  </div>
-);
 
 // --- Main Component ---
 const PackageTripClientWrapper = ({ initialPackages, initialTrips }) => {

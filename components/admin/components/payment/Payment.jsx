@@ -7,7 +7,7 @@ const PaymentsContent = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen p-6">
+    <div className=" min-h-screen p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header Section */}
         <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/60 relative overflow-hidden">

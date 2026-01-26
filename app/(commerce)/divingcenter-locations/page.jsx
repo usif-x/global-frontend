@@ -27,7 +27,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://topdivers.online/locations",
+    canonical: "https://topdivers.online/divingcenter-locations",
   },
 };
 

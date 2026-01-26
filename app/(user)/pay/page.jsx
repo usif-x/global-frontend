@@ -287,13 +287,12 @@ function PaymentStatusPage() {
 
     async function fetchInvoiceData() {
       try {
-        const data = await InvoiceService.getInvoiceByReference(
-          customerReference
-        );
+        const data =
+          await InvoiceService.getInvoiceByReference(customerReference);
         setInvoice(data);
       } catch (err) {
         setError(
-          err.response?.data?.detail || "Could not find the specified invoice."
+          err.response?.data?.detail || "Could not find the specified invoice.",
         );
       } finally {
         setLoading(false);
@@ -338,7 +337,7 @@ function PaymentStatusPage() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen flex items-center justify-center py-12 px-4">
+    <div className=" min-h-screen flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200/60">
         {renderContent()}
       </div>

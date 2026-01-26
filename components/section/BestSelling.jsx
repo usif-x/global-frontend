@@ -46,7 +46,7 @@ const normalizeApiItem = (apiItem) => {
           } catch {
             // If parsing fails, treat array elements as items
             items = data.filter(
-              (item) => item && (typeof item === "string" ? item.trim() : item)
+              (item) => item && (typeof item === "string" ? item.trim() : item),
             );
             break;
           }
@@ -57,7 +57,7 @@ const normalizeApiItem = (apiItem) => {
         } else {
           // It's an array of strings
           items = data.filter(
-            (item) => item && (typeof item === "string" ? item.trim() : item)
+            (item) => item && (typeof item === "string" ? item.trim() : item),
           );
           break;
         }
@@ -260,13 +260,7 @@ const BestSellersHero = () => {
   return (
     <section className="relative py-20 overflow-hidden">
       {/* Modern Background with Gradient Mesh */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-cyan-50/30 to-blue-50"></div>
-
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-200/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-200/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
+      <div className="absolute inset-0 "></div>
 
       <div className="relative container mx-auto px-4">
         {/* Section Header */}

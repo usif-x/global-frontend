@@ -165,7 +165,7 @@ const UserDetailsModal = ({ userId, onClose, token }) => {
           `${process.env.NEXT_PUBLIC_API_URL}/admins/user/${userId}/details`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
 
         if (!response.ok) throw new Error("Failed to fetch user details");
@@ -173,7 +173,7 @@ const UserDetailsModal = ({ userId, onClose, token }) => {
         setUserDetails(data);
       } catch (error) {
         toast.error(
-          "Failed to fetch user details. " + (error.message || "Unknown error")
+          "Failed to fetch user details. " + (error.message || "Unknown error"),
         );
         onClose();
       } finally {
@@ -362,8 +362,8 @@ const UserDetailsModal = ({ userId, onClose, token }) => {
                                 invoice.status === "PAID"
                                   ? "bg-green-100 text-green-700"
                                   : invoice.status === "PENDING"
-                                  ? "bg-yellow-100 text-yellow-700"
-                                  : "bg-red-100 text-red-700"
+                                    ? "bg-yellow-100 text-yellow-700"
+                                    : "bg-red-100 text-red-700"
                               }`}
                             >
                               {invoice.status}
@@ -562,8 +562,8 @@ const UserDetailsModal = ({ userId, onClose, token }) => {
                                     notification.type === "payment"
                                       ? "mdi:cash"
                                       : notification.type === "enrollment"
-                                      ? "mdi:school"
-                                      : "mdi:bell"
+                                        ? "mdi:school"
+                                        : "mdi:bell"
                                   }
                                   className="w-4 h-4 text-cyan-600"
                                 />
@@ -785,7 +785,7 @@ const TestimonialsModal = ({ user, onClose, token }) => {
         try {
           const res = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/admins/get-user-testminals/${user.id}`,
-            { headers: { Authorization: `Bearer ${token}` } }
+            { headers: { Authorization: `Bearer ${token}` } },
           );
           if (!res.ok) throw new Error("Failed to fetch testimonials");
           const data = await res.json();
@@ -846,7 +846,7 @@ const TestimonialsModal = ({ user, onClose, token }) => {
       // Refresh testimonials
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/admins/get-user-testminals/${user.id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       if (res.ok) {
         const data = await res.json();
@@ -941,15 +941,15 @@ const TestimonialsModal = ({ user, onClose, token }) => {
                           testimonial.is_accepted === true
                             ? "bg-green-100 text-green-700"
                             : testimonial.is_rejected === true
-                            ? "bg-red-100 text-red-700"
-                            : "bg-yellow-100 text-yellow-700"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-yellow-100 text-yellow-700"
                         }`}
                       >
                         {testimonial.is_rejected
                           ? "Rejected"
                           : testimonial.is_accepted
-                          ? "Approved"
-                          : "Pending"}
+                            ? "Approved"
+                            : "Pending"}
                       </span>
                       <div className="flex space-x-1">
                         {testimonial.is_accepted !== true && (
@@ -1130,7 +1130,7 @@ const UserService = {
     const query = new URLSearchParams(params).toString();
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/admins/get-all-users?${query}`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
     if (!response.ok) throw new Error("Failed to fetch users.");
     return response.json();
@@ -1144,7 +1144,7 @@ const UserService = {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
     if (!response.ok) throw new Error("Failed to update user status.");
   },
@@ -1157,7 +1157,7 @@ const UserService = {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
     if (!response.ok) throw new Error("Failed to update user status.");
   },
@@ -1170,7 +1170,7 @@ const UserService = {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
     if (!response.ok) throw new Error("Failed to delete user.");
   },
@@ -1185,7 +1185,7 @@ const UserService = {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ user_id: userId, course_id: courseId }),
-      }
+      },
     );
     if (!response.ok) {
       const errorData = await response.json();
@@ -1278,7 +1278,7 @@ export default function UserManagementPage() {
             data.total_pages ||
             Math.ceil(
               (data.total || data.users.length) /
-                (data.page_size || pagination.page_size)
+                (data.page_size || pagination.page_size),
             ),
           has_next: data.has_next || false,
           has_previous: data.has_previous || false,
@@ -1510,7 +1510,7 @@ export default function UserManagementPage() {
         ),
       },
     ],
-    [users]
+    [users],
   );
 
   const table = useReactTable({
@@ -1529,7 +1529,7 @@ export default function UserManagementPage() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen">
+    <div className=" min-h-screen">
       <div className="container mx-auto p-4 sm:p-6 lg:p-8">
         {/* Header Section */}
         <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/60 mb-8 relative overflow-hidden">
@@ -1708,15 +1708,15 @@ export default function UserManagementPage() {
                           <div className="flex items-center gap-2">
                             {flexRender(
                               header.column.columnDef.header,
-                              header.getContext()
+                              header.getContext(),
                             )}
                             <Icon
                               icon={
                                 header.column.getIsSorted() === "asc"
                                   ? "mdi:arrow-up"
                                   : header.column.getIsSorted() === "desc"
-                                  ? "mdi:arrow-down"
-                                  : "mdi:unfold-more-horizontal"
+                                    ? "mdi:arrow-down"
+                                    : "mdi:unfold-more-horizontal"
                               }
                               className="text-slate-400 w-4 h-4"
                             />
@@ -1741,7 +1741,7 @@ export default function UserManagementPage() {
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </td>
                       ))}
@@ -1765,7 +1765,7 @@ export default function UserManagementPage() {
                       to{" "}
                       {Math.min(
                         pagination.page * pagination.page_size,
-                        pagination.total
+                        pagination.total,
                       )}{" "}
                       of {pagination.total} users
                     </span>
@@ -1890,11 +1890,11 @@ export default function UserManagementPage() {
                             u.is_blocked
                               ? "Blocked"
                               : u.is_active
-                              ? "Active"
-                              : "Inactive"
+                                ? "Active"
+                                : "Inactive"
                           }","${formatLastLogin(u.last_login)}","${formatDate(
-                            u.created_at
-                          )}"`
+                            u.created_at,
+                          )}"`,
                       )
                       .join("\n");
                     const header =

@@ -124,7 +124,7 @@ export default function BlogList({ onAdd, onEdit }) {
       (blog) =>
         blog.title?.toLowerCase().includes(search) ||
         blog.subject?.toLowerCase().includes(search) ||
-        blog.tags?.some((tag) => tag.toLowerCase().includes(search))
+        blog.tags?.some((tag) => tag.toLowerCase().includes(search)),
     );
   }, [blogs, searchTerm]);
 
@@ -132,13 +132,13 @@ export default function BlogList({ onAdd, onEdit }) {
     const total = blogs.length;
     const totalBlocks = blogs.reduce(
       (sum, blog) => sum + (blog.content?.length || 0),
-      0
+      0,
     );
     const totalImages = blogs.reduce(
       (sum, blog) =>
         sum +
         (blog.content?.filter((block) => block.type === "image").length || 0),
-      0
+      0,
     );
     const totalTags = new Set(blogs.flatMap((blog) => blog.tags || [])).size;
     return { total, totalBlocks, totalImages, totalTags };
@@ -244,7 +244,7 @@ export default function BlogList({ onAdd, onEdit }) {
         ),
       },
     ],
-    [onEdit]
+    [onEdit],
   );
 
   const table = useReactTable({
@@ -257,7 +257,7 @@ export default function BlogList({ onAdd, onEdit }) {
   });
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen">
+    <div className=" min-h-screen">
       <div className="container mx-auto p-4 sm:p-6 lg:p-8">
         {/* Header Section */}
         <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/60 mb-8 relative overflow-hidden">
@@ -400,15 +400,15 @@ export default function BlogList({ onAdd, onEdit }) {
                           <div className="flex items-center gap-2">
                             {flexRender(
                               header.column.columnDef.header,
-                              header.getContext()
+                              header.getContext(),
                             )}
                             <Icon
                               icon={
                                 header.column.getIsSorted() === "asc"
                                   ? "mdi:arrow-up"
                                   : header.column.getIsSorted() === "desc"
-                                  ? "mdi:arrow-down"
-                                  : "mdi:unfold-more-horizontal"
+                                    ? "mdi:arrow-down"
+                                    : "mdi:unfold-more-horizontal"
                               }
                               className="text-slate-400 w-4 h-4"
                             />
@@ -430,7 +430,7 @@ export default function BlogList({ onAdd, onEdit }) {
                         <td key={cell.id} className="px-6 py-4 text-sm">
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </td>
                       ))}

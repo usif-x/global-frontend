@@ -91,15 +91,15 @@ const NotificationModal = ({
                             notification.priority === "high"
                               ? "bg-red-100 text-red-800"
                               : notification.priority === "medium"
-                              ? "bg-orange-100 text-orange-800"
-                              : "bg-blue-100 text-blue-800"
+                                ? "bg-orange-100 text-orange-800"
+                                : "bg-blue-100 text-blue-800"
                           }`}
                         >
                           {notification.priority === "high"
                             ? "Urgent"
                             : notification.priority === "medium"
-                            ? "Important"
-                            : "Info"}
+                              ? "Important"
+                              : "Info"}
                         </span>
                         <span className="text-xs text-gray-500">
                           {notification.time}
@@ -192,7 +192,7 @@ const AdminDashboard = () => {
       if (results[1].status === "fulfilled" && results[1].value?.users) {
         const today = new Date().toDateString();
         const newUsersToday = results[1].value.users.filter(
-          (user) => new Date(user.created_at).toDateString() === today
+          (user) => new Date(user.created_at).toDateString() === today,
         ).length;
         stats.new_users_today = newUsersToday;
       }
@@ -301,8 +301,8 @@ const AdminDashboard = () => {
       setNotifications(newNotifications);
       setNotificationCount(
         newNotifications.filter(
-          (n) => n.priority === "high" || n.priority === "medium"
-        ).length
+          (n) => n.priority === "high" || n.priority === "medium",
+        ).length,
       );
     } catch (error) {
       console.error("Error loading notifications:", error);
@@ -398,7 +398,7 @@ const AdminDashboard = () => {
           {
             id: "divecenters",
             label: "Dive Centers",
-            icon: "mdi:diving",
+            icon: "mdi:office-building-location-outline",
             color: "text-teal-500",
             description: "Manage dive centers and their info",
           },

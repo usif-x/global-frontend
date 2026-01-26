@@ -51,7 +51,7 @@ const NotificationsTab = () => {
 
     // Optimistic update
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
     );
     try {
       await postData(`/notifications/${id}/read`, {}, true);
@@ -59,7 +59,7 @@ const NotificationsTab = () => {
       toast.error("Failed to update notification status.");
       // Revert on error
       setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, is_read: false } : n))
+        prev.map((n) => (n.id === id ? { ...n, is_read: false } : n)),
       );
     }
   };
@@ -129,7 +129,7 @@ const NotificationsTab = () => {
         size: 20,
       },
     ],
-    []
+    [],
   );
 
   // Create the table instance
@@ -203,7 +203,7 @@ const NotificationsTab = () => {
     }
     if (filteredData.length === 0) {
       return (
-        <div className="text-center py-16 px-6 bg-gradient-to-br from-slate-50 to-cyan-50 rounded-xl border border-slate-200">
+        <div className="text-center py-16 px-6  rounded-xl border border-slate-200">
           <Icon
             icon="mdi:bell-check-outline"
             className="mx-auto h-16 w-16 text-slate-400 mb-4"

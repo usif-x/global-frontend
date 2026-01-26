@@ -24,7 +24,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  ArcElement
+  ArcElement,
 );
 
 // Helper components for charts/visualizations
@@ -265,7 +265,7 @@ export default function ComprehensiveAnalyticsDashboard() {
 
   if (loading && !data) {
     return (
-      <div className="flex justify-center items-center h-96 bg-gradient-to-br from-slate-50 to-cyan-50">
+      <div className="flex justify-center items-center h-96 ">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div>
           <p className="text-slate-600">Loading comprehensive analytics...</p>
@@ -850,7 +850,7 @@ export default function ComprehensiveAnalyticsDashboard() {
                                 </span>
                               </td>
                             </tr>
-                          )
+                          ),
                         )}
                       </tbody>
                     </table>
@@ -907,7 +907,7 @@ export default function ComprehensiveAnalyticsDashboard() {
                                 </span>
                               </td>
                             </tr>
-                          )
+                          ),
                         )}
                       </tbody>
                     </table>

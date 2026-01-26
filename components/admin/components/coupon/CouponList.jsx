@@ -121,7 +121,7 @@ const CouponList = ({ onAdd, onEdit }) => {
     // Apply type filter
     if (filterType === "active") {
       filtered = filtered.filter(
-        (c) => c.is_active && !isExpired(c.expire_date)
+        (c) => c.is_active && !isExpired(c.expire_date),
       );
     } else if (filterType === "inactive") {
       filtered = filtered.filter((c) => !c.is_active);
@@ -135,7 +135,7 @@ const CouponList = ({ onAdd, onEdit }) => {
       filtered = filtered.filter(
         (c) =>
           c.code?.toLowerCase().includes(search) ||
-          c.activity?.toLowerCase().includes(search)
+          c.activity?.toLowerCase().includes(search),
       );
     }
 
@@ -145,7 +145,7 @@ const CouponList = ({ onAdd, onEdit }) => {
   const statsData = useMemo(() => {
     const total = coupons.length;
     const active = coupons.filter(
-      (c) => c.is_active && !isExpired(c.expire_date)
+      (c) => c.is_active && !isExpired(c.expire_date),
     ).length;
     const totalUsage = coupons.reduce((sum, c) => sum + (c.used_count || 0), 0);
     const avgDiscount =
@@ -204,12 +204,12 @@ const CouponList = ({ onAdd, onEdit }) => {
                     {!row.original.is_active
                       ? "Inactive"
                       : expired
-                      ? "Expired"
-                      : row.original.remaining <= 0
-                      ? "Used Up"
-                      : usagePercentage > 80
-                      ? "Low"
-                      : "Active"}
+                        ? "Expired"
+                        : row.original.remaining <= 0
+                          ? "Used Up"
+                          : usagePercentage > 80
+                            ? "Low"
+                            : "Active"}
                   </span>
                   <span className="text-xs text-slate-500 capitalize">
                     {row.original.activity === "all"
@@ -311,7 +311,7 @@ const CouponList = ({ onAdd, onEdit }) => {
         ),
       },
     ],
-    [onEdit]
+    [onEdit],
   );
 
   const table = useReactTable({
@@ -324,7 +324,7 @@ const CouponList = ({ onAdd, onEdit }) => {
   });
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-cyan-50 min-h-screen">
+    <div className=" min-h-screen">
       <div className="container mx-auto p-4 sm:p-6 lg:p-8">
         {/* Header Section */}
         <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/60 mb-8 relative overflow-hidden">
@@ -482,15 +482,15 @@ const CouponList = ({ onAdd, onEdit }) => {
                           <div className="flex items-center gap-2">
                             {flexRender(
                               header.column.columnDef.header,
-                              header.getContext()
+                              header.getContext(),
                             )}
                             <Icon
                               icon={
                                 header.column.getIsSorted() === "asc"
                                   ? "mdi:arrow-up"
                                   : header.column.getIsSorted() === "desc"
-                                  ? "mdi:arrow-down"
-                                  : "mdi:unfold-more-horizontal"
+                                    ? "mdi:arrow-down"
+                                    : "mdi:unfold-more-horizontal"
                               }
                               className="text-slate-400 w-4 h-4"
                             />
@@ -512,7 +512,7 @@ const CouponList = ({ onAdd, onEdit }) => {
                         <td key={cell.id} className="px-6 py-4 text-sm">
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </td>
                       ))}

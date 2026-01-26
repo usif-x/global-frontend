@@ -204,7 +204,7 @@ const CoursesTab = () => {
 
     if (courses.length === 0) {
       return (
-        <div className="text-center py-16 px-6 bg-gradient-to-br from-slate-50 to-cyan-50 rounded-xl border border-slate-200">
+        <div className="text-center py-16 px-6  rounded-xl border border-slate-200">
           <Icon
             icon="mdi:school-outline"
             className="mx-auto h-16 w-16 text-slate-400 mb-4"

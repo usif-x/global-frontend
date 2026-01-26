@@ -170,6 +170,13 @@ export default function Home() {
                     className="w-full h-full object-contain"
                   />
                 </div>
+                <div className="bg-white rounded-lg p-2 w-14 h-9 sm:w-16 sm:h-10 flex items-center justify-center">
+                  <img
+                    src="/image/fawry.png"
+                    alt="Cash"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
               </div>
             </div>
 
