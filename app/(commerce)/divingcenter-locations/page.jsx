@@ -1,6 +1,7 @@
 import DiveCenterService from "@/services/divecenterService"; // Make sure this path is correct
 import { Icon } from "@iconify/react";
 import Image from "next/image";
+import Link from "next/link";
 
 // Updated metadata to be more general
 export const metadata = {
@@ -136,66 +137,71 @@ export default async function LocationsPage() {
           {diveCenters && diveCenters.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               {diveCenters.map((center) => (
-                <div
+                <Link
                   key={center.id}
-                  className="bg-white rounded-3xl shadow-xl overflow-hidden transform transition-all duration-300 flex flex-col"
+                  href={`/divingcenter-locations/${center.id}`}
+                  className="block group"
                 >
-                  <div className="relative h-64 w-full">
-                    <Image
-                      src={center.images[0]}
-                      alt={`View of the ${center.name} dive center`}
-                      layout="fill"
-                      objectFit="cover"
-                      className="transition-transform duration-300 group-hover:scale-110"
-                    />
-                  </div>
-                  <div className="p-8 flex-grow flex flex-col">
-                    <h2 className="text-3xl font-bold text-blue-900">
-                      {center.name}
-                    </h2>
-                    <p className="mt-3 text-gray-600 flex-grow">
-                      {center.description}
-                    </p>
-
-                    <div className="mt-6 space-y-4">
-                      <div className="flex items-start">
-                        <Icon
-                          icon="mdi:map-marker"
-                          className="h-6 w-6 text-cyan-600 mr-3 flex-shrink-0 mt-1"
-                        />
-                        <span className="text-gray-700">{center.location}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Icon
-                          icon="mdi:phone"
-                          className="h-6 w-6 text-cyan-600 mr-3"
-                        />
-                        <a
-                          href={`tel:${center.phone}`}
-                          className="text-gray-700 hover:text-cyan-700"
-                        >
-                          {center.phone}
-                        </a>
-                      </div>
-                      <div className="flex items-center">
-                        <Icon
-                          icon="mdi:email"
-                          className="h-6 w-6 text-cyan-600 mr-3"
-                        />
-                        <a
-                          href={`mailto:${center.email}`}
-                          className="text-gray-700 hover:text-cyan-700"
-                        >
-                          {center.email}
-                        </a>
-                      </div>
+                  <div className="bg-white rounded-3xl shadow-xl overflow-hidden transform transition-all duration-300 flex flex-col hover:shadow-2xl hover:scale-105">
+                    <div className="relative h-64 w-full">
+                      <Image
+                        src={center.images[0]}
+                        alt={`View of the ${center.name} dive center`}
+                        layout="fill"
+                        objectFit="cover"
+                        className="transition-transform duration-300 group-hover:scale-110"
+                      />
                     </div>
+                    <div className="p-8 flex-grow flex flex-col">
+                      <h2 className="text-3xl font-bold text-blue-900">
+                        {center.name}
+                      </h2>
+                      <p className="mt-3 text-gray-600 flex-grow">
+                        {center.description}
+                      </p>
 
-                    {center.working_hours && (
-                      <WorkingHoursDisplay hours={center.working_hours} />
-                    )}
+                      <div className="mt-6 space-y-4">
+                        <div className="flex items-start">
+                          <Icon
+                            icon="mdi:map-marker"
+                            className="h-6 w-6 text-cyan-600 mr-3 flex-shrink-0 mt-1"
+                          />
+                          <span className="text-gray-700">
+                            {center.location}
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <Icon
+                            icon="mdi:phone"
+                            className="h-6 w-6 text-cyan-600 mr-3"
+                          />
+                          <a
+                            href={`tel:${center.phone}`}
+                            className="text-gray-700 hover:text-cyan-700"
+                          >
+                            {center.phone}
+                          </a>
+                        </div>
+                        <div className="flex items-center">
+                          <Icon
+                            icon="mdi:email"
+                            className="h-6 w-6 text-cyan-600 mr-3"
+                          />
+                          <a
+                            href={`mailto:${center.email}`}
+                            className="text-gray-700 hover:text-cyan-700"
+                          >
+                            {center.email}
+                          </a>
+                        </div>
+                      </div>
+
+                      {center.working_hours && (
+                        <WorkingHoursDisplay hours={center.working_hours} />
+                      )}
+                    </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           ) : (

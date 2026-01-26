@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL; // backend API
   const siteBaseUrl = process.env.NEXT_PUBLIC_APP_URL; // public site
@@ -13,10 +15,22 @@ export async function GET() {
       coursesResponse,
       divingCentersResponse,
     ] = await Promise.all([
-      fetch(`${apiBaseUrl}/trips`, { signal: controller.signal }),
-      fetch(`${apiBaseUrl}/packages`, { signal: controller.signal }),
-      fetch(`${apiBaseUrl}/courses`, { signal: controller.signal }),
-      fetch(`${apiBaseUrl}/dive-centers`, { signal: controller.signal }),
+      fetch(`${apiBaseUrl}/trips`, {
+        signal: controller.signal,
+        cache: "no-store",
+      }),
+      fetch(`${apiBaseUrl}/packages`, {
+        signal: controller.signal,
+        cache: "no-store",
+      }),
+      fetch(`${apiBaseUrl}/courses`, {
+        signal: controller.signal,
+        cache: "no-store",
+      }),
+      fetch(`${apiBaseUrl}/dive-centers`, {
+        signal: controller.signal,
+        cache: "no-store",
+      }),
     ]);
 
     clearTimeout(timeoutId);

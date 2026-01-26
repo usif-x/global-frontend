@@ -1,3 +1,4 @@
+import VideoGallery from "@/components/ui/VideoGallery";
 import DiveCenterService from "@/services/divecenterService";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
@@ -81,7 +82,6 @@ export default async function DiveCenterPage({ params }) {
     <>
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-900 via-cyan-700 to-teal-600 py-32 text-center text-white">
-        <div className="absolute inset-0 bg-black opacity-40"></div>
         {center.images && center.images.length > 0 && (
           <div className="absolute inset-0">
             <Image
@@ -89,7 +89,7 @@ export default async function DiveCenterPage({ params }) {
               alt={`Hero image of ${center.name}`}
               layout="fill"
               objectFit="cover"
-              className="opacity-20"
+              className="opacity-10"
             />
           </div>
         )}
@@ -116,10 +116,10 @@ export default async function DiveCenterPage({ params }) {
               View All Locations
             </Link>
             <a
-              href={`tel:${center.phone}`}
+              href={`https://wa.me/${center.phone}`}
               className="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
             >
-              Call Now
+              WhatsApp Us
             </a>
           </div>
         </div>
