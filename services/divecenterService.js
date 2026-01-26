@@ -10,7 +10,7 @@ class DiveCenterService {
   }
 
   static async create(data) {
-    return await postData("/dive-centers", data, true);
+    return await postData("/dive-centers/", data, true);
   }
 
   static async update(id, data) {
