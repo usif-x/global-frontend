@@ -572,15 +572,6 @@ const DiveCenterFormModal = memo(({ diveCenter, onClose, onSave }) => {
     setSelectedVideo(file);
   }, []);
 
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -617,34 +608,37 @@ const DiveCenterFormModal = memo(({ diveCenter, onClose, onSave }) => {
         return;
       }
 
-      // Prepare data as JSON with base64 for files
-      const data = {
-        name: formData.name,
-        description: formData.description,
-        location: formData.location,
-        hotel_name: formData.hotel_name || "",
-        phone: formData.phone,
-        email: formData.email,
-        coordinates: {
+      // Create FormData for multipart upload
+      const submitData = new FormData();
+      submitData.append("name", formData.name);
+      submitData.append("description", formData.description);
+      submitData.append("location", formData.location);
+      submitData.append("hotel_name", formData.hotel_name || "");
+      submitData.append("phone", formData.phone);
+      submitData.append("email", formData.email);
+      submitData.append(
+        "coordinates",
+        JSON.stringify({
           latitude: parseFloat(formData.coordinates.latitude) || 0,
           longitude: parseFloat(formData.coordinates.longitude) || 0,
-        },
-        working_hours: formData.working_hours,
-      };
+        }),
+      );
+      submitData.append(
+        "working_hours",
+        JSON.stringify(formData.working_hours),
+      );
 
-      // Convert images to base64
-      if (selectedImages.length > 0) {
-        data.images = await Promise.all(
-          selectedImages.map((file) => convertToBase64(file)),
-        );
-      }
+      // Append images
+      selectedImages.forEach((file) => {
+        submitData.append("images", file);
+      });
 
-      // Convert video to base64
+      // Append video if selected
       if (selectedVideo) {
-        data.video = await convertToBase64(selectedVideo);
+        submitData.append("video", selectedVideo);
       }
 
-      await onSave(data, diveCenter?.id);
+      await onSave(submitData, diveCenter?.id);
     } finally {
       setIsSubmitting(false);
     }
