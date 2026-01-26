@@ -7,29 +7,41 @@ export async function GET() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 sec timeout
 
-    const [tripsResponse, packagesResponse, coursesResponse] =
-      await Promise.all([
-        fetch(`${apiBaseUrl}/trips`, { signal: controller.signal }),
-        fetch(`${apiBaseUrl}/packages`, { signal: controller.signal }),
-        fetch(`${apiBaseUrl}/courses`, { signal: controller.signal }),
-      ]);
+    const [
+      tripsResponse,
+      packagesResponse,
+      coursesResponse,
+      divingCentersResponse,
+    ] = await Promise.all([
+      fetch(`${apiBaseUrl}/trips`, { signal: controller.signal }),
+      fetch(`${apiBaseUrl}/packages`, { signal: controller.signal }),
+      fetch(`${apiBaseUrl}/courses`, { signal: controller.signal }),
+      fetch(`${apiBaseUrl}/dive-centers`, { signal: controller.signal }),
+    ]);
 
     clearTimeout(timeoutId);
 
-    if (!tripsResponse.ok || !packagesResponse.ok || !coursesResponse.ok) {
+    if (
+      !tripsResponse.ok ||
+      !packagesResponse.ok ||
+      !coursesResponse.ok ||
+      !divingCentersResponse.ok
+    ) {
       throw new Error("Failed to fetch data from API");
     }
 
-    const [trips, packages, courses] = await Promise.all([
+    const [trips, packages, courses, divingCenters] = await Promise.all([
       tripsResponse.json(),
       packagesResponse.json(),
       coursesResponse.json(),
+      divingCentersResponse.json(),
     ]);
 
     if (
       !Array.isArray(trips) ||
       !Array.isArray(packages) ||
-      !Array.isArray(courses)
+      !Array.isArray(courses) ||
+      !Array.isArray(divingCenters)
     ) {
       throw new Error("Invalid data structure received from API");
     }
@@ -39,6 +51,11 @@ export async function GET() {
       { url: `${siteBaseUrl}/trips/`, priority: "0.9", changefreq: "daily" },
       { url: `${siteBaseUrl}/packages/`, priority: "0.9", changefreq: "daily" },
       { url: `${siteBaseUrl}/courses/`, priority: "0.9", changefreq: "daily" },
+      {
+        url: `${siteBaseUrl}/divingcenter-locations/`,
+        priority: "0.8",
+        changefreq: "weekly",
+      },
       {
         url: `${siteBaseUrl}/dive-sites/`,
         priority: "0.8",
@@ -87,6 +104,13 @@ export async function GET() {
           priority: "0.8",
           changefreq: "weekly",
         })),
+      ...divingCenters
+        .filter((dc) => dc.id != null)
+        .map((dc) => ({
+          url: `${siteBaseUrl}/divingcenter-locations/${dc.id}/`,
+          priority: "0.8",
+          changefreq: "weekly",
+        })),
     ];
 
     // Build XML
@@ -99,7 +123,7 @@ ${urls
     <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
-  </url>`
+  </url>`,
   )
   .join("\n")}
 </urlset>`;
@@ -144,7 +168,7 @@ ${fallbackUrls
     <lastmod>${new Date().toISOString().split("T")[0]}</lastmod>
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
-  </url>`
+  </url>`,
   )
   .join("\n")}
 </urlset>`;
