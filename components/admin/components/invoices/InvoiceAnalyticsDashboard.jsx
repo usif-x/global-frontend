@@ -298,6 +298,12 @@ export default function ComprehensiveAnalyticsDashboard() {
                   <p className="text-sm text-slate-500 mt-1">
                     Real-time insights, financial reports & platform statistics
                   </p>
+                  <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
+                    <Icon icon="mdi:information-outline" className="w-4 h-4 text-blue-600" />
+                    <p className="text-xs text-blue-700 font-medium">
+                      All revenue amounts displayed in EGP (multi-currency invoices automatically converted)
+                    </p>
+                  </div>
                 </div>
               </div>
 

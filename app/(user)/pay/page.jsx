@@ -122,7 +122,18 @@ const SuccessDisplay = ({ invoice }) => (
                         Pay{" "}
                         <strong>
                           {formatCurrency(invoice.amount, invoice.currency)}
-                        </strong>{" "}
+                        </strong>
+                        {invoice.currency !== "EGP" &&
+                          invoice.convert_rate && (
+                            <span className="text-xs text-blue-600 ml-1">
+                              (≈{" "}
+                              {formatCurrency(
+                                invoice.amount * invoice.convert_rate,
+                                "EGP",
+                              )}
+                              )
+                            </span>
+                          )}{" "}
                         in cash when you arrive at the diving center.
                       </p>
                     </div>
@@ -188,6 +199,22 @@ const SuccessDisplay = ({ invoice }) => (
           {formatCurrency(invoice.amount, invoice.currency)}
         </span>
       </div>
+      {invoice.currency !== "EGP" && invoice.convert_rate && (
+        <>
+          <div className="flex justify-between items-center">
+            <span className="text-slate-500 text-sm">EGP Equivalent:</span>
+            <span className="font-semibold text-slate-700">
+              {formatCurrency(invoice.amount * invoice.convert_rate, "EGP")}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-slate-500 text-sm">Conversion Rate:</span>
+            <span className="font-medium text-slate-600 text-sm">
+              1 {invoice.currency} = {invoice.convert_rate.toFixed(2)} EGP
+            </span>
+          </div>
+        </>
+      )}
     </div>
     <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
       <Link
@@ -235,6 +262,22 @@ const FailedDisplay = ({ invoice, status }) => (
             {formatCurrency(invoice.amount, invoice.currency)}
           </span>
         </div>
+        {invoice.currency !== "EGP" && invoice.convert_rate && (
+          <>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-500 text-sm">EGP Equivalent:</span>
+              <span className="font-semibold text-slate-700">
+                {formatCurrency(invoice.amount * invoice.convert_rate, "EGP")}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-500 text-sm">Conversion Rate:</span>
+              <span className="font-medium text-slate-600 text-sm">
+                1 {invoice.currency} = {invoice.convert_rate.toFixed(2)} EGP
+              </span>
+            </div>
+          </>
+        )}
       </div>
     )}
     <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">

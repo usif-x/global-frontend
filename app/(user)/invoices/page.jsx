@@ -298,7 +298,24 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
                 <p className="text-2xl font-bold text-slate-800">
                   {formatCurrency(invoice.amount, invoice.currency)}
                 </p>
-                <p className="text-sm font-medium text-slate-500">
+                {invoice.currency !== "EGP" && invoice.convert_rate && (
+                  <div className="mt-1 text-sm text-slate-600">
+                    <Icon
+                      icon="mdi:information-outline"
+                      className="inline w-4 h-4 mr-1"
+                    />
+                    ≈{" "}
+                    {formatCurrency(
+                      invoice.amount * invoice.convert_rate,
+                      "EGP",
+                    )}
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      Rate: 1 {invoice.currency} ={" "}
+                      {invoice.convert_rate.toFixed(2)} EGP
+                    </div>
+                  </div>
+                )}
+                <p className="text-sm font-medium text-slate-500 mt-2">
                   Pay Currency
                 </p>
                 <p className="text-lg font-bold text-slate-800">
@@ -319,13 +336,39 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
             {invoice.discount_breakdown && (
               <div>
                 <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b pb-2">
-                  Price Breakdown (EGP)
+                  Price Breakdown ({invoice.currency})
                 </h3>
+                {invoice.currency !== "EGP" && invoice.convert_rate && (
+                  <div className="mb-3 bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
+                    <div className="flex items-start gap-2">
+                      <Icon
+                        icon="mdi:information-outline"
+                        className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                      />
+                      <div className="text-sm text-blue-700">
+                        <p className="font-medium">Multi-Currency Invoice</p>
+                        <p className="mt-1">
+                          Prices below are in {invoice.currency}. EGP
+                          equivalent:{" "}
+                          <strong>
+                            {formatCurrency(
+                              invoice.amount * invoice.convert_rate,
+                              "EGP",
+                            )}
+                          </strong>{" "}
+                          (Rate: 1 {invoice.currency} ={" "}
+                          {invoice.convert_rate.toFixed(2)} EGP)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-4 space-y-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-600">Base Price:</span>
                     <span className="font-semibold text-slate-800">
-                      EGP {invoice.discount_breakdown.base_price?.toFixed(2)}
+                      {invoice.currency}{" "}
+                      {invoice.discount_breakdown.base_price?.toFixed(2)}
                     </span>
                   </div>
 
@@ -342,7 +385,7 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
                           %)
                         </span>
                         <span className="font-bold text-green-700">
-                          - EGP{" "}
+                          - {invoice.currency}{" "}
                           {invoice.discount_breakdown.group_discount.amount?.toFixed(
                             2,
                           )}
@@ -370,7 +413,7 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
                           %)
                         </span>
                         <span className="font-bold text-purple-700">
-                          - EGP{" "}
+                          - {invoice.currency}{" "}
                           {invoice.discount_breakdown.promo_discount.amount?.toFixed(
                             2,
                           )}
@@ -392,7 +435,7 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
                         Total Savings:
                       </span>
                       <span className="font-bold text-green-600">
-                        EGP{" "}
+                        {invoice.currency}{" "}
                         {invoice.discount_breakdown.total_discount?.toFixed(2)}
                       </span>
                     </div>
@@ -401,7 +444,8 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
                   <div className="flex justify-between font-bold text-lg border-t pt-3">
                     <span className="text-slate-800">Final Amount:</span>
                     <span className="text-blue-600">
-                      EGP {invoice.discount_breakdown.final_price?.toFixed(2)}
+                      {invoice.currency}{" "}
+                      {invoice.discount_breakdown.final_price?.toFixed(2)}
                     </span>
                   </div>
                 </div>

@@ -242,6 +242,15 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
                       ? "Online Payment"
                       : "Cash Payment"}
                   </span>
+                  {invoice.currency !== "EGP" && invoice.convert_rate && (
+                    <span
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800"
+                      title={`1 ${invoice.currency} = ${invoice.convert_rate} EGP`}
+                    >
+                      <Icon icon="mdi:currency-exchange" className="w-4 h-4" />
+                      Multi-Currency
+                    </span>
+                  )}
                 </div>
               </div>
               <button
@@ -403,17 +412,27 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                     <div>
                       <span className="text-slate-500 font-medium">
-                        Amount:
+                        Amount Paid:
                       </span>
                       <p className="text-slate-800 font-bold text-lg">
-                        {formatCurrency(invoice.amount, invoice.currency)}
+                        {invoice.amount.toFixed(2)} {invoice.currency}
                       </p>
+                      {invoice.currency !== "EGP" && invoice.convert_rate && (
+                        <p className="text-xs text-slate-500 mt-1">
+                          ≈ {(invoice.amount * invoice.convert_rate).toFixed(2)} EGP
+                        </p>
+                      )}
                     </div>
                     <div>
                       <span className="text-slate-500 font-medium">
                         Currency:
                       </span>
                       <p className="text-slate-800">{invoice.currency}</p>
+                      {invoice.currency !== "EGP" && invoice.convert_rate && (
+                        <p className="text-xs text-slate-500 mt-1">
+                          Rate: 1 {invoice.currency} = {invoice.convert_rate.toFixed(2)} EGP
+                        </p>
+                      )}
                     </div>
                     <div>
                       <span className="text-slate-500 font-medium">
@@ -488,7 +507,7 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
                         Base Price:
                       </span>
                       <span className="font-bold text-slate-800 text-lg">
-                        EGP {invoice.discount_breakdown.base_price?.toFixed(2)}
+                        {invoice.discount_breakdown.base_price?.toFixed(2)} {invoice.currency}
                       </span>
                     </div>
 
@@ -517,10 +536,7 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
                             </div>
                           </div>
                           <span className="font-black text-green-700 text-lg">
-                            - EGP{" "}
-                            {invoice.discount_breakdown.group_discount.amount?.toFixed(
-                              2,
-                            )}
+                            - {invoice.discount_breakdown.group_discount.amount?.toFixed(2)} {invoice.currency}
                           </span>
                         </div>
                         <p className="text-xs text-green-700 bg-green-100/50 px-2 py-1 rounded">
@@ -557,10 +573,7 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
                             </div>
                           </div>
                           <span className="font-black text-purple-700 text-lg">
-                            - EGP{" "}
-                            {invoice.discount_breakdown.promo_discount.amount?.toFixed(
-                              2,
-                            )}
+                            - {invoice.discount_breakdown.promo_discount.amount?.toFixed(2)} {invoice.currency}
                           </span>
                         </div>
                         <p className="text-xs text-purple-700 bg-purple-100/50 px-2 py-1 rounded font-mono">
@@ -577,10 +590,7 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
                           Total Savings:
                         </span>
                         <span className="font-black text-green-600 text-lg">
-                          EGP{" "}
-                          {invoice.discount_breakdown.total_discount?.toFixed(
-                            2,
-                          )}
+                          {invoice.discount_breakdown.total_discount?.toFixed(2)} {invoice.currency}
                         </span>
                       </div>
                     )}
@@ -593,9 +603,13 @@ const InvoiceDetailsModal = ({ invoiceId, onClose }) => {
                             Final Amount
                           </p>
                           <p className="font-black text-3xl">
-                            EGP{" "}
-                            {invoice.discount_breakdown.final_price?.toFixed(2)}
+                            {invoice.discount_breakdown.final_price?.toFixed(2)} {invoice.currency}
                           </p>
+                          {invoice.currency !== "EGP" && invoice.convert_rate && (
+                            <p className="text-blue-100 text-xs mt-1">
+                              ≈ {(invoice.discount_breakdown.final_price * invoice.convert_rate)?.toFixed(2)} EGP
+                            </p>
+                          )}
                         </div>
                         {invoice.discount_breakdown.total_discount > 0 && (
                           <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg text-center">
@@ -1004,12 +1018,23 @@ export default function InvoiceManagementPage() {
       {
         accessorKey: "amount",
         header: "Amount",
-        cell: ({ row }) => (
-          <span className="font-semibold text-slate-800">
-            {formatCurrency(row.original.amount, row.original.currency)}
-          </span>
-        ),
-      }, // Note: we pass the original currency here for potential future use, but our helper defaults to EGP.
+        cell: ({ row }) => {
+          const invoice = row.original;
+          const amountInEGP = invoice.amount * (invoice.convert_rate || 1);
+          return (
+            <div>
+              <span className="font-semibold text-slate-800 block">
+                {invoice.amount.toFixed(2)} {invoice.currency}
+              </span>
+              {invoice.currency !== "EGP" && invoice.convert_rate && (
+                <span className="text-xs text-slate-500 block" title={`Conversion rate: 1 ${invoice.currency} = ${invoice.convert_rate} EGP`}>
+                  ≈ {amountInEGP.toFixed(2)} EGP
+                </span>
+              )}
+            </div>
+          );
+        },
+      },
       {
         accessorKey: "status",
         header: "Status",
@@ -1178,6 +1203,12 @@ export default function InvoiceManagementPage() {
               <p className="text-sm text-slate-500 mt-1">
                 Oversee all financial transactions and invoices.
               </p>
+              <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
+                <Icon icon="mdi:information-outline" className="w-4 h-4 text-blue-600" />
+                <p className="text-xs text-blue-700 font-medium">
+                  Summary totals shown in EGP (individual invoices may be in different currencies)
+                </p>
+              </div>
             </div>
           </div>
         </div>
