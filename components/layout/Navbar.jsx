@@ -189,7 +189,7 @@ const Navbar = () => {
           >
             <div className="relative rounded-full">
               <Image
-                src="/image/logo.png"
+                src="/image/logo.jpg"
                 alt="Hurghada Trips Logo"
                 width={32}
                 height={32}
