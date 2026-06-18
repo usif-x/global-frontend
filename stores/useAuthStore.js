@@ -27,6 +27,7 @@ export const useAuthStore = create(
       admin: null,
       token: null,
       userType: null,
+      hasHydrated: false, // 👈 NEW
 
       login: ({ user, token }) => {
         set({
@@ -58,22 +59,23 @@ export const useAuthStore = create(
         });
       },
 
-      // --- 👇 أضف هذه الدالة هنا 👇 ---
       updateUser: (newUserData) => {
         set((state) => {
-          // تأكد من أن هناك مستخدم لتحديثه
           if (state.user) {
             return {
               user: {
-                ...state.user, // احتفظ بالبيانات القديمة
-                ...newUserData, // ادمج البيانات الجديدة معها
+                ...state.user,
+                ...newUserData,
               },
             };
           }
-          return state; // إذا لم يكن هناك مستخدم، لا تفعل شيئًا
+          return state;
         });
       },
-      // --- 👆 نهاية الدالة المضافة 👆 ---
+
+      setHasHydrated: (value) => {
+        set({ hasHydrated: value });
+      },
 
       isAdmin: () => get().userType === "admin" && get().admin !== null,
       isUser: () => get().userType === "user" && get().user !== null,
@@ -87,7 +89,12 @@ export const useAuthStore = create(
         admin: state.admin,
         token: state.token,
         userType: state.userType,
+        // don't persist hasHydrated itself
       }),
-    }
-  )
+      onRehydrateStorage: () => (state, error) => {
+        // Called once rehydration finishes (success or fail)
+        useAuthStore.getState().setHasHydrated(true);
+      },
+    },
+  ),
 );

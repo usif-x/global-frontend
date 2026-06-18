@@ -132,6 +132,7 @@ const NotificationModal = ({
 
 const AdminDashboard = () => {
   const { admin, logout, isAdmin } = useAuthStore();
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false); // For mobile
   const [isCollapsed, setIsCollapsed] = useState(false); // For desktop
@@ -149,19 +150,17 @@ const AdminDashboard = () => {
   });
 
   useEffect(() => {
+    if (!hasHydrated) return; // 👈 don't check auth until store is ready
+
     if (!isAdmin()) {
       router.push("/admin/login");
       return;
     }
 
-    // Load notifications on component mount
     loadNotifications();
-
-    // Set up polling for real-time updates (every 3 minutes)
     const interval = setInterval(loadNotifications, 180000);
-
     return () => clearInterval(interval);
-  }, [isAdmin, router]);
+  }, [hasHydrated, isAdmin, router]);
 
   const loadNotifications = async () => {
     try {
@@ -541,6 +540,7 @@ const AdminDashboard = () => {
     }
   };
 
+  if (!hasHydrated) return null; // or a loading spinner
   if (!admin) return null;
 
   return (
