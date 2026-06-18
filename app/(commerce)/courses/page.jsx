@@ -14,19 +14,19 @@ export const metadata = {
   robots: "index, follow",
   authors: [{ name: "Yousseif Muhammad" }],
   openGraph: {
-    title: "Top Divers Hurghada - Diving Courses",
-    description: "Top Divers Hurghada - Diving Courses",
+    title: "Hurghada Trips Hurghada - Diving Courses",
+    description: "Hurghada Trips Hurghada - Diving Courses",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Top Divers Hurghada - Diving Courses",
-    description: "Top Divers Hurghada - Diving Courses",
+    title: "Hurghada Trips Hurghada - Diving Courses",
+    description: "Hurghada Trips Hurghada - Diving Courses",
   },
   icons: {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://topdivers.online/courses",
+    canonical: "https://hurghada-trips.online/courses",
   },
   category: "education",
 };
@@ -101,7 +101,7 @@ const CoursesPage = async () => {
     } else {
       console.error(
         "API endpoint /courses did not return an array. Received:",
-        data
+        data,
       );
     }
   } catch (err) {

@@ -20,7 +20,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://topdivers.online/dive-sites",
+    canonical: "https://hurghada-trips.online/dive-sites",
   },
 };
 

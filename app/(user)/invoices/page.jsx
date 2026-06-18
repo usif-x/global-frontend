@@ -36,9 +36,9 @@ const generateInvoicePDF = async (invoice, user) => {
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(123, 136, 151);
-    doc.text("Top Divers Hurghada", 20, 25);
+    doc.text("Hurghada Trips Hurghada", 20, 25);
     doc.text("Sunrise Alma resort, hurghada - egypt", 20, 30);
-    doc.text("Website: topdivers.online", 20, 35);
+    doc.text("Website: hurghada-trips.online", 20, 35);
 
     // --- Invoice Details ---
     doc.setFontSize(12);
@@ -931,7 +931,7 @@ export default function MyInvoicesPage() {
                 {/* Contact options */}
                 <div className="flex flex-wrap gap-3">
                   <a
-                    href="https://www.instagram.com/topdivers.hurghada"
+                    href="https://www.instagram.com/Hurghada Trips.hurghada"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2.5 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors text-sm font-semibold shadow-md hover:shadow-lg"

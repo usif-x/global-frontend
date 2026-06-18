@@ -1,23 +1,23 @@
 export const metadata = {
   title: "Privacy Policy ",
-  description: "Privacy policy for Top Divers Hurghada",
-  keywords: "privacy, policy, Top Divers, hurghada",
+  description: "Privacy policy for Hurghada Trips Hurghada",
+  keywords: "privacy, policy, Hurghada Trips, hurghada",
   robots: "index, follow",
   authors: [{ name: "Yousseif Muhammad" }],
   openGraph: {
     title: "Privacy Policy ",
-    description: "Privacy policy for Top Divers Hurghada",
+    description: "Privacy policy for Hurghada Trips Hurghada",
   },
   twitter: {
     card: "summary_large_image",
     title: "Privacy Policy ",
-    description: "Privacy policy for Top Divers Hurghada",
+    description: "Privacy policy for Hurghada Trips Hurghada",
   },
   icons: {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://topdivers.online/privacy-policy",
+    canonical: "https://hurghada-trips.online/privacy-policy",
   },
 };
 

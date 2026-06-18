@@ -35,7 +35,7 @@ export default function Home() {
               {/* Company Info - Full width on mobile, spans 2 cols on large screens */}
               <div className="lg:col-span-2">
                 <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white">
-                  About Top Divers Hurghada
+                  About Hurghada Trips Hurghada
                 </h3>
                 <p className="text-white/80 mb-4 leading-relaxed text-sm sm:text-base">
                   Our dive base is managed and supervised by a highly
@@ -46,7 +46,7 @@ export default function Home() {
                 </p>
                 <div className="flex space-x-4">
                   <a
-                    href="https://www.instagram.com/topdivers.hurghada"
+                    href="https://www.instagram.com/Hurghada Trips.hurghada"
                     className="text-white/60 hover:text-white transition-colors"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -80,10 +80,10 @@ export default function Home() {
                       className="text-white/60 flex-shrink-0"
                     />
                     <a
-                      href="mailto:contact@topdivers.online"
+                      href="mailto:contact@hurghada-trips.online"
                       className="text-white/80 text-sm hover:text-white transition-colors break-all"
                     >
-                      contact@topdivers.online
+                      contact@hurghada-trips.online
                     </a>
                   </div>
                   <div className="flex items-start space-x-3">
@@ -183,7 +183,7 @@ export default function Home() {
             {/* Bottom Bar */}
             <div className="pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
               <p className="text-white/60 text-xs sm:text-sm text-center sm:text-left">
-                © {new Date().getFullYear()} Top Divers Hurghada. All rights
+                © {new Date().getFullYear()} Hurghada Trips Hurghada. All rights
                 reserved.
               </p>
               <div className="flex flex-col items-center sm:flex-row sm:items-center gap-3 sm:gap-4 text-xs sm:text-sm text-white/60">

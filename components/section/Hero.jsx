@@ -5,8 +5,8 @@ const Hero = ({
   slides = [
     {
       backgroundImageUrl: "/image/hero-bg2.jpg",
-      title: "Top Divers",
-      subtitle: "Experience the Red Sea's Beauty with TopDivers",
+      title: "Hurghada Trips",
+      subtitle: "Experience the Red Sea's Beauty with Hurghada Trips",
       description:
         "Book your dive today and get ready for an unforgettable adventure!",
       buttonText: "Book A Trip",
@@ -84,7 +84,7 @@ const Hero = ({
         }, 400);
       }
     },
-    [currentSlide, isTransitioning]
+    [currentSlide, isTransitioning],
   );
 
   useEffect(() => {

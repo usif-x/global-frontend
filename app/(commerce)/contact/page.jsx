@@ -354,7 +354,7 @@ const ContactPage = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Email Us
             </h3>
-            <p className="text-gray-600">contact@topdivers.online</p>
+            <p className="text-gray-600">contact@hurghada-trips.online</p>
             <p className="text-sm text-gray-500 mt-1">We reply within 24h</p>
           </div>
 

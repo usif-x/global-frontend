@@ -117,8 +117,8 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
       // Level 1 admins only get basic data
       if (!isLevel2Admin) {
         const [all, recentUsersData] = await Promise.all([
-          fetch("https://api.topdivers.online/analytics/all").then((r) =>
-            r.json()
+          fetch("https://api.hurghada-trips.online/analytics/all").then((r) =>
+            r.json(),
           ),
           AdminService.getRecentUsers(),
         ]);
@@ -132,8 +132,8 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
         const [analytics, all, invoiceSummary, recentUsersData] =
           await Promise.all([
             AnalyticsService.getDashboardSummary(),
-            fetch("https://api.topdivers.online/analytics/all").then((r) =>
-              r.json()
+            fetch("https://api.hurghada-trips.online/analytics/all").then((r) =>
+              r.json(),
             ),
             InvoiceService.getInvoiceSummaryAdmin(),
             AdminService.getRecentUsers(),

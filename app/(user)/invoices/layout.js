@@ -2,7 +2,7 @@ export const metadata = {
   title: "My Invoices",
   description: "My Invoices",
   keywords: "globaldiver invoices, invoices, user",
-  robots: "index, follow",
+  robots: "noindex, nofollow",
   authors: [{ name: "Yousseif Muhammad" }],
   openGraph: {
     title: "My Invoices",
@@ -17,7 +17,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://topdivers.online/invoices",
+    canonical: "https://hurghada-trips.online/invoices",
   },
 };
 

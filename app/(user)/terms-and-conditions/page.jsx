@@ -23,7 +23,7 @@ const TermsAndConditions = () => {
           <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
             <p className="font-medium text-blue-900">Contract Agreement</p>
             <p className="text-blue-800 mt-1">
-              The contract is stipulated between you and "Top Divers"
+              The contract is stipulated between you and "Hurghada Trips"
             </p>
           </div>
 
@@ -57,9 +57,9 @@ const TermsAndConditions = () => {
               Price Changes
             </p>
             <p className="text-amber-800 mt-1 text-sm">
-              Top Divers reserves the right to change prices due to local taxes
-              or governmental fees. Your booking remains valid at the original
-              price if paid in advance.
+              Hurghada Trips reserves the right to change prices due to local
+              taxes or governmental fees. Your booking remains valid at the
+              original price if paid in advance.
             </p>
           </div>
         </div>
@@ -308,7 +308,7 @@ const TermsAndConditions = () => {
                 to:
               </p>
               <p className="font-mono bg-white px-2 py-1 rounded border">
-                contact@topdivers.online
+                contact@hurghada-trips.online
               </p>
               <p>3. We'll respond within 7 working days via email</p>
             </div>
@@ -331,7 +331,7 @@ const TermsAndConditions = () => {
               Website Copyright
             </h4>
             <p className="text-gray-700 text-sm">
-              Top Divers owns all website content copyright. Access doesn't
+              Hurghada Trips owns all website content copyright. Access doesn't
               authorize copying or distribution of materials.
             </p>
           </div>
@@ -354,7 +354,9 @@ const TermsAndConditions = () => {
                 />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Top Divers</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Hurghada Trips
+                </h1>
                 <p className="text-gray-600 text-sm">Terms & Conditions</p>
               </div>
             </div>
@@ -419,11 +421,11 @@ const TermsAndConditions = () => {
               Contact us for clarification on any of these terms and conditions.
             </p>
             <a
-              href="mailto:contact@topdivers.online"
+              href="mailto:contact@hurghada-trips.online"
               className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               <Icon icon="solar:letter-bold" className="w-4 h-4" />
-              contact@topdivers.online
+              contact@hurghada-trips.online
             </a>
           </div>
         </div>

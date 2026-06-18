@@ -1,23 +1,23 @@
 export const metadata = {
   title: "Terms & Conditions ",
-  description: "Terms and conditions for Top Divers Hurghada",
-  keywords: "terms, conditions, Top Divers, hurghada",
+  description: "Terms and conditions for Hurghada Trips Hurghada",
+  keywords: "terms, conditions, Hurghada Trips, hurghada",
   robots: "index, follow",
   authors: [{ name: "Yousseif Muhammad" }],
   openGraph: {
     title: "Terms & Conditions ",
-    description: "Terms and conditions for Top Divers Hurghada",
+    description: "Terms and conditions for Hurghada Trips Hurghada",
   },
   twitter: {
     card: "summary_large_image",
     title: "Terms & Conditions ",
-    description: "Terms and conditions for Top Divers Hurghada",
+    description: "Terms and conditions for Hurghada Trips Hurghada",
   },
   icons: {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://topdivers.online/terms-and-conditions",
+    canonical: "https://hurghada-trips.online/terms-and-conditions",
   },
 };
 

@@ -1,23 +1,23 @@
 export const metadata = {
   title: "Safety Guidelines ",
-  description: "Safety guidelines for Top Divers Hurghada",
-  keywords: "safety, guidelines, Top Divers, hurghada",
+  description: "Safety guidelines for Hurghada Trips Hurghada",
+  keywords: "safety, guidelines, Hurghada Trips, hurghada",
   robots: "index, follow",
   authors: [{ name: "Yousseif Muhammad" }],
   openGraph: {
     title: "Safety Guidelines ",
-    description: "Safety guidelines for Top Divers Hurghada",
+    description: "Safety guidelines for Hurghada Trips Hurghada",
   },
   twitter: {
     card: "summary_large_image",
     title: "Safety Guidelines ",
-    description: "Safety guidelines for Top Divers Hurghada",
+    description: "Safety guidelines for Hurghada Trips Hurghada",
   },
   icons: {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://topdivers.online/safety-guidelines",
+    canonical: "https://hurghada-trips.online/safety-guidelines",
   },
 };
 

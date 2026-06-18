@@ -25,7 +25,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://topdivers.online/trips",
+    canonical: "https://hurghada-trips.online/trips",
   },
 };
 
@@ -39,7 +39,7 @@ const formatPrice = (
   price,
   hasDiscount,
   discountPercentage,
-  discountAlwaysAvailable
+  discountAlwaysAvailable,
 ) => {
   // Only apply discount if it's always available or if conditions are met
   if (hasDiscount && discountPercentage && discountAlwaysAvailable) {
@@ -110,7 +110,7 @@ const TripsPage = async ({ searchParams }) => {
         trip.adult_price,
         trip.has_discount,
         trip.discount_percentage,
-        trip.discount_always_available
+        trip.discount_always_available,
       );
       const price = priceDetails.discounted || priceDetails.original;
 
@@ -122,7 +122,7 @@ const TripsPage = async ({ searchParams }) => {
             trip.adult_price,
             trip.has_discount,
             trip.discount_percentage,
-            trip.discount_always_available
+            trip.discount_always_available,
           );
           return parseFloat(priceDetails.discounted || priceDetails.original);
         })
@@ -156,28 +156,28 @@ const TripsPage = async ({ searchParams }) => {
           a.adult_price,
           a.has_discount,
           a.discount_percentage,
-          a.discount_always_available
+          a.discount_always_available,
         ).discounted ||
           formatPrice(
             a.adult_price,
             a.has_discount,
             a.discount_percentage,
-            a.discount_always_available
-          ).original
+            a.discount_always_available,
+          ).original,
       );
       const priceB = parseFloat(
         formatPrice(
           b.adult_price,
           b.has_discount,
           b.discount_percentage,
-          b.discount_always_available
+          b.discount_always_available,
         ).discounted ||
           formatPrice(
             b.adult_price,
             b.has_discount,
             b.discount_percentage,
-            b.discount_always_available
-          ).original
+            b.discount_always_available,
+          ).original,
       );
 
       switch (sortBy) {
@@ -313,10 +313,10 @@ const TripsPage = async ({ searchParams }) => {
                       trip.adult_price,
                       trip.has_discount,
                       trip.discount_percentage,
-                      trip.discount_always_available
+                      trip.discount_always_available,
                     );
                     return parseFloat(
-                      priceDetails.discounted || priceDetails.original
+                      priceDetails.discounted || priceDetails.original,
                     );
                   })
                   .filter((p) => !isNaN(p));
@@ -402,10 +402,10 @@ const TripsPage = async ({ searchParams }) => {
                 trip.adult_price,
                 trip.has_discount,
                 trip.discount_percentage,
-                trip.discount_always_available
+                trip.discount_always_available,
               );
               const packageInfo = packages.find(
-                (p) => p.id === trip.package_id
+                (p) => p.id === trip.package_id,
               );
               const discountBadgeText = getDiscountBadgeText(trip);
 

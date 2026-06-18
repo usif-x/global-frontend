@@ -35,7 +35,7 @@ export async function generateMetadata({ params }) {
       icon: "/favicon.ico",
     },
     alternates: {
-      canonical: `https://topdivers.online/divingcenter-locations/${id}`,
+      canonical: `https://hurghada-trips.online/divingcenter-locations/${id}`,
     },
   };
 }

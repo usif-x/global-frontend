@@ -61,7 +61,7 @@ const WhyChooseUs = () => {
             Your Perfect Diving Partner
           </h2>
           <p className="text-gray-600 text-lg md:text-xl max-w-3xl mx-auto">
-            Experience the difference with TopDivers. We combine expertise,
+            Experience the difference with Hurghada Trips. We combine expertise,
             passion, and dedication to create unforgettable underwater
             adventures.
           </p>

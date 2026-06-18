@@ -17,7 +17,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "api.topdivers.online",
+        hostname: "api.hurghada-trips.online",
         pathname: "/**",
       },
     ],

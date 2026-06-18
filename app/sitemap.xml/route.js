@@ -2,7 +2,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL; // backend API
-  const siteBaseUrl = process.env.NEXT_PUBLIC_APP_URL; // public site
+  const siteBaseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://hurghada-trips.online"; // public site
 
   try {
     // Fetch all data concurrently with timeouts
@@ -14,6 +15,7 @@ export async function GET() {
       packagesResponse,
       coursesResponse,
       divingCentersResponse,
+      blogsResponse,
     ] = await Promise.all([
       fetch(`${apiBaseUrl}/trips`, {
         signal: controller.signal,
@@ -31,6 +33,10 @@ export async function GET() {
         signal: controller.signal,
         cache: "no-store",
       }),
+      fetch(`${apiBaseUrl}/blogs`, {
+        signal: controller.signal,
+        cache: "no-store",
+      }),
     ]);
 
     clearTimeout(timeoutId);
@@ -39,29 +45,33 @@ export async function GET() {
       !tripsResponse.ok ||
       !packagesResponse.ok ||
       !coursesResponse.ok ||
-      !divingCentersResponse.ok
+      !divingCentersResponse.ok ||
+      !blogsResponse.ok
     ) {
       throw new Error("Failed to fetch data from API");
     }
 
-    const [trips, packages, courses, divingCenters] = await Promise.all([
+    const [trips, packages, courses, divingCenters, blogs] = await Promise.all([
       tripsResponse.json(),
       packagesResponse.json(),
       coursesResponse.json(),
       divingCentersResponse.json(),
+      blogsResponse.json(),
     ]);
 
     if (
       !Array.isArray(trips) ||
       !Array.isArray(packages) ||
       !Array.isArray(courses) ||
-      !Array.isArray(divingCenters)
+      !Array.isArray(divingCenters) ||
+      !Array.isArray(blogs)
     ) {
       throw new Error("Invalid data structure received from API");
     }
 
     // Generate URLs for sitemap (with trailing slash)
-    const urls = [
+    const staticUrls = [
+      { url: `${siteBaseUrl}/`, priority: "1.0", changefreq: "daily" },
       { url: `${siteBaseUrl}/trips/`, priority: "0.9", changefreq: "daily" },
       { url: `${siteBaseUrl}/packages/`, priority: "0.9", changefreq: "daily" },
       { url: `${siteBaseUrl}/courses/`, priority: "0.9", changefreq: "daily" },
@@ -86,16 +96,34 @@ export async function GET() {
         changefreq: "daily",
       },
       {
-        url: `${siteBaseUrl}/profile/`,
-        priority: "0.5",
+        url: `${siteBaseUrl}/blog/`,
+        priority: "0.7",
+        changefreq: "weekly",
+      },
+      {
+        url: `${siteBaseUrl}/contact/`,
+        priority: "0.6",
         changefreq: "monthly",
       },
-      { url: `${siteBaseUrl}/login/`, priority: "0.4", changefreq: "yearly" },
       {
-        url: `${siteBaseUrl}/register/`,
-        priority: "0.4",
+        url: `${siteBaseUrl}/privacy-policy/`,
+        priority: "0.3",
         changefreq: "yearly",
       },
+      {
+        url: `${siteBaseUrl}/terms-and-conditions/`,
+        priority: "0.3",
+        changefreq: "yearly",
+      },
+      {
+        url: `${siteBaseUrl}/safety-guidelines/`,
+        priority: "0.3",
+        changefreq: "yearly",
+      },
+    ];
+
+    const urls = [
+      ...staticUrls,
 
       ...trips
         .filter((t) => t.id != null)
@@ -125,6 +153,13 @@ export async function GET() {
           priority: "0.8",
           changefreq: "weekly",
         })),
+      ...blogs
+        .filter((blog) => blog?.title)
+        .map((blog) => ({
+          url: `${siteBaseUrl}/blog/${encodeURIComponent(blog.title)}/`,
+          priority: "0.7",
+          changefreq: "weekly",
+        })),
     ];
 
     // Build XML
@@ -152,23 +187,53 @@ ${urls
     console.error("Error generating sitemap:", error);
 
     const fallbackUrls = [
+      { url: `${siteBaseUrl}/`, priority: "1.0", changefreq: "daily" },
       { url: `${siteBaseUrl}/trips/`, priority: "0.9", changefreq: "daily" },
       { url: `${siteBaseUrl}/packages/`, priority: "0.9", changefreq: "daily" },
       { url: `${siteBaseUrl}/courses/`, priority: "0.9", changefreq: "daily" },
+      {
+        url: `${siteBaseUrl}/divingcenter-locations/`,
+        priority: "0.8",
+        changefreq: "weekly",
+      },
+      {
+        url: `${siteBaseUrl}/dive-sites/`,
+        priority: "0.8",
+        changefreq: "weekly",
+      },
+      {
+        url: `${siteBaseUrl}/destinations/`,
+        priority: "0.8",
+        changefreq: "weekly",
+      },
       {
         url: `${siteBaseUrl}/bestsellers/`,
         priority: "0.7",
         changefreq: "daily",
       },
       {
-        url: `${siteBaseUrl}/profile/`,
-        priority: "0.5",
+        url: `${siteBaseUrl}/blog/`,
+        priority: "0.7",
+        changefreq: "weekly",
+      },
+      {
+        url: `${siteBaseUrl}/contact/`,
+        priority: "0.6",
         changefreq: "monthly",
       },
-      { url: `${siteBaseUrl}/login/`, priority: "0.4", changefreq: "yearly" },
       {
-        url: `${siteBaseUrl}/register/`,
-        priority: "0.4",
+        url: `${siteBaseUrl}/privacy-policy/`,
+        priority: "0.3",
+        changefreq: "yearly",
+      },
+      {
+        url: `${siteBaseUrl}/terms-and-conditions/`,
+        priority: "0.3",
+        changefreq: "yearly",
+      },
+      {
+        url: `${siteBaseUrl}/safety-guidelines/`,
+        priority: "0.3",
         changefreq: "yearly",
       },
     ];

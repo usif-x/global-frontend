@@ -2,7 +2,7 @@ export const metadata = {
   title: "Login",
   description: "Login to your account",
   keywords: "login, account, user",
-  robots: "index, follow",
+  robots: "noindex, nofollow",
   authors: [{ name: "Yousseif Muhammad" }],
   openGraph: {
     title: "Login ",
@@ -17,7 +17,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://topdivers.online/login",
+    canonical: "https://hurghada-trips.online/login",
   },
 };
 

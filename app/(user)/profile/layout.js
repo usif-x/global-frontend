@@ -2,7 +2,7 @@ export const metadata = {
   title: "My Profile ",
   description: "Your profile and settings",
   keywords: "profile, settings, user",
-  robots: "index, follow",
+  robots: "noindex, nofollow",
   authors: [{ name: "Yousseif Muhammad" }],
   openGraph: {
     title: "My Profile ",
@@ -17,7 +17,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://topdivers.online/profile",
+    canonical: "https://hurghada-trips.online/profile",
   },
 };
 

@@ -448,7 +448,7 @@ const SafetyGuidelines = () => {
               Equipment Responsibility
             </h4>
             <p className="text-amber-800 text-sm">
-              While Top Divers maintains all rental equipment to the highest
+              While Hurghada Trips maintains all rental equipment to the highest
               standards, divers are responsible for conducting pre-dive safety
               checks and reporting any equipment issues immediately.
             </p>
@@ -585,7 +585,7 @@ const SafetyGuidelines = () => {
                   <li>• Call emergency services (122)</li>
                   <li>• Contact diving emergency hotline</li>
                   <li>• Notify hyperbaric chamber</li>
-                  <li>• Update Top Divers staff</li>
+                  <li>• Update Hurghada Trips staff</li>
                 </ul>
               </div>
               <div>
@@ -1294,7 +1294,9 @@ const SafetyGuidelines = () => {
                 />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Top Divers</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Hurghada Trips
+                </h1>
                 <p className="text-gray-600 text-sm">Safety Guidelines</p>
               </div>
             </div>

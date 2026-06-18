@@ -123,17 +123,16 @@ const SuccessDisplay = ({ invoice }) => (
                         <strong>
                           {formatCurrency(invoice.amount, invoice.currency)}
                         </strong>
-                        {invoice.currency !== "EGP" &&
-                          invoice.convert_rate && (
-                            <span className="text-xs text-blue-600 ml-1">
-                              (≈{" "}
-                              {formatCurrency(
-                                invoice.amount * invoice.convert_rate,
-                                "EGP",
-                              )}
-                              )
-                            </span>
-                          )}{" "}
+                        {invoice.currency !== "EGP" && invoice.convert_rate && (
+                          <span className="text-xs text-blue-600 ml-1">
+                            (≈{" "}
+                            {formatCurrency(
+                              invoice.amount * invoice.convert_rate,
+                              "EGP",
+                            )}
+                            )
+                          </span>
+                        )}{" "}
                         in cash when you arrive at the diving center.
                       </p>
                     </div>
@@ -153,7 +152,7 @@ const SuccessDisplay = ({ invoice }) => (
             )}
             <div className="flex flex-wrap gap-3">
               <a
-                href="https://www.instagram.com/topdivers.hurghada"
+                href="https://www.instagram.com/Hurghada Trips.hurghada"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors text-sm font-medium"

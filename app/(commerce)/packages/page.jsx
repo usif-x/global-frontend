@@ -26,7 +26,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://topdivers.online/packages",
+    canonical: "https://hurghada-trips.online/packages",
   },
 };
 
@@ -57,7 +57,7 @@ const PackagesPage = async () => {
     } else {
       console.error(
         "API did not return an array for /packages. Received:",
-        packagesData
+        packagesData,
       );
     }
 

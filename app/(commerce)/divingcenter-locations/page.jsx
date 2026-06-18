@@ -5,7 +5,7 @@ import Link from "next/link";
 
 // Updated metadata to be more general
 export const metadata = {
-  title: "Our Dive Center Locations | Top Divers Hurghada",
+  title: "Our Dive Center Locations | Hurghada Trips Hurghada",
   description:
     "Explore our premier dive centers in Hurghada. Your gateways to unforgettable Red Sea diving adventures with state-of-the-art facilities.",
   keywords:
@@ -13,14 +13,14 @@ export const metadata = {
   robots: "index, follow",
   authors: [{ name: "Yousseif Muhammad" }],
   openGraph: {
-    title: "Our Dive Center Locations | Top Divers Hurghada",
+    title: "Our Dive Center Locations | Hurghada Trips Hurghada",
     description:
       "Explore our premier dive centers in Hurghada. Your gateways to unforgettable Red Sea diving adventures.",
     images: [{ url: "/image/dive-center-hero.webp" }], // A general hero image
   },
   twitter: {
     card: "summary_large_image",
-    title: "Our Dive Center Locations | Top Divers Hurghada",
+    title: "Our Dive Center Locations | Hurghada Trips Hurghada",
     description:
       "Explore our premier dive centers in Hurghada. Your gateways to unforgettable Red Sea diving adventures.",
   },
@@ -28,7 +28,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://topdivers.online/divingcenter-locations",
+    canonical: "https://hurghada-trips.online/divingcenter-locations",
   },
 };
 

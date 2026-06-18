@@ -2,7 +2,7 @@ export const metadata = {
   title: "Register",
   description: "Join our diving community by creating your account",
   keywords: "register, account, user",
-  robots: "index, follow",
+  robots: "noindex, nofollow",
   authors: [{ name: "Yousseif Muhammad" }],
   openGraph: {
     title: "Register ",
@@ -17,7 +17,7 @@ export const metadata = {
     icon: "/favicon.ico",
   },
   alternates: {
-    canonical: "https://topdivers.online/register",
+    canonical: "https://hurghada-trips.online/register",
   },
 };
 
