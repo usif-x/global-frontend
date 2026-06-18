@@ -14,13 +14,13 @@ export const metadata = {
   robots: "index, follow",
   authors: [{ name: "Yousseif Muhammad" }],
   openGraph: {
-    title: "Hurghada Trips Hurghada - Diving Courses",
-    description: "Hurghada Trips Hurghada - Diving Courses",
+    title: "Hurghada Trips - Diving Courses",
+    description: "Hurghada Trips - Diving Courses",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Hurghada Trips Hurghada - Diving Courses",
-    description: "Hurghada Trips Hurghada - Diving Courses",
+    title: "Hurghada Trips - Diving Courses",
+    description: "Hurghada Trips - Diving Courses",
   },
   icons: {
     icon: "/favicon.ico",

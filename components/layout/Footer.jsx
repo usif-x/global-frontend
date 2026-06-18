@@ -35,7 +35,7 @@ export default function Home() {
               {/* Company Info - Full width on mobile, spans 2 cols on large screens */}
               <div className="lg:col-span-2">
                 <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white">
-                  About Hurghada Trips Hurghada
+                  About Hurghada Trips
                 </h3>
                 <p className="text-white/80 mb-4 leading-relaxed text-sm sm:text-base">
                   Our dive base is managed and supervised by a highly
@@ -45,15 +45,6 @@ export default function Home() {
                   high-quality services and unforgettable diving experiences.
                 </p>
                 <div className="flex space-x-4">
-                  <a
-                    href="https://www.instagram.com/Hurghada Trips.hurghada"
-                    className="text-white/60 hover:text-white transition-colors"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Instagram"
-                  >
-                    <Icon icon="mdi:instagram" width={24} height={24} />
-                  </a>
                   <a
                     href="https://api.whatsapp.com/send?phone=201070440861"
                     className="text-white/60 hover:text-white transition-colors"
@@ -94,7 +85,7 @@ export default function Home() {
                       className="text-white/60 mt-1 flex-shrink-0"
                     />
                     <span className="text-white/80 text-sm">
-                      Sunrise Alma Resort
+                      Sunrise AQUAJOY
                       <br />
                       Egypt Hurghada
                     </span>
@@ -183,7 +174,7 @@ export default function Home() {
             {/* Bottom Bar */}
             <div className="pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
               <p className="text-white/60 text-xs sm:text-sm text-center sm:text-left">
-                © {new Date().getFullYear()} Hurghada Trips Hurghada. All rights
+                © {new Date().getFullYear()} Hurghada Trips. All rights
                 reserved.
               </p>
               <div className="flex flex-col items-center sm:flex-row sm:items-center gap-3 sm:gap-4 text-xs sm:text-sm text-white/60">

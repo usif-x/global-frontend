@@ -36,8 +36,8 @@ const generateInvoicePDF = async (invoice, user) => {
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(123, 136, 151);
-    doc.text("Hurghada Trips Hurghada", 20, 25);
-    doc.text("Sunrise Alma resort, hurghada - egypt", 20, 30);
+    doc.text("Hurghada Trips", 20, 25);
+    doc.text("Sunrise AQUAJOY, hurghada - egypt", 20, 30);
     doc.text("Website: hurghada-trips.online", 20, 35);
 
     // --- Invoice Details ---
