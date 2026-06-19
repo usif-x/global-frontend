@@ -20,6 +20,11 @@ const nextConfig = {
         hostname: "api.hurghada-trips.online",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "storage.hurghada-trips.online",
+        pathname: "/**",
+      },
     ],
   },
   trailingSlash: true,
