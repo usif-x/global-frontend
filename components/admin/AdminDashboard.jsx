@@ -541,6 +541,11 @@ const AdminDashboard = () => {
   };
 
   if (!hasHydrated) return null; // or a loading spinner
+  console.log("DEBUG:", {
+    hasHydrated,
+    admin,
+    isAuthenticated: useAuthStore.getState().isAuthenticated,
+  });
   if (!admin) return null;
 
   return (
