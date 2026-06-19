@@ -31,7 +31,9 @@ function shouldMakeAPICall(payload, lastVerified = null) {
   // If we haven't verified via API in the last hour, do it
   if (lastVerified) {
     const oneHour = 60 * 60;
-    const lastVerifiedTimestamp = Math.floor(new Date(lastVerified).getTime() / 1000);
+    const lastVerifiedTimestamp = Math.floor(
+      new Date(lastVerified).getTime() / 1000,
+    );
     if (now - lastVerifiedTimestamp < oneHour) {
       return { shouldCall: false, reason: "recently_verified" };
     }
@@ -39,7 +41,9 @@ function shouldMakeAPICall(payload, lastVerified = null) {
 
   // For user tokens, check if it's been more than 30 minutes since login
   if (payload.role === "user" && payload.login_time) {
-    const loginTimestamp = Math.floor(new Date(payload.login_time).getTime() / 1000);
+    const loginTimestamp = Math.floor(
+      new Date(payload.login_time).getTime() / 1000,
+    );
     const thirtyMinutes = 30 * 60;
     if (now - loginTimestamp < thirtyMinutes) {
       return { shouldCall: false, reason: "recent_login" };
@@ -178,7 +182,12 @@ async function verifyToken(authState) {
   return {
     valid: apiResult.valid,
     role: apiResult.role || userRole, // Fallback to JWT role if API doesn't return role
-    response: updateAuthCookie(nextResponse, authState, apiResult.valid, apiResult.role || userRole),
+    response: updateAuthCookie(
+      nextResponse,
+      authState,
+      apiResult.valid,
+      apiResult.role || userRole,
+    ),
   };
 }
 
@@ -193,15 +202,24 @@ export async function middleware(request) {
 
   const isAuthenticated = authState?.isAuthenticated && tokenVerification.valid;
   const userRole = tokenVerification.role;
-  const isAdmin = isAuthenticated && userRole === "admin";
-  const isUser = isAuthenticated && (userRole === "user" || userRole === "admin");
+  const isAdmin =
+    isAuthenticated &&
+    (userRole === "admin" ||
+      userRole === "superadmin" ||
+      authState?.userType === "admin");
+  const isUser =
+    isAuthenticated && (userRole === "user" || userRole === "admin");
 
-  console.log(`[Middleware] ${pathname} - Authenticated: ${isAuthenticated}, Role: ${userRole}`);
+  console.log(
+    `[Middleware] ${pathname} - Authenticated: ${isAuthenticated}, Role: ${userRole}`,
+  );
 
   // Route definitions
   const isAdminPath = pathname.startsWith("/admin");
   const isAuthPath = pathname === "/login" || pathname === "/register";
-  const isUserProtectedPath = ["/profile", "/invoices", "/payment"].some((p) => pathname.startsWith(p));
+  const isUserProtectedPath = ["/profile", "/invoices", "/payment"].some((p) =>
+    pathname.startsWith(p),
+  );
   const isActionPath = /\/(enroll|book)\/?$/.test(pathname);
 
   // Helper functions for responses
@@ -258,5 +276,7 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/((?!_next(?:/static|/image)|favicon\\.ico|image/|.*\\.(?:svg|jpg|jpeg|png|gif|webp|ico)$).*)"],
+  matcher: [
+    "/((?!_next(?:/static|/image)|favicon\\.ico|image/|.*\\.(?:svg|jpg|jpeg|png|gif|webp|ico)$).*)",
+  ],
 };

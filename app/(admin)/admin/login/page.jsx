@@ -16,14 +16,16 @@ export default function AdminLoginPage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const userType = useAuthStore((state) => state.userType);
 
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
+
   useEffect(() => {
-    if (isAuthenticated) {
-    }
-    if (userType === "admin") {
+    if (!hasHydrated) return; // wait until cookie is read
+
+    if (isAuthenticated && userType === "admin") {
       toast("Already logged in, redirecting...");
       router.replace("/admin/dashboard");
     }
-  }, [isAuthenticated, userType, router]);
+  }, [hasHydrated]); // only depend on hydration
 
   const [formData, setFormData] = useState({
     username_or_email: "",

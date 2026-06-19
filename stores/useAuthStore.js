@@ -40,12 +40,17 @@ export const useAuthStore = create(
       },
 
       adminLogin: ({ admin, token }) => {
+        // Decode the token to get the role (or get it from the API response)
+        const payload = JSON.parse(atob(token.split(".")[1]));
         set({
           isAuthenticated: true,
           admin,
           token,
           userType: "admin",
           user: null,
+          userRole: payload.role, // store actual role
+          tokenValid: true,
+          tokenVerified: new Date().toISOString(),
         });
       },
 
@@ -89,7 +94,9 @@ export const useAuthStore = create(
         admin: state.admin,
         token: state.token,
         userType: state.userType,
-        // don't persist hasHydrated itself
+        tokenValid: state.tokenValid, // persist
+        tokenVerified: state.tokenVerified,
+        userRole: state.userRole,
       }),
       onRehydrateStorage: () => (state, error) => {
         // Called once rehydration finishes (success or fail)
