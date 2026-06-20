@@ -30,6 +30,24 @@ const Hero = ({
       buttonText: "Learn More",
       buttonLink: "/packages",
     },
+    {
+      backgroundImageUrl: "/image/hero-bg4.png",
+      title: "Discover the Desert",
+      subtitle: "Unforgettable Safari Adventures",
+      description:
+        "Experience the thrill of the desert with exciting safari tours, breathtaking sunsets, Bedouin culture, and memories that will last a lifetime.",
+      buttonText: "Book Your Safari",
+      buttonLink: "/trips",
+    },
+    {
+      backgroundImageUrl: "/image/hero-bg5.png",
+      title: "Dive Into Wonder",
+      subtitle: "Snorkeling Adventures",
+      description:
+        "Glide through crystal-clear waters and discover vibrant coral reefs teeming with marine life, all just beneath the surface.",
+      buttonText: "View Tours",
+      buttonLink: "/packages",
+    },
   ],
   autoPlayInterval = 5000,
 }) => {
