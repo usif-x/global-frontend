@@ -14,7 +14,7 @@ export const metadata = {
     description: "Join our diving community by creating your account",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.jpg",
   },
   alternates: {
     canonical: "https://hurghada-trips.online/register",

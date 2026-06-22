@@ -32,7 +32,7 @@ export async function generateMetadata({ params }) {
       description: tripData.description,
     },
     icons: {
-      icon: "/favicon.ico",
+      icon: "/favicon.jpg",
     },
     alternates: {
       canonical: `https://hurghada-trips.online/divingcenter-locations/${id}`,

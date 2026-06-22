@@ -17,7 +17,7 @@ export const metadata = {
     description: "A comprehensive list of our curated diving locations",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.jpg",
   },
   alternates: {
     canonical: "https://hurghada-trips.online/dive-sites",

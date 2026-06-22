@@ -23,7 +23,7 @@ export const metadata = {
     description: "Hurghada Trips - Diving Courses",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.jpg",
   },
   alternates: {
     canonical: "https://hurghada-trips.online/courses",

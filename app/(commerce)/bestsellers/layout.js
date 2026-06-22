@@ -14,7 +14,7 @@ export const metadata = {
     description: "Best Selling Courses and Trips",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.jpg",
   },
   alternates: {
     canonical: "https://hurghada-trips.online/best-selling",

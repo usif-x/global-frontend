@@ -14,7 +14,7 @@ export const metadata = {
     description: "Terms and conditions for Hurghada Trips",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.jpg",
   },
   alternates: {
     canonical: "https://hurghada-trips.online/terms-and-conditions",

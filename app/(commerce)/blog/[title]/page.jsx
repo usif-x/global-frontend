@@ -33,7 +33,7 @@ export async function generateMetadata({ params }) {
         images: blog.featured_image ? [blog.featured_image] : [],
       },
       icons: {
-        icon: "/favicon.ico",
+        icon: "/favicon.jpg",
       },
     };
   } catch (error) {

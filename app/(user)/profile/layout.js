@@ -14,7 +14,7 @@ export const metadata = {
     description: "Your profile and settings",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.jpg",
   },
   alternates: {
     canonical: "https://hurghada-trips.online/profile",

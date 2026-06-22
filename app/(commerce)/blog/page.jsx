@@ -22,7 +22,7 @@ export const metadata = {
       "Explore diving stories, tips, and underwater adventures from around the world",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.jpg",
   },
   alternates: {
     canonical: "https://hurghada-trips.online/blog",

@@ -25,7 +25,7 @@ export const metadata = {
       "Explore our premier dive centers in Hurghada. Your gateways to unforgettable Red Sea diving adventures.",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.jpg",
   },
   alternates: {
     canonical: "https://hurghada-trips.online/divingcenter-locations",

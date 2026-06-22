@@ -22,7 +22,7 @@ export const metadata = {
     description: "Explore our complete, curated list of premier dive trips",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.jpg",
   },
   alternates: {
     canonical: "https://hurghada-trips.online/trips",

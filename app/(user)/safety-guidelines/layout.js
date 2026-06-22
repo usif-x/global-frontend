@@ -14,7 +14,7 @@ export const metadata = {
     description: "Safety guidelines for Hurghada Trips",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.jpg",
   },
   alternates: {
     canonical: "https://hurghada-trips.online/safety-guidelines",

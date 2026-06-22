@@ -14,7 +14,7 @@ export const metadata = {
     description: "Login to your account",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.jpg",
   },
   alternates: {
     canonical: "https://hurghada-trips.online/login",

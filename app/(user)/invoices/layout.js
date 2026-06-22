@@ -14,7 +14,7 @@ export const metadata = {
     description: "My Invoices",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.jpg",
   },
   alternates: {
     canonical: "https://hurghada-trips.online/invoices",
