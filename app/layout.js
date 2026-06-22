@@ -46,7 +46,7 @@ export const metadata = {
     siteName: "Hurghada Trips",
     images: [
       {
-        url: "https://hurghada-trips.online/hero-bg.jpg",
+        url: "https://hurghada-trips.online/image/hero-bg.jpg",
         width: 1200,
         height: 630,
         alt: "Scuba diving in the Red Sea",
@@ -61,7 +61,7 @@ export const metadata = {
     title: "Hurghada Trips",
     description:
       "Explore Hurghada trips with Hurghada Trips : Red Sea diving, snorkeling, boat & island tours, safari adventures, and Egypt travel packages for all travelers.",
-    images: ["https://hurghada-trips.online/hero-bg.jpg"],
+    images: ["https://hurghada-trips.online/image/hero-bg.jpg"],
   },
 };
 

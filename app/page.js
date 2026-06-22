@@ -30,7 +30,7 @@ export const metadata = {
     siteName: "Hurghada Trips",
     images: [
       {
-        url: "https://hurghada-trips.online/hero-bg.jpg",
+        url: "https://hurghada-trips.online/image/hero-bg.jpg",
         width: 1200,
         height: 630,
         alt: "Scuba diving in the Red Sea",

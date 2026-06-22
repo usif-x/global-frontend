@@ -7,7 +7,7 @@ import MarkdownRenderer from "../ui/MarkdownRender";
 
 // --- Reusable UI Components ---
 const ErrorMessage = ({ error }) => (
-  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+  <div className="min-h-screen flex items-center justify-center">
     <div
       className="bg-red-50 border border-red-200 rounded-xl p-8 max-w-md"
       role="alert"
@@ -22,7 +22,7 @@ const ErrorMessage = ({ error }) => (
 
 // Empty State Component
 const EmptyState = () => (
-  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+  <div className="min-h-screen flex items-center justify-center">
     <div className="text-center p-8 max-w-md">
       <div className="bg-blue-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
         <Icon

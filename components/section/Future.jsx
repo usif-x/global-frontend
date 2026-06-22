@@ -7,37 +7,37 @@ const features = [
     icon: "ph:hand-coins",
     title: "Best Prices",
     description:
-      "We guarantee competitive and transparent pricing with no hidden fees, ensuring you get the best value for your adventure.",
+      "Enjoy competitive prices across all Hurghada activities, with transparent rates and no hidden fees.",
   },
   {
     icon: "mdi:emoticon-happy-outline",
-    title: "Happy Divers",
+    title: "Thousands of Happy Guests",
     description:
-      "Our community is built on fun and friendship. We have a proven track record of satisfied divers who return time and again.",
+      "Our guests return year after year thanks to unforgettable experiences, friendly service, and trusted quality.",
   },
   {
     icon: "fa-solid:medal",
-    title: "Expert Staff",
+    title: "Experienced Local Team",
     description:
-      "Our PADI-certified instructors are passionate, experienced, and dedicated to your safety and enjoyment on every dive.",
+      "Our professional team knows Hurghada inside out and ensures every trip is enjoyable, organized, and memorable.",
   },
   {
     icon: "mdi:shield-check",
-    title: "Safety First",
+    title: "Safety & Reliability",
     description:
-      "Your safety is our top priority. We maintain the highest standards of equipment and follow strict safety protocols on every dive.",
+      "From diving and snorkeling trips to safari adventures and boat excursions, safety always comes first.",
   },
   {
     icon: "mdi:calendar-check",
-    title: "Flexible Booking",
+    title: "Easy & Flexible Booking",
     description:
-      "Easy online booking with flexible cancellation policies. We understand that plans can change and we're here to accommodate.",
+      "Book your favorite activities online with flexible scheduling and customer-friendly cancellation policies.",
   },
   {
-    icon: "mdi:diving-scuba-tank",
-    title: "Top Equipment",
+    icon: "mdi:ferry",
+    title: "Wide Range of Activities",
     description:
-      "We use only the best diving equipment, regularly serviced and maintained to ensure optimal performance and safety.",
+      "Choose from diving, snorkeling, island trips, speed boat tours, safari adventures, fishing trips, and much more.",
   },
 ];
 
@@ -58,12 +58,12 @@ const WhyChooseUs = () => {
             </span>
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 mb-6">
-            Your Perfect Diving Partner
+            Your Trusted Partner for Hurghada Adventures
           </h2>
           <p className="text-gray-600 text-lg md:text-xl max-w-3xl mx-auto">
-            Experience the difference with Hurghada Trips. We combine expertise,
-            passion, and dedication to create unforgettable underwater
-            adventures.
+            Discover the best of Hurghada with a wide selection of diving,
+            snorkeling, safari, island, speed boat, and sea excursions designed
+            for unforgettable memories.
           </p>
         </div>
 
@@ -110,16 +110,18 @@ const WhyChooseUs = () => {
               />
               <div className="text-left">
                 <p className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                  Certified Excellence
+                  Trusted Experiences
                 </p>
+
                 <p className="text-2xl font-bold text-gray-800">
-                  PADI 5-Star Dive Center
+                  All Hurghada Activities in One Place
                 </p>
               </div>
             </div>
             <p className="text-gray-600 max-w-md">
-              Recognized for outstanding service, professional instruction, and
-              commitment to diver safety
+              Explore diving, snorkeling, safari tours, island excursions, speed
+              boat trips, fishing adventures, and more with a trusted local
+              team.
             </p>
           </div>
         </div>
