@@ -20,10 +20,12 @@ export default function Home() {
             style={{ fontSize: "2rem", marginBottom: "1rem" }}
             className="font-summer-splash text-center"
           >
-            READY TO DIVE ?
+            YOUR HURGHADA ADVENTURE STARTS HERE
           </h2>
+
           <p style={{ fontSize: "1.1rem", marginBottom: "1rem" }}>
-            Join us for an unforgettable underwater adventure
+            Book the best tours, sea trips, snorkeling, diving, safari, and
+            speed boat experiences
           </p>
         </div>
 
