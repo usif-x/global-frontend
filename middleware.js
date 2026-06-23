@@ -4,7 +4,42 @@ import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-// Helper function to verify JWT token locally using the secret
+// ---------------------------------------------------------------------------
+// Admin subdomain helpers
+// ---------------------------------------------------------------------------
+
+// True when the request came in on admin.website.com (vs website.com)
+function isAdminHost(host) {
+  return host.startsWith("admin.");
+}
+
+// Converts the raw incoming pathname into the "canonical" /admin/... form
+// we use for all internal logic, regardless of which host it arrived on.
+//   admin.website.com/dashboard  -> /admin/dashboard
+//   admin.website.com/admin/x    -> /admin/x   (avoid double prefix)
+//   website.com/admin/dashboard  -> /admin/dashboard (unchanged)
+function toCanonicalPath(pathname, onAdminHost) {
+  if (!onAdminHost) return pathname;
+  if (pathname.startsWith("/admin")) return pathname;
+  return pathname === "/" ? "/admin" : `/admin${pathname}`;
+}
+
+// Converts a canonical /admin/... path back into whatever path makes sense
+// for the host the request actually came in on. Used when building
+// redirect/rewrite targets.
+//   onAdminHost=true,  "/admin/login"     -> "/login"
+//   onAdminHost=false, "/admin/login"     -> "/admin/login"
+function toHostPath(canonicalPath, onAdminHost) {
+  if (!onAdminHost) return canonicalPath;
+  if (!canonicalPath.startsWith("/admin")) return canonicalPath;
+  const stripped = canonicalPath.slice("/admin".length);
+  return stripped === "" ? "/" : stripped;
+}
+
+// ---------------------------------------------------------------------------
+// JWT / auth helpers (unchanged from your original logic)
+// ---------------------------------------------------------------------------
+
 async function verifyJWTLocally(token) {
   if (!token) return { valid: false, payload: null };
 
@@ -22,13 +57,11 @@ async function verifyJWTLocally(token) {
   }
 }
 
-// Helper function to check if we should make API call for additional verification
 function shouldMakeAPICall(payload, lastVerified = null) {
   if (!payload) return { shouldCall: false, reason: "no_payload" };
 
   const now = Math.floor(Date.now() / 1000);
 
-  // If we haven't verified via API in the last hour, do it
   if (lastVerified) {
     const oneHour = 60 * 60;
     const lastVerifiedTimestamp = Math.floor(
@@ -39,7 +72,6 @@ function shouldMakeAPICall(payload, lastVerified = null) {
     }
   }
 
-  // For user tokens, check if it's been more than 30 minutes since login
   if (payload.role === "user" && payload.login_time) {
     const loginTimestamp = Math.floor(
       new Date(payload.login_time).getTime() / 1000,
@@ -53,7 +85,6 @@ function shouldMakeAPICall(payload, lastVerified = null) {
   return { shouldCall: true, reason: "periodic_check" };
 }
 
-// Helper function to parse auth data from cookies
 async function getAuthFromCookies() {
   const cookieStore = await cookies();
   try {
@@ -80,7 +111,6 @@ async function getAuthFromCookies() {
   }
 }
 
-// Helper function to update auth cookie with verification data
 function updateAuthCookie(response, authState, tokenValid, userRole) {
   const updatedState = {
     ...authState,
@@ -101,7 +131,6 @@ function updateAuthCookie(response, authState, tokenValid, userRole) {
   return response;
 }
 
-// Fallback API verification (only when needed)
 async function verifyTokenAPI(token) {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -129,7 +158,6 @@ async function verifyTokenAPI(token) {
   }
 }
 
-// Main token verification function
 async function verifyToken(authState) {
   const token = authState?.token;
 
@@ -137,7 +165,6 @@ async function verifyToken(authState) {
     return { valid: false, role: null, response: null };
   }
 
-  // Step 1: Verify JWT locally first (fastest)
   const jwtResult = await verifyJWTLocally(token);
 
   if (!jwtResult.valid) {
@@ -150,7 +177,6 @@ async function verifyToken(authState) {
     };
   }
 
-  // Step 2: Extract role and user info from JWT payload
   const payload = jwtResult.payload;
   const userRole = payload.role;
   const userId = payload.id;
@@ -160,7 +186,6 @@ async function verifyToken(authState) {
     `[Middleware] JWT valid - User: ${userId}, Role: ${userRole}${adminLevel ? `, Level: ${adminLevel}` : ""}`,
   );
 
-  // Step 3: Check if we need additional API verification
   const apiCheck = shouldMakeAPICall(payload, authState?.tokenVerified);
 
   if (!apiCheck.shouldCall) {
@@ -168,20 +193,18 @@ async function verifyToken(authState) {
     return {
       valid: true,
       role: userRole,
-      response: null, // No need to update cookie
+      response: null,
     };
   }
 
-  // Step 4: Make API call for additional verification (rate limited)
   console.log(`[Middleware] Making API verification: ${apiCheck.reason}`);
 
   const apiResult = await verifyTokenAPI(token);
 
-  // Update cookie with API verification result
   const nextResponse = NextResponse.next();
   return {
     valid: apiResult.valid,
-    role: apiResult.role || userRole, // Fallback to JWT role if API doesn't return role
+    role: apiResult.role || userRole,
     response: updateAuthCookie(
       nextResponse,
       authState,
@@ -191,8 +214,19 @@ async function verifyToken(authState) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Main middleware
+// ---------------------------------------------------------------------------
+
 export async function middleware(request) {
-  const { pathname } = request.nextUrl;
+  const host = request.headers.get("host") || "";
+  const onAdminHost = isAdminHost(host);
+
+  const rawPathname = request.nextUrl.pathname;
+  // All logic below works against the canonical /admin/... path,
+  // regardless of whether we're on admin.website.com or website.com/admin/...
+  const pathname = toCanonicalPath(rawPathname, onAdminHost);
+  const needsRewrite = onAdminHost && pathname !== rawPathname;
 
   // 1. Get Authentication State
   const authState = await getAuthFromCookies();
@@ -211,10 +245,10 @@ export async function middleware(request) {
     isAuthenticated && (userRole === "user" || userRole === "admin");
 
   console.log(
-    `[Middleware] ${pathname} - Authenticated: ${isAuthenticated}, Role: ${userRole}`,
+    `[Middleware] host=${host} rawPath=${rawPathname} canonicalPath=${pathname} - Authenticated: ${isAuthenticated}, Role: ${userRole}`,
   );
 
-  // Route definitions
+  // Route definitions (all evaluated against the canonical path)
   const isAdminPath = pathname.startsWith("/admin");
   const isAuthPath = pathname === "/login" || pathname === "/register";
   const isUserProtectedPath = ["/profile", "/invoices", "/payment"].some((p) =>
@@ -222,9 +256,20 @@ export async function middleware(request) {
   );
   const isActionPath = /\/(enroll|book)\/?$/.test(pathname);
 
-  // Helper functions for responses
-  const createRedirectResponse = (url) => {
-    const redirectResponse = NextResponse.redirect(new URL(url, request.url));
+  // Builds a URL for redirect/rewrite targets. Takes a canonical path
+  // (e.g. "/admin/login") and converts it to whatever the *current host*
+  // expects (e.g. "/login" if we're already on admin.website.com).
+  const buildUrl = (canonicalPath) => {
+    const hostPath = toHostPath(canonicalPath, onAdminHost);
+    return new URL(hostPath, request.url);
+  };
+
+  const createRedirectResponse = (canonicalPathOrUrl) => {
+    const target =
+      typeof canonicalPathOrUrl === "string"
+        ? buildUrl(canonicalPathOrUrl)
+        : canonicalPathOrUrl;
+    const redirectResponse = NextResponse.redirect(target);
     if (tokenVerification.response) {
       tokenVerification.response.cookies.getAll().forEach((cookie) => {
         redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
@@ -233,7 +278,20 @@ export async function middleware(request) {
     return redirectResponse;
   };
 
+  // Replaces NextResponse.next() — also handles rewriting admin-host
+  // requests to their /admin/... equivalent path.
   const createNextResponse = () => {
+    if (needsRewrite) {
+      const rewriteUrl = request.nextUrl.clone();
+      rewriteUrl.pathname = pathname; // canonical /admin/... path
+      const rewriteResponse = NextResponse.rewrite(rewriteUrl);
+      if (tokenVerification.response) {
+        tokenVerification.response.cookies.getAll().forEach((cookie) => {
+          rewriteResponse.cookies.set(cookie.name, cookie.value, cookie);
+        });
+      }
+      return rewriteResponse;
+    }
     return tokenVerification.response || NextResponse.next();
   };
 
@@ -247,9 +305,9 @@ export async function middleware(request) {
     }
 
     if (!isAdmin) {
-      const loginUrl = new URL("/admin/login", request.url);
-      loginUrl.searchParams.set("redirect", pathname);
-      return createRedirectResponse(loginUrl.toString());
+      const loginUrl = buildUrl("/admin/login");
+      loginUrl.searchParams.set("redirect", toHostPath(pathname, onAdminHost));
+      return createRedirectResponse(loginUrl);
     }
   }
 
@@ -266,9 +324,9 @@ export async function middleware(request) {
 
   if (isUserProtectedPath || isActionPath) {
     if (!isAuthenticated) {
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("redirect", pathname);
-      return createRedirectResponse(loginUrl.toString());
+      const loginUrl = buildUrl("/login");
+      loginUrl.searchParams.set("redirect", toHostPath(pathname, onAdminHost));
+      return createRedirectResponse(loginUrl);
     }
   }
 
