@@ -29,13 +29,8 @@ const EmptyState = () => (
       <WavesArea backgroundColor="#20A7DB">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">
-            Trips
+            Packages & Trips
           </h1>
-          <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto">
-            If diving has always been your dream, then you are in the right
-            place! We will help your dreams come true by opening the wonderful
-            underwater world!
-          </p>
         </div>
       </WavesArea>
       <div
@@ -52,9 +47,8 @@ const EmptyState = () => (
           No Trips or Packages Available
         </h2>
         <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-          We're currently preparing exciting new diving adventures and Trip
-          packages for you. Please check back soon for amazing underwater
-          experiences!
+          We're currently preparing exciting new adventures and Trip packages
+          for you. Please check back soon for amazing experiences!
         </p>
       </div>
     </div>

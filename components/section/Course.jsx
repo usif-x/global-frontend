@@ -35,7 +35,7 @@ const EmptyState = () => (
       </h2>
       <p className="text-gray-600 mb-6 leading-relaxed">
         We're currently updating our course offerings. Please check back soon
-        for exciting new diving adventures!
+        for exciting new adventures!
       </p>
     </div>
   </div>

@@ -275,7 +275,7 @@ const BestSellersHero = () => {
             Most Popular Experiences
           </h2>
           <p className="text-gray-600 text-lg md:text-xl max-w-3xl mx-auto">
-            Discover our top-rated trips and courses, loved by divers worldwide
+            Discover our top-rated trips and courses.
           </p>
         </div>
 

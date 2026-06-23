@@ -141,7 +141,6 @@ const Navbar = () => {
   const otherLinks = [
     { href: "/destinations", label: "Destinations" },
     { href: "/dive-sites", label: "Dive Sites" },
-    { href: "/divingcenter-locations", label: "Dive Centers Locations" },
     { href: "/contact", label: "Contact" },
     { href: "/privacy-policy", label: "Privacy Policy" },
     { href: "/terms-and-conditions", label: "Terms and Conditions" },
