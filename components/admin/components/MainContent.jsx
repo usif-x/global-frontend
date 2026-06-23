@@ -197,28 +197,6 @@ const InvoiceSplitBar = ({ paid, pending, failed }) => {
   );
 };
 
-// Circular ring for confirmation rate
-const ConfirmationRing = ({ rate }) => {
-  const pct = Math.round((rate || 0) * 100);
-  return (
-    <div className="flex items-center gap-4">
-      <div
-        className="relative w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0"
-        style={{
-          background: `conic-gradient(#6366f1 ${pct}%, #e2e8f0 ${pct}%)`,
-        }}
-      >
-        <div className="absolute inset-1.5 bg-white rounded-full flex items-center justify-center">
-          <span className="text-sm font-bold text-slate-700">{pct}%</span>
-        </div>
-      </div>
-      <p className="text-xs text-slate-400">
-        of invoices confirmed by customers
-      </p>
-    </div>
-  );
-};
-
 // Small horizontal bar chart for sales_over_time
 const SalesTrendChart = ({ data }) => {
   if (!data || data.length === 0) {
@@ -571,14 +549,6 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
                 {formatEGP(stats?.total_discount_given)} given in discounts
               </p>
             }
-          />
-
-          <GeniusStatCard
-            title="Confirmation Rate"
-            value=""
-            icon="mdi:check-decagram"
-            color="bg-violet-500"
-            subValue={<ConfirmationRing rate={stats?.confirmation_rate} />}
           />
         </div>
       )}
