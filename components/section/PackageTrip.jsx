@@ -1,5 +1,8 @@
-import { getData } from "@/lib/server-axios";
+"use client";
+
+import { getData } from "@/lib/axios"; // your client‑side axios utility
 import { Icon } from "@iconify/react";
+import { useEffect, useState } from "react";
 import WavesArea from "../ui/Wave";
 import PackageTripClientWrapper from "./PackageTripWrapper";
 
@@ -55,24 +58,47 @@ const EmptyState = () => (
   </div>
 );
 
-// Main Server Component
-const PackageTripDisplay = async () => {
-  let packages = [];
-  let trips = [];
-  let error = null;
+// Loading State Component
+const LoadingState = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="text-center">
+      <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-sky-500 border-t-transparent mb-4"></div>
+      <p className="text-gray-600">Loading trips and packages...</p>
+    </div>
+  </div>
+);
 
-  try {
-    // Fetch both packages and trips using server-axios
-    const [packagesData, tripsData] = await Promise.all([
-      getData("/packages/"),
-      getData("/trips/"),
-    ]);
+// Main Client Component
+const PackageTripDisplay = () => {
+  const [packages, setPackages] = useState([]);
+  const [trips, setTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    packages = packagesData || [];
-    trips = tripsData || [];
-  } catch (err) {
-    error = err.message || "Failed to fetch data";
-    console.error("Error fetching data:", err);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [packagesData, tripsData] = await Promise.all([
+          getData("/packages/"),
+          getData("/trips/"),
+        ]);
+        setPackages(packagesData || []);
+        setTrips(tripsData || []);
+        setError(null);
+      } catch (err) {
+        setError(err.message || "Failed to fetch data");
+        console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Loading State
+  if (loading) {
+    return <LoadingState />;
   }
 
   // Error State

@@ -282,19 +282,19 @@ const PackageTripClientWrapper = ({ initialPackages, initialTrips }) => {
   const packages = initialPackages || [];
   const trips = initialTrips || [];
 
-  // Show all trips in the carousel
-  const displayedTrips = trips.slice(0, 8); // Limit to 8 for performance
+  const displayedTrips = trips.slice(0, 8);
 
-  // Get unique package IDs from all trips
-  const tripPackageIds = [
-    ...new Set(trips.map((trip) => trip.package_id).filter(Boolean)),
-  ];
+  // Get unique package IDs from trips (only if trips exist)
+  const tripPackageIds =
+    trips.length > 0
+      ? [...new Set(trips.map((trip) => trip.package_id).filter(Boolean))]
+      : [];
 
-  // Show packages that are associated with trips
-  const displayedPackages = packages
-    .filter((pkg) => tripPackageIds.includes(pkg.id))
-    .slice(0, 6); // Limit to 6 for performance
-
+  // Show packages: if trips exist, show only those with trips; otherwise show all
+  const displayedPackages =
+    trips.length > 0
+      ? packages.filter((pkg) => tripPackageIds.includes(pkg.id)).slice(0, 6)
+      : packages.slice(0, 6);
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* TRIPS SECTION */}
