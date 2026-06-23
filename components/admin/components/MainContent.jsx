@@ -49,6 +49,25 @@ const initials = (name) => {
     .toUpperCase();
 };
 
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+// confirmation_rate assumed to be 0–1 fraction. If your API returns 0–100
+// already, drop the * 100 here.
+const formatPercent = (value) => `${Math.round((value || 0) * 100)}%`;
+
 // ---------- Small building blocks ----------
 
 const GeniusStatCard = ({
@@ -123,6 +142,23 @@ const QuickActionBtn = ({ icon, title, desc, onClick }) => (
   </button>
 );
 
+const SectionHeading = ({ icon, title, action, onAction }) => (
+  <div className="flex justify-between items-center mb-4">
+    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+      <Icon icon={icon} className="text-cyan-500" />
+      {title}
+    </h3>
+    {action && (
+      <button
+        onClick={onAction}
+        className="text-sm text-cyan-600 hover:underline font-medium"
+      >
+        {action} →
+      </button>
+    )}
+  </div>
+);
+
 // Stacked bar showing paid / pending / failed proportions by amount
 const InvoiceSplitBar = ({ paid, pending, failed }) => {
   const total = paid + pending + failed;
@@ -161,6 +197,99 @@ const InvoiceSplitBar = ({ paid, pending, failed }) => {
   );
 };
 
+// Circular ring for confirmation rate
+const ConfirmationRing = ({ rate }) => {
+  const pct = Math.round((rate || 0) * 100);
+  return (
+    <div className="flex items-center gap-4">
+      <div
+        className="relative w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0"
+        style={{
+          background: `conic-gradient(#6366f1 ${pct}%, #e2e8f0 ${pct}%)`,
+        }}
+      >
+        <div className="absolute inset-1.5 bg-white rounded-full flex items-center justify-center">
+          <span className="text-sm font-bold text-slate-700">{pct}%</span>
+        </div>
+      </div>
+      <p className="text-xs text-slate-400">
+        of invoices confirmed by customers
+      </p>
+    </div>
+  );
+};
+
+// Small horizontal bar chart for sales_over_time
+const SalesTrendChart = ({ data }) => {
+  if (!data || data.length === 0) {
+    return (
+      <p className="text-sm text-slate-400 py-10 text-center">
+        No sales recorded in this period
+      </p>
+    );
+  }
+  const max = Math.max(...data.map((d) => d.revenue), 1);
+  return (
+    <div className="flex items-end gap-1.5 h-32 mt-4">
+      {data.map((d, idx) => (
+        <div
+          key={idx}
+          className="flex-1 flex flex-col items-center gap-1.5 group"
+          title={`${d.date}: ${formatEGP(d.revenue)} (${d.count} sale${d.count === 1 ? "" : "s"})`}
+        >
+          <div className="w-full flex items-end justify-center h-24">
+            <div
+              className="w-full max-w-[28px] rounded-t-md bg-cyan-500 group-hover:bg-cyan-600 transition-colors"
+              style={{ height: `${Math.max((d.revenue / max) * 100, 4)}%` }}
+            />
+          </div>
+          <span className="text-[10px] text-slate-400 whitespace-nowrap">
+            {new Date(d.date).toLocaleDateString("en-US", {
+              day: "numeric",
+              month: "short",
+            })}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Horizontal proportion list for activity / payment-method distributions
+const DistributionList = ({ items, colorClass }) => {
+  if (!items || items.length === 0) {
+    return (
+      <p className="text-sm text-slate-400 py-6 text-center">No data yet</p>
+    );
+  }
+  const total = items.reduce((sum, i) => sum + (i.value || 0), 0) || 1;
+  return (
+    <div className="space-y-3">
+      {items.map((item, idx) => {
+        const pct = Math.round((item.value / total) * 100);
+        return (
+          <div key={idx}>
+            <div className="flex justify-between text-xs mb-1">
+              <span className="font-medium text-slate-600 truncate pr-2">
+                {item.name}
+              </span>
+              <span className="text-slate-400 flex-shrink-0">
+                {item.value} • {pct}%
+              </span>
+            </div>
+            <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+              <div
+                className={`h-full rounded-full ${colorClass}`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 // Generic ranked-list panel for top customers / courses / activities
 const RankedListPanel = ({ title, icon, items, emptyLabel, renderItem }) => (
   <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 h-full">
@@ -174,7 +303,7 @@ const RankedListPanel = ({ title, icon, items, emptyLabel, renderItem }) => (
       <div className="space-y-1">
         {items.slice(0, 5).map((item, idx) => (
           <div
-            key={item.id || idx}
+            key={idx}
             className="flex items-center justify-between py-2.5 px-2 rounded-lg hover:bg-slate-50 transition-colors"
           >
             <div className="flex items-center gap-3 min-w-0">
@@ -190,20 +319,19 @@ const RankedListPanel = ({ title, icon, items, emptyLabel, renderItem }) => (
   </div>
 );
 
-const SectionHeading = ({ icon, title, action, onAction }) => (
-  <div className="flex justify-between items-center mb-4">
-    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-      <Icon icon={icon} className="text-cyan-500" />
-      {title}
-    </h3>
-    {action && (
-      <button
-        onClick={onAction}
-        className="text-sm text-cyan-600 hover:underline font-medium"
-      >
-        {action} →
-      </button>
-    )}
+// Small lifecycle badge for invoice statuses
+const LifecycleBadge = ({ label, value, icon, color }) => (
+  <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
+    <div className={`p-2 rounded-lg ${color} bg-opacity-10`}>
+      <Icon
+        icon={icon}
+        className={`w-4 h-4 ${color.replace("bg-", "text-")}`}
+      />
+    </div>
+    <div>
+      <p className="text-lg font-bold text-slate-800 leading-none">{value}</p>
+      <p className="text-xs text-slate-500">{label}</p>
+    </div>
   </div>
 );
 
@@ -224,7 +352,6 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
       const isLevel2Admin = admin?.admin_level === 2;
       const headers = getAuthHeaders();
 
-      // Level 1 admins only get basic data
       if (!isLevel2Admin) {
         const [all, recentUsersData] = await Promise.all([
           fetch("https://api.hurghada-trips.online/analytics/all", {
@@ -233,12 +360,8 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
           AdminService.getRecentUsers(),
         ]);
 
-        setDashboardData({
-          all,
-          recentUsers: recentUsersData,
-        });
+        setDashboardData({ all, recentUsers: recentUsersData });
       } else {
-        // Level 2 admins get full analytics
         const [analytics, all, invoiceSummary, recentUsersData] =
           await Promise.all([
             AnalyticsService.getDashboardSummary(),
@@ -275,6 +398,14 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
             time: "Today",
           });
         }
+        if (analytics?.invoices?.not_picked_up > 0) {
+          notifs.push({
+            id: 3,
+            type: "warning",
+            message: `${analytics.invoices.not_picked_up} booking${analytics.invoices.not_picked_up > 1 ? "s" : ""} not yet picked up`,
+            time: "Today",
+          });
+        }
         setRecentNotifications(notifs);
       }
     } catch (error) {
@@ -304,10 +435,14 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
   }
 
   const {
+    stats,
+    charts,
     top_customers,
     top_courses,
     top_activities,
+    users,
     testimonials,
+    invoices,
     recent_transactions,
     recentUsers,
     all,
@@ -316,7 +451,7 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
 
   const isLevel2Admin = admin?.admin_level === 2;
 
-  // Invoice summary (level 2 only)
+  // Invoice summary (dedicated endpoint) — used for the revenue split bar
   const paidAmount = invoiceSummary?.total_revenue || 0;
   const paidCount = invoiceSummary?.paid_count || 0;
   const pendingAmount = invoiceSummary?.pending_amount_total || 0;
@@ -326,6 +461,8 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
   const totalInvoices = invoiceSummary?.total_invoices || 0;
   const collectionRate =
     totalInvoices > 0 ? Math.round((paidCount / totalInvoices) * 100) : 0;
+
+  const bestMonth = stats?.best_selling_month;
 
   return (
     <div className="space-y-8">
@@ -348,12 +485,21 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
               })}
             </p>
           </div>
-          {isLevel2Admin && (
-            <span className="self-start md:self-auto inline-flex items-center gap-1.5 text-xs font-semibold bg-white/15 px-3 py-1.5 rounded-full backdrop-blur-sm">
-              <Icon icon="mdi:shield-crown" className="w-4 h-4" />
-              Superadmin view
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {isLevel2Admin && bestMonth?.revenue > 0 && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/15 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                <Icon icon="mdi:trophy" className="w-4 h-4" />
+                Best month: {MONTH_NAMES[bestMonth.month - 1]} {bestMonth.year}{" "}
+                • {formatEGP(bestMonth.revenue)}
+              </span>
+            )}
+            {isLevel2Admin && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/15 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                <Icon icon="mdi:shield-crown" className="w-4 h-4" />
+                Superadmin view
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -380,74 +526,91 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
         </div>
       )}
 
-      {/* Key Stats Grid (bento) */}
+      {/* Key Stats Grid (bento) - Level 2 */}
+      {isLevel2Admin && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <GeniusStatCard
+            span="md:col-span-2"
+            title="Revenue"
+            value={formatEGP(paidAmount)}
+            icon="mdi:cash-fast"
+            color="bg-emerald-500"
+            subValue={
+              <InvoiceSplitBar
+                paid={paidAmount}
+                pending={pendingAmount}
+                failed={failedAmount}
+              />
+            }
+          />
+
+          <GeniusStatCard
+            title="Sales"
+            value={stats?.sales_count || 0}
+            icon="mdi:cart-check"
+            color="bg-cyan-600"
+            subValue={
+              <div className="flex gap-3 text-xs text-slate-500">
+                <span className="font-medium">
+                  {stats?.trips_booked || 0} trips
+                </span>
+                <span className="font-medium">
+                  {stats?.courses_booked || 0} courses
+                </span>
+              </div>
+            }
+          />
+
+          <GeniusStatCard
+            title="Avg. Order Value"
+            value={formatEGP(stats?.average_order_value)}
+            icon="mdi:calculator-variant"
+            color="bg-indigo-500"
+            subValue={
+              <p className="text-xs text-slate-400">
+                {formatEGP(stats?.total_discount_given)} given in discounts
+              </p>
+            }
+          />
+
+          <GeniusStatCard
+            title="Confirmation Rate"
+            value=""
+            icon="mdi:check-decagram"
+            color="bg-violet-500"
+            subValue={<ConfirmationRing rate={stats?.confirmation_rate} />}
+          />
+        </div>
+      )}
+
+      {/* Content & users overview - all admins */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {isLevel2Admin && (
-          <>
-            <GeniusStatCard
-              span="md:col-span-2"
-              title="Revenue"
-              value={formatEGP(paidAmount)}
-              icon="mdi:cash-fast"
-              color="bg-emerald-500"
-              subValue={
-                <InvoiceSplitBar
-                  paid={paidAmount}
-                  pending={pendingAmount}
-                  failed={failedAmount}
-                />
-              }
-            />
-
-            <GeniusStatCard
-              title="Invoices"
-              value={totalInvoices}
-              icon="mdi:file-document-edit"
-              color="bg-violet-500"
-              trend={collectionRate >= 50 ? "up" : "down"}
-              trendValue={`${collectionRate}% paid`}
-              subValue={
-                <div className="flex gap-3 text-xs text-slate-500">
-                  <span className="font-medium text-emerald-600">
-                    {paidCount} paid
-                  </span>
-                  <span className="font-medium text-amber-600">
-                    {pendingCount} pending
-                  </span>
-                  {failedCount > 0 && (
-                    <span className="font-medium text-rose-600">
-                      {failedCount} failed
-                    </span>
-                  )}
-                </div>
-              }
-            />
-
-            <GeniusStatCard
-              title="Avg. Invoice"
-              value={formatEGP(
-                totalInvoices > 0
-                  ? (paidAmount + pendingAmount + failedAmount) / totalInvoices
-                  : 0,
-              )}
-              subValue={
-                <p className="text-xs text-slate-400">Across all invoices</p>
-              }
-              icon="mdi:calculator-variant"
-              color="bg-indigo-500"
-            />
-          </>
-        )}
         <GeniusStatCard
           title="Total Users"
           value={formatCompact(all?.users_count || 0)}
-          subValue={
-            <p className="text-xs text-slate-400">
-              {all?.active_users_count || 0} active
-            </p>
-          }
           icon="mdi:account-group"
           color="bg-cyan-500"
+          subValue={
+            isLevel2Admin && users ? (
+              <div className="flex gap-3 text-xs">
+                <span className="font-medium text-emerald-600">
+                  {users.active} active
+                </span>
+                <span className="font-medium text-slate-400">
+                  {users.inactive} inactive
+                </span>
+                {users.blocked > 0 && (
+                  <span className="font-medium text-rose-600">
+                    {users.blocked} blocked
+                  </span>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400">
+                {all?.active_users_count || 0} active
+              </p>
+            )
+          }
         />
         <GeniusStatCard
           title="Trips"
@@ -471,13 +634,6 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
           }
           icon="mdi:package-variant"
           color="bg-green-500"
-        />
-        <GeniusStatCard
-          title="Testimonials"
-          value={`${all?.testimonials_count || 0}`}
-          subValue={<p className="text-xs text-slate-400">Customer reviews</p>}
-          icon="mdi:comment-quote"
-          color="bg-red-500"
         />
       </div>
 
@@ -545,70 +701,168 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
         </div>
       </div>
 
-      {/* Insights row - Level 2 only: Top customers / courses / activities */}
+      {/* Sales trend + distributions - Level 2 only */}
       {isLevel2Admin && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <RankedListPanel
-            title="Top Customers"
-            icon="mdi:account-star"
-            items={top_customers}
-            emptyLabel="No customer data yet"
-            renderItem={(c) => (
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-cyan-100 text-cyan-700 text-xs font-bold flex items-center justify-center flex-shrink-0">
-                  {initials(c.name)}
+        <>
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+            <SectionHeading
+              icon="mdi:chart-bar"
+              title="Sales Over Time"
+              action="View Analytics"
+              onAction={() => setActiveTab("analytics")}
+            />
+            <SalesTrendChart data={charts?.sales_over_time} />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+              <SectionHeading
+                icon="mdi:map-marker-radius"
+                title="Activity Distribution"
+              />
+              <DistributionList
+                items={charts?.activity_distribution}
+                colorClass="bg-blue-500"
+              />
+            </div>
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+              <SectionHeading
+                icon="mdi:credit-card-outline"
+                title="Payment Methods"
+              />
+              <DistributionList
+                items={charts?.payment_method_distribution}
+                colorClass="bg-emerald-500"
+              />
+            </div>
+          </div>
+
+          {/* Invoice lifecycle breakdown */}
+          {invoices && (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+              <SectionHeading
+                icon="mdi:timeline-clock"
+                title="Invoice Lifecycle"
+                action="Manage Invoices"
+                onAction={() => setActiveTab("invoices")}
+              />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <LifecycleBadge
+                  label="Confirmed"
+                  value={invoices.confirmed}
+                  icon="mdi:check-circle"
+                  color="bg-emerald-500"
+                />
+                <LifecycleBadge
+                  label="Unconfirmed"
+                  value={invoices.unconfirmed}
+                  icon="mdi:help-circle"
+                  color="bg-amber-500"
+                />
+                <LifecycleBadge
+                  label="Picked Up"
+                  value={invoices.picked_up}
+                  icon="mdi:bag-checked"
+                  color="bg-cyan-500"
+                />
+                <LifecycleBadge
+                  label="Not Picked Up"
+                  value={invoices.not_picked_up}
+                  icon="mdi:bag-personal"
+                  color="bg-orange-500"
+                />
+                <LifecycleBadge
+                  label="Expired"
+                  value={invoices.expired}
+                  icon="mdi:calendar-remove"
+                  color="bg-rose-500"
+                />
+                <LifecycleBadge
+                  label="Cancelled"
+                  value={invoices.cancelled}
+                  icon="mdi:close-circle"
+                  color="bg-slate-400"
+                />
+                <LifecycleBadge
+                  label="Unpaid"
+                  value={invoices.unpaid}
+                  icon="mdi:cash-remove"
+                  color="bg-red-500"
+                />
+                <LifecycleBadge
+                  label="Potential Revenue"
+                  value={formatEGP(stats?.potential_revenue)}
+                  icon="mdi:cash-clock"
+                  color="bg-violet-500"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Top customers / courses / activities */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <RankedListPanel
+              title="Top Customers"
+              icon="mdi:account-star"
+              items={top_customers}
+              emptyLabel="No customer data yet"
+              renderItem={(c) => (
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-cyan-100 text-cyan-700 text-xs font-bold flex items-center justify-center flex-shrink-0">
+                    {initials(c.name)}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-slate-700 truncate">
+                      {c.name || "Unnamed customer"}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      {formatEGP(c.total_spent)} • {c.order_count || 0} order
+                      {c.order_count === 1 ? "" : "s"}
+                    </p>
+                  </div>
                 </div>
+              )}
+            />
+
+            <RankedListPanel
+              title="Top Courses"
+              icon="mdi:book-open-page-variant"
+              items={top_courses}
+              emptyLabel="No course sales yet"
+              renderItem={(c) => (
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-slate-700 truncate">
-                    {c.name || "Unnamed customer"}
+                    {c.title || c.name || "Untitled course"}
                   </p>
                   <p className="text-xs text-slate-400">
-                    {formatEGP(c.total_spent)} • {c.orders_count || 0} orders
+                    {formatEGP(c.total_revenue)} • {c.sales_count || 0} sales
                   </p>
                 </div>
-              </div>
-            )}
-          />
+              )}
+            />
 
-          <RankedListPanel
-            title="Top Courses"
-            icon="mdi:book-open-page-variant"
-            items={top_courses}
-            emptyLabel="No course data yet"
-            renderItem={(c) => (
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-slate-700 truncate">
-                  {c.title || c.name || "Untitled course"}
-                </p>
-                <p className="text-xs text-slate-400">
-                  {c.enrollments_count || c.bookings_count || 0} enrollments
-                </p>
-              </div>
-            )}
-          />
-
-          <RankedListPanel
-            title="Top Activities"
-            icon="mdi:airplane"
-            items={top_activities}
-            emptyLabel="No activity data yet"
-            renderItem={(a) => (
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-slate-700 truncate">
-                  {a.title || a.name || "Untitled activity"}
-                </p>
-                <p className="text-xs text-slate-400">
-                  {a.bookings_count || 0} bookings
-                </p>
-              </div>
-            )}
-          />
-        </div>
+            <RankedListPanel
+              title="Top Activities"
+              icon="mdi:airplane"
+              items={top_activities}
+              emptyLabel="No activity sales yet"
+              renderItem={(a) => (
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-700 truncate">
+                    {a.activity || "Untitled activity"}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {formatEGP(a.total_revenue)} • {a.sales_count || 0} sales
+                  </p>
+                </div>
+              )}
+            />
+          </div>
+        </>
       )}
 
       {/* Recent Activity + Recent Users */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Activity - Level 2 only */}
         {isLevel2Admin && (
           <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
             <SectionHeading
@@ -630,11 +884,7 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
-                          tx.status === "PAID"
-                            ? "bg-green-100 text-green-600"
-                            : "bg-yellow-100 text-yellow-600"
-                        }`}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${tx.status === "PAID" ? "bg-green-100 text-green-600" : "bg-yellow-100 text-yellow-600"}`}
                       >
                         <Icon
                           icon={
@@ -649,7 +899,7 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
                           {tx.buyer}
                         </p>
                         <p className="text-xs text-slate-500">
-                          Invoice #{tx.id}
+                          Invoice #{tx.id} • {formatTimeAgo(tx.date)}
                         </p>
                       </div>
                     </div>
@@ -658,11 +908,7 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
                         {formatEGP(tx.amount)}
                       </p>
                       <span
-                        className={`text-[10px] uppercase font-semibold ${
-                          tx.status === "PAID"
-                            ? "text-green-600"
-                            : "text-yellow-600"
-                        }`}
+                        className={`text-[10px] uppercase font-semibold ${tx.status === "PAID" ? "text-green-600" : "text-yellow-600"}`}
                       >
                         {tx.status}
                       </span>
@@ -674,11 +920,8 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
           </div>
         )}
 
-        {/* Recent Users - all admins */}
         <div
-          className={`bg-white rounded-2xl shadow-sm border border-slate-100 p-6 ${
-            isLevel2Admin ? "" : "lg:col-span-3"
-          }`}
+          className={`bg-white rounded-2xl shadow-sm border border-slate-100 p-6 ${isLevel2Admin ? "" : "lg:col-span-3"}`}
         >
           <SectionHeading
             icon="mdi:account-plus"
@@ -717,41 +960,33 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
       </div>
 
       {/* Testimonials snapshot - Level 2 only */}
-      {isLevel2Admin && testimonials && testimonials.length > 0 && (
+      {isLevel2Admin && testimonials && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
           <SectionHeading
             icon="mdi:comment-quote"
-            title="Latest Testimonials"
-            action="View All"
+            title="Testimonials"
+            action="Review Feedback"
             onAction={() => setActiveTab("testimonials")}
           />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {testimonials.slice(0, 3).map((t, idx) => (
-              <div
-                key={t.id || idx}
-                className="p-4 bg-slate-50 rounded-xl border border-slate-100"
-              >
-                <div className="flex items-center gap-1 mb-2">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Icon
-                      key={i}
-                      icon="mdi:star"
-                      className={`w-4 h-4 ${
-                        i < (t.rating || 0)
-                          ? "text-amber-400"
-                          : "text-slate-200"
-                      }`}
-                    />
-                  ))}
-                </div>
-                <p className="text-sm text-slate-600 line-clamp-3">
-                  {t.comment || t.message || "No comment provided"}
-                </p>
-                <p className="text-xs text-slate-400 mt-2 font-medium">
-                  {t.customer_name || t.name || "Anonymous"}
-                </p>
-              </div>
-            ))}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center p-4 rounded-xl bg-slate-50">
+              <p className="text-2xl font-bold text-slate-800">
+                {testimonials.total}
+              </p>
+              <p className="text-xs text-slate-500 mt-1">Total</p>
+            </div>
+            <div className="text-center p-4 rounded-xl bg-emerald-50">
+              <p className="text-2xl font-bold text-emerald-600">
+                {testimonials.accepted}
+              </p>
+              <p className="text-xs text-slate-500 mt-1">Accepted</p>
+            </div>
+            <div className="text-center p-4 rounded-xl bg-amber-50">
+              <p className="text-2xl font-bold text-amber-600">
+                {testimonials.unaccepted}
+              </p>
+              <p className="text-xs text-slate-500 mt-1">Awaiting review</p>
+            </div>
           </div>
         </div>
       )}
