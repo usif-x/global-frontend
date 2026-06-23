@@ -4,6 +4,7 @@ import LoadingOverlay from "@/components/layout/Loading";
 import GoogleTranslateButton from "@/components/layout/TranslateButton";
 import LoadingProvider from "@/providers/loadingProvider";
 import { Roboto } from "next/font/google";
+import Script from "next/script";
 import { Suspense } from "react";
 import { ToastContainer } from "react-toastify";
 
