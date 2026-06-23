@@ -367,8 +367,7 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-600">Base Price:</span>
                     <span className="font-semibold text-slate-800">
-                      {invoice.currency}{" "}
-                      {invoice.discount_breakdown.base_price?.toFixed(2)}
+                      {invoice.currency} {invoice.amount?.toFixed(2)}
                     </span>
                   </div>
 
