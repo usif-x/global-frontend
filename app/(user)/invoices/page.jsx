@@ -931,15 +931,6 @@ export default function MyInvoicesPage() {
                 {/* Contact options */}
                 <div className="flex flex-wrap gap-3">
                   <a
-                    href="https://www.instagram.com/Hurghada Trips.hurghada"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2.5 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors text-sm font-semibold shadow-md hover:shadow-lg"
-                  >
-                    <Icon icon="mdi:instagram" className="w-5 h-5" />
-                    <span>Message on Instagram</span>
-                  </a>
-                  <a
                     href="https://api.whatsapp.com/send?phone=201070440861&text=Hello! I need to confirm my trip details"
                     target="_blank"
                     rel="noopener noreferrer"

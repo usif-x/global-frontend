@@ -242,15 +242,6 @@ export default function InvoiceDetailPage() {
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
-                  href="https://www.instagram.com/Hurghada Trips.hurghada"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors text-sm font-medium"
-                >
-                  <Icon icon="mdi:instagram" className="w-5 h-5" />
-                  <span>Message on Instagram</span>
-                </a>
-                <a
                   href={`https://api.whatsapp.com/send?phone=201070440861&text=Hello! I need to confirm my booking for invoice ${invoice.customer_reference}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -400,15 +391,6 @@ export default function InvoiceDetailPage() {
                       </>
                     )}
                     <div className="flex flex-wrap gap-3">
-                      <a
-                        href="https://www.instagram.com/Hurghada Trips.hurghada"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors text-sm font-medium"
-                      >
-                        <Icon icon="mdi:instagram" className="w-5 h-5" />
-                        <span>Message on Instagram</span>
-                      </a>
                       <a
                         href={`https://api.whatsapp.com/send?phone=201070440861&text=Hello! I've completed payment for invoice ${invoice.customer_reference}`}
                         target="_blank"
