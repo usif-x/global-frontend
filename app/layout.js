@@ -3,13 +3,14 @@ import ConditionalLayout from "@/components/layout/ConditionalLayout.jsx";
 import LoadingOverlay from "@/components/layout/Loading";
 import GoogleTranslateButton from "@/components/layout/TranslateButton";
 import LoadingProvider from "@/providers/loadingProvider";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { Roboto } from "next/font/google";
 import { Suspense } from "react";
 import { ToastContainer } from "react-toastify";
+
 import "./globals.css";
 
 // add crisp chat script
-import Script from "next/script";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -74,35 +75,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${roboto.className}`}>
-        {/* Chatwoot Chat */}
-        <Script
-          id="chatwoot-chat"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function(d,t) {
-                var BASE_URL="https://chatwoot.usif.space";
-                var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
-                g.src=BASE_URL+"/packs/js/sdk.js";
-                g.async = true;
-                s.parentNode.insertBefore(g,s);
-                g.onload=function(){
-                  window.chatwootSDK.run({
-                    websiteToken: '9EdMLbvtgyHG66Kz7wnczvdt',
-                    baseUrl: BASE_URL
-                  })
-                }
-              })(document,"script");
-            `,
-          }}
-        />
-        {/* Umami Analytics */}
-        <Script
-          defer
-          src="https://umami.usif.space/script.js"
-          data-website-id="987ff080-4a1c-4bec-8ef4-dc0a2ed0b805"
-          strategy="afterInteractive"
-        />
         <Suspense>
           <LoadingProvider>
             <ToastContainer
@@ -125,6 +97,7 @@ export default function RootLayout({ children }) {
           </LoadingProvider>
         </Suspense>
       </body>
+      <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
     </html>
   );
 }
