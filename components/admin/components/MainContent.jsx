@@ -2,7 +2,7 @@
 
 import AdminService from "@/services/adminService";
 import AnalyticsService from "@/services/analyticsService";
-import { getAuthHeaders } from "@/utils/auth";
+import getAuthHeaders from "@/utils/auth";
 import { Icon } from "@iconify/react";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
