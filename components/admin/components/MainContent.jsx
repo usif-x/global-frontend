@@ -192,6 +192,13 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
   } = dashboardData || {};
 
   const isLevel2Admin = admin?.admin_level === 2;
+  const paidRevenue =
+    (stats?.total_invoice_revenue || 0) - (stats?.pending_invoice_revenue || 0);
+
+  const collectionRate =
+    stats?.total_invoice_revenue > 0
+      ? Math.round((paidRevenue / stats.total_invoice_revenue) * 100)
+      : 0;
 
   return (
     <div className="space-y-8">
@@ -220,18 +227,27 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
         {isLevel2Admin && (
           <>
             <GeniusStatCard
-              title="Total Revenue"
-              value={formatEGP(stats?.revenue)}
-              subValue={`${stats?.sales_count || 0} Sales`}
+              title="Revenue"
+              value={formatEGP(stats?.total_invoice_revenue || 0)}
+              subValue={`${formatEGP(paidRevenue)} (${stats?.paid_invoices_count || 0}) Paid • ${formatEGP(stats?.pending_invoice_revenue || 0)} (${stats?.pending_invoices_count || 0}) Pending • ${collectionRate}% Collected`}
               icon="mdi:cash-fast"
               color="bg-emerald-500"
             />
+
             <GeniusStatCard
-              title="Pending Revenue"
-              value={formatEGP(stats?.potential_revenue)}
-              subValue={`${stats?.pending_invoices || 0} Orders`}
-              icon="mdi:cash-clock"
-              color="bg-amber-500"
+              title="Invoices"
+              value={stats?.invoices_count || 0}
+              subValue={`${stats?.paid_invoices_count || 0} Paid • ${stats?.pending_invoices_count || 0} Pending • ${
+                stats?.invoices_count
+                  ? Math.round(
+                      ((stats?.paid_invoices_count || 0) /
+                        stats.invoices_count) *
+                        100,
+                    )
+                  : 0
+              }% Paid`}
+              icon="mdi:file-document-edit"
+              color="bg-violet-500"
             />
           </>
         )}
@@ -257,11 +273,18 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
           color="bg-purple-500"
         />
         <GeniusStatCard
+          title="Packages"
+          value={`${all?.packages_count || 0}`}
+          subValue="Available packages"
+          icon="mdi:package-variant"
+          color="bg-green-500"
+        />
+        <GeniusStatCard
           title="Testimonials"
           value={`${all?.testimonials_count || 0}`}
           subValue="Customer reviews"
           icon="mdi:comment-quote"
-          color="bg-amber-500"
+          color="bg-red-500"
         />
       </div>
 
