@@ -435,8 +435,7 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
                         Total Savings:
                       </span>
                       <span className="font-bold text-green-600">
-                        {invoice.currency}{" "}
-                        {invoice.discount_breakdown.total_discount?.toFixed(2)}
+                        {invoice.currency} {invoice.amount?.toFixed(2)}
                       </span>
                     </div>
                   )}
@@ -444,8 +443,7 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
                   <div className="flex justify-between font-bold text-lg border-t pt-3">
                     <span className="text-slate-800">Final Amount:</span>
                     <span className="text-blue-600">
-                      {invoice.currency}{" "}
-                      {invoice.discount_breakdown.final_price?.toFixed(2)}
+                      {invoice.currency} {invoice.amount?.toFixed(2)}
                     </span>
                   </div>
                 </div>

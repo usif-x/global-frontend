@@ -616,8 +616,7 @@ export default function InvoiceDetailPage() {
                       <div className="flex justify-between">
                         <span className="text-slate-600">Base Price:</span>
                         <span className="font-semibold text-slate-800 text-lg">
-                          {invoice.currency}{" "}
-                          {invoice.discount_breakdown.base_price?.toFixed(2)}
+                          {invoice.currency} {invoice.amount?.toFixed(2)}
                         </span>
                       </div>
 
@@ -703,10 +702,7 @@ export default function InvoiceDetailPage() {
                               Final Amount
                             </p>
                             <p className="font-black text-3xl">
-                              {invoice.currency}{" "}
-                              {invoice.discount_breakdown.final_price?.toFixed(
-                                2,
-                              )}
+                              {invoice.currency} {invoice.amount?.toFixed(2)}
                             </p>
                           </div>
                           {invoice.discount_breakdown.total_discount > 0 && (
