@@ -2,6 +2,7 @@
 
 import AdminService from "@/services/adminService";
 import AnalyticsService from "@/services/analyticsService";
+import { getAuthHeaders } from "@/utils/auth";
 import { Icon } from "@iconify/react";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -221,13 +222,14 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
     setLoading(true);
     try {
       const isLevel2Admin = admin?.admin_level === 2;
+      const headers = getAuthHeaders();
 
       // Level 1 admins only get basic data
       if (!isLevel2Admin) {
         const [all, recentUsersData] = await Promise.all([
-          fetch("https://api.hurghada-trips.online/analytics/all").then((r) =>
-            r.json(),
-          ),
+          fetch("https://api.hurghada-trips.online/analytics/all", {
+            headers,
+          }).then((r) => r.json()),
           AdminService.getRecentUsers(),
         ]);
 
@@ -240,12 +242,12 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
         const [analytics, all, invoiceSummary, recentUsersData] =
           await Promise.all([
             AnalyticsService.getDashboardSummary(),
-            fetch("https://api.hurghada-trips.online/analytics/all").then((r) =>
-              r.json(),
-            ),
-            fetch(
-              "https://api.hurghada-trips.online/invoices/admin/summary",
-            ).then((r) => r.json()),
+            fetch("https://api.hurghada-trips.online/analytics/all", {
+              headers,
+            }).then((r) => r.json()),
+            fetch("https://api.hurghada-trips.online/invoices/admin/summary", {
+              headers,
+            }).then((r) => r.json()),
             AdminService.getRecentUsers(),
           ]);
 
