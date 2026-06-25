@@ -119,8 +119,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     description: "",
     package_id: "",
     duration: "",
-    duration_unit: "day/s", // Default to days
-    // Simplified pricing - single currency (EGP)
+    duration_unit: "day/s",
     adult_price: "",
     child_price: "",
     child_allowed: true,
@@ -133,11 +132,12 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     included: [""],
     not_included: [""],
     terms_and_conditions: [""],
-    images: [], // Will store File objects for new uploads
-    existing_images: [], // Will store existing image URLs
+    images: [],
+    existing_images: [],
+    videos: [], // NEW: File objects for new video uploads
+    existing_videos: [], // NEW: existing video URLs
     is_image_list: false,
   });
-
   // Load packages and populate form
   useEffect(() => {
     const loadAndPopulate = async () => {
@@ -147,7 +147,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
           packagesData.map((pkg) => ({
             value: pkg.id.toString(),
             label: pkg.name,
-          }))
+          })),
         );
       } catch (error) {
         toast.error("Failed to load packages for selection.");
@@ -159,10 +159,11 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
       setFormData({
         name: trip.name || "",
         description: trip.description || "",
-        images: [], // Reset for new uploads
-        existing_images: trip.images || [], // Store existing image URLs
+        images: [],
+        existing_images: trip.images || [],
+        videos: [], // NEW
+        existing_videos: trip.videos || [], // NEW
         is_image_list: trip.is_image_list || false,
-        // Simplified pricing
         adult_price: trip.adult_price?.toString() || "",
         child_price: trip.child_price?.toString() || "",
         child_allowed:
@@ -251,6 +252,27 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
       ...prev,
       existing_images: prev.existing_images.filter((_, i) => i !== index),
     }));
+  const handleVideoChange = (index, file) => {
+    setFormData((prev) => ({
+      ...prev,
+      videos: prev.videos.map((vid, i) => (i === index ? file : vid)),
+    }));
+  };
+
+  const addVideo = () =>
+    setFormData((prev) => ({ ...prev, videos: [...prev.videos, null] }));
+
+  const removeVideo = (index) =>
+    setFormData((prev) => ({
+      ...prev,
+      videos: prev.videos.filter((_, i) => i !== index),
+    }));
+
+  const removeExistingVideo = (index) =>
+    setFormData((prev) => ({
+      ...prev,
+      existing_videos: prev.existing_videos.filter((_, i) => i !== index),
+    }));
 
   const handleImportImages = () => {
     if (!selectedTripForImport) {
@@ -259,7 +281,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     }
 
     const selectedTrip = allTrips.find(
-      (t) => t.id === parseInt(selectedTripForImport)
+      (t) => t.id === parseInt(selectedTripForImport),
     );
 
     if (
@@ -273,7 +295,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
 
     // Add images from selected trip to existing_images
     const newImages = selectedTrip.images.filter(
-      (img) => !formData.existing_images.includes(img)
+      (img) => !formData.existing_images.includes(img),
     );
 
     if (newImages.length === 0) {
@@ -287,7 +309,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     }));
 
     toast.success(
-      `Imported ${newImages.length} image(s) from ${selectedTrip.name}`
+      `Imported ${newImages.length} image(s) from ${selectedTrip.name}`,
     );
     setSelectedTripForImport(null);
   };
@@ -364,57 +386,57 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
       submitFormData.append("adult_price", parseFloat(formData.adult_price));
       submitFormData.append(
         "child_price",
-        formData.child_allowed ? parseFloat(formData.child_price || 0) : 0
+        formData.child_allowed ? parseFloat(formData.child_price || 0) : 0,
       );
       submitFormData.append("child_allowed", formData.child_allowed);
       submitFormData.append(
         "maxim_person",
-        parseInt(formData.maxim_person, 10)
+        parseInt(formData.maxim_person, 10),
       );
       submitFormData.append("has_discount", formData.has_discount);
       submitFormData.append(
         "discount_percentage",
-        formData.has_discount ? parseFloat(formData.discount_percentage) : 0
+        formData.has_discount ? parseFloat(formData.discount_percentage) : 0,
       );
       submitFormData.append(
         "discount_requires_min_people",
-        formData.has_discount ? formData.discount_requires_min_people : false
+        formData.has_discount ? formData.discount_requires_min_people : false,
       );
       submitFormData.append(
         "discount_always_available",
-        formData.has_discount ? formData.discount_always_available : false
+        formData.has_discount ? formData.discount_always_available : false,
       );
       submitFormData.append(
         "discount_min_people",
         formData.has_discount && formData.discount_requires_min_people
           ? parseInt(formData.discount_min_people, 10)
-          : 0
+          : 0,
       );
       submitFormData.append("is_image_list", formData.is_image_list);
 
       // Add arrays as JSON strings
       submitFormData.append(
         "included",
-        JSON.stringify(formData.included.filter((item) => item && item.trim()))
+        JSON.stringify(formData.included.filter((item) => item && item.trim())),
       );
       submitFormData.append(
         "not_included",
         JSON.stringify(
-          formData.not_included.filter((item) => item && item.trim())
-        )
+          formData.not_included.filter((item) => item && item.trim()),
+        ),
       );
       submitFormData.append(
         "terms_and_conditions",
         JSON.stringify(
-          formData.terms_and_conditions.filter((item) => item && item.trim())
-        )
+          formData.terms_and_conditions.filter((item) => item && item.trim()),
+        ),
       );
 
       // Add existing images (for updates)
       if (trip && formData.existing_images.length > 0) {
         submitFormData.append(
           "existing_images",
-          JSON.stringify(formData.existing_images)
+          JSON.stringify(formData.existing_images),
         );
       }
 
@@ -422,6 +444,22 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
       formData.images.forEach((file) => {
         if (file instanceof File) {
           submitFormData.append("images", file);
+        }
+      });
+
+      // NEW: Add existing videos (for updates)
+
+      if (trip && formData.existing_videos.length > 0) {
+        submitFormData.append(
+          "existing_videos",
+          JSON.stringify(formData.existing_videos),
+        );
+      }
+
+      // NEW: Add new video files
+      formData.videos.forEach((file) => {
+        if (file instanceof File) {
+          submitFormData.append("videos", file);
         }
       });
 
@@ -436,7 +474,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
       onSuccess && onSuccess(result);
     } catch (error) {
       toast.error(
-        error.response?.data?.message || error.message || "Failed to save trip"
+        error.response?.data?.message || error.message || "Failed to save trip",
       );
     } finally {
       setIsLoading(false);
@@ -608,7 +646,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
                 options={durationUnitOptions}
                 placeholder="Select Duration Unit *"
                 value={durationUnitOptions.find(
-                  (unit) => unit.value === formData.duration_unit
+                  (unit) => unit.value === formData.duration_unit,
                 )}
                 onChange={(opt) => handleSelectChange("duration_unit", opt)}
                 error={errors.duration_unit}
@@ -945,6 +983,152 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
               </button>
             </div>
 
+            <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-2xl p-6 border border-cyan-100">
+              <div className="flex items-center justify-between mb-4">
+                <label className="block text-sm font-medium text-slate-700">
+                  Trip Videos
+                </label>
+                <button
+                  type="button"
+                  onClick={addVideo}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+                  disabled={isLoading}
+                >
+                  <Icon icon="mdi:plus-circle" className="w-4 h-4" />
+                  <span>Add Video</span>
+                </button>
+              </div>
+
+              {/* Existing Videos */}
+              {formData.existing_videos.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-medium text-slate-700 mb-3">
+                    Current Videos
+                  </h4>
+                  <div className="space-y-3">
+                    {formData.existing_videos.map((videoUrl, index) => (
+                      <div
+                        key={`existing-video-${index}`}
+                        className="group bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-all duration-200 flex items-start space-x-4"
+                      >
+                        <div className="flex-shrink-0">
+                          <video
+                            src={videoUrl}
+                            className="w-28 h-20 object-cover rounded-lg border-2 border-slate-200 bg-black"
+                            muted
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-slate-700">
+                            Existing Video {index + 1}
+                          </p>
+                          <p className="text-xs text-slate-500 break-all">
+                            {videoUrl}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeExistingVideo(index)}
+                          className="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+                          disabled={isLoading}
+                        >
+                          <Icon icon="mdi:delete" className="w-5 h-5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* New Video Uploads */}
+              <div className="space-y-4">
+                {formData.videos.map((video, index) => (
+                  <div
+                    key={`new-video-${index}`}
+                    className="group bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-all duration-200 flex items-start space-x-4"
+                  >
+                    <div className="flex-shrink-0">
+                      {video instanceof File ? (
+                        <video
+                          src={URL.createObjectURL(video)}
+                          className="w-28 h-20 object-cover rounded-lg border-2 border-slate-200 bg-black"
+                          muted
+                          controls
+                        />
+                      ) : (
+                        <div className="w-28 h-20 bg-slate-100 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center">
+                          <Icon
+                            icon="mdi:video-plus"
+                            className="w-8 h-8 text-slate-400"
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm,video/quicktime"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            // Validate file size (100MB limit — adjust to your S3/dyno limits)
+                            if (file.size > 100 * 1024 * 1024) {
+                              toast.error("Video size must be less than 100MB");
+                              return;
+                            }
+                            handleVideoChange(index, file);
+                          }
+                        }}
+                        className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100 file:cursor-pointer cursor-pointer"
+                        disabled={isLoading}
+                      />
+                      <p className="text-xs text-slate-500 mt-1">
+                        New Video {index + 1} • Max 100MB • MP4, WebM, MOV
+                      </p>
+                      {video instanceof File && (
+                        <p className="text-xs text-green-600 mt-1">
+                          Selected: {video.name} (
+                          {(video.size / 1024 / 1024).toFixed(2)} MB)
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeVideo(index)}
+                      className="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+                      disabled={isLoading}
+                    >
+                      <Icon icon="mdi:delete" className="w-5 h-5" />
+                    </button>
+                  </div>
+                ))}
+                {formData.videos.length === 0 &&
+                  formData.existing_videos.length === 0 && (
+                    <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center">
+                      <Icon
+                        icon="mdi:video-plus"
+                        className="w-12 h-12 text-slate-400 mx-auto mb-4"
+                      />
+                      <h4 className="text-lg font-medium text-slate-600 mb-2">
+                        No videos yet
+                      </h4>
+                      <p className="text-sm text-slate-500 mb-4">
+                        Upload a short highlight video to give travelers a feel
+                        for the trip
+                      </p>
+                      <button
+                        type="button"
+                        onClick={addVideo}
+                        className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                        disabled={isLoading}
+                      >
+                        Upload First Video
+                      </button>
+                    </div>
+                  )}
+              </div>
+            </div>
+
             {/* Import Images from Another Trip */}
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200 mb-6">
               <div className="flex items-start space-x-3 mb-4">
@@ -998,7 +1182,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
                       <div className="bg-white rounded-lg p-4 border border-blue-200">
                         {(() => {
                           const selectedTrip = allTrips.find(
-                            (t) => t.id === parseInt(selectedTripForImport)
+                            (t) => t.id === parseInt(selectedTripForImport),
                           );
                           return selectedTrip ? (
                             <div className="space-y-3">
