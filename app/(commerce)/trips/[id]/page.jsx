@@ -128,6 +128,18 @@ const TripPage = ({ params }) => {
       child: tripData.child_price || 0,
     };
   };
+  const getMediaItems = () => {
+    if (!tripData) return [];
+    const images = (tripData.images || []).map((src) => ({
+      type: "image",
+      src,
+    }));
+    const videos = (tripData.videos || []).map((src) => ({
+      type: "video",
+      src,
+    }));
+    return [...images, ...videos];
+  };
 
   useEffect(() => {
     const loadTripData = async () => {
@@ -370,15 +382,13 @@ const TripPage = ({ params }) => {
   };
 
   const goToNextImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev === tripData.images.length - 1 ? 0 : prev + 1,
-    );
+    const media = getMediaItems();
+    setCurrentImageIndex((prev) => (prev === media.length - 1 ? 0 : prev + 1));
   };
 
   const goToPrevImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev === 0 ? tripData.images.length - 1 : prev - 1,
-    );
+    const media = getMediaItems();
+    setCurrentImageIndex((prev) => (prev === 0 ? media.length - 1 : prev - 1));
   };
 
   const handleKeyDown = (e) => {
@@ -661,39 +671,68 @@ const TripPage = ({ params }) => {
         <div className="grid lg:grid-cols-3 gap-12">
           {/* ... Left Column (no changes needed here) ... */}
           <div className="lg:col-span-2 space-y-8">
-            {tripData.images && tripData.images.length > 1 && (
-              <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 flex items-center">
-                  <Icon
-                    icon="lucide:camera"
-                    className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-blue-600"
-                  />
-                  Photo Gallery
-                </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-                  {tripData.images.map((image, index) => (
-                    <div
-                      key={index}
-                      onClick={() => openLightbox(index)}
-                      className="relative h-32 sm:h-48 rounded-lg sm:rounded-xl overflow-hidden group cursor-pointer"
-                    >
-                      <Image
-                        src={image}
-                        alt={`${tripData.name} - Photo ${index + 1}`}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+            {(() => {
+              const media = getMediaItems();
+              return (
+                media.length > 1 && (
+                  <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 flex items-center">
+                      <Icon
+                        icon="lucide:camera"
+                        className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-blue-600"
                       />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                        <Icon
-                          icon="lucide:maximize-2"
-                          className="w-6 h-6 sm:w-8 sm:h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                        />
-                      </div>
+                      Photo & Video Gallery
+                    </h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+                      {media.map((item, index) => (
+                        <div
+                          key={index}
+                          onClick={() => openLightbox(index)}
+                          className="relative h-32 sm:h-48 rounded-lg sm:rounded-xl overflow-hidden group cursor-pointer bg-black"
+                        >
+                          {item.type === "image" ? (
+                            <Image
+                              src={item.src}
+                              alt={`${tripData.name} - Photo ${index + 1}`}
+                              fill
+                              className="object-cover transition-transform duration-500 group-hover:scale-110"
+                            />
+                          ) : (
+                            <video
+                              src={item.src}
+                              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                              muted
+                              playsInline
+                              preload="metadata"
+                            />
+                          )}
+
+                          {item.type === "video" && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <Icon
+                                  icon="lucide:play"
+                                  className="w-6 h-6 sm:w-7 sm:h-7 text-blue-600 ml-0.5"
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                            {item.type === "image" && (
+                              <Icon
+                                icon="lucide:maximize-2"
+                                className="w-6 h-6 sm:w-8 sm:h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                              />
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </div>
+                )
+              );
+            })()}
 
             <div className="bg-white rounded-2xl shadow-xl p-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
@@ -1768,124 +1807,156 @@ const TripPage = ({ params }) => {
       )}
 
       {/* Image Lightbox Modal */}
-      {lightboxOpen && tripData.images && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-xl flex flex-col">
-          {/* Header Controls - with padding to avoid navbar overlap */}
-          <div className="w-full flex justify-center items-center z-20 pt-20 sm:pt-24 pb-4 px-4">
-            <div className="w-full max-w-7xl flex justify-between items-center">
-              {/* Counter - Centered Left */}
-              <div className="bg-black/30 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
-                <span className="text-white font-medium text-sm sm:text-base">
-                  {currentImageIndex + 1} / {tripData.images.length}
-                </span>
-              </div>
+      {lightboxOpen &&
+        (() => {
+          const media = getMediaItems();
+          const currentItem = media[currentImageIndex];
+          if (!currentItem) return null;
 
-              {/* Close Button - Centered Right */}
-              <button
-                onClick={closeLightbox}
-                className="p-3 bg-black/30 hover:bg-red-500/80 text-white rounded-full transition-all duration-300 border border-white/10 hover:border-red-500/50 group"
-                aria-label="Close preview"
-              >
-                <Icon
-                  icon="lucide:x"
-                  className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300"
-                />
-              </button>
-            </div>
-          </div>
+          return (
+            <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-xl flex flex-col">
+              {/* Header Controls */}
+              <div className="w-full flex justify-center items-center z-20 pt-20 sm:pt-24 pb-4 px-4">
+                <div className="w-full max-w-7xl flex justify-between items-center">
+                  <div className="bg-black/30 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+                    <span className="text-white font-medium text-sm sm:text-base">
+                      {currentImageIndex + 1} / {media.length}
+                    </span>
+                  </div>
 
-          {/* Main Image Area - Centered */}
-          <div
-            className="flex-1 relative flex items-center justify-center px-4 sm:px-8 pb-4 overflow-hidden"
-            onClick={closeLightbox}
-          >
-            <div className="relative w-full h-full max-w-7xl flex items-center justify-center">
-              {/* Previous Button - Centered vertically */}
-              {tripData.images.length > 1 && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    goToPrevImage();
-                  }}
-                  className="absolute left-0 sm:left-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 bg-black/30 hover:bg-blue-600/80 text-white rounded-full transition-all duration-300 border border-white/10 hover:border-blue-500/50 backdrop-blur-md z-20"
-                  aria-label="Previous image"
-                >
-                  <Icon
-                    icon="lucide:chevron-left"
-                    className="w-6 h-6 sm:w-8 sm:h-8"
-                  />
-                </button>
-              )}
-
-              {/* Image Container - Fully Centered */}
-              <div
-                className="relative w-full h-full flex items-center justify-center"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="relative w-full h-full max-h-[calc(100vh-280px)] sm:max-h-[calc(100vh-320px)]">
-                  <Image
-                    src={tripData.images[currentImageIndex]}
-                    alt={`${tripData.name} - Photo ${currentImageIndex + 1}`}
-                    fill
-                    className="object-contain drop-shadow-2xl"
-                    quality={100}
-                    priority
-                  />
+                  <button
+                    onClick={closeLightbox}
+                    className="p-3 bg-black/30 hover:bg-red-500/80 text-white rounded-full transition-all duration-300 border border-white/10 hover:border-red-500/50 group"
+                    aria-label="Close preview"
+                  >
+                    <Icon
+                      icon="lucide:x"
+                      className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300"
+                    />
+                  </button>
                 </div>
               </div>
 
-              {/* Next Button - Centered vertically */}
-              {tripData.images.length > 1 && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    goToNextImage();
-                  }}
-                  className="absolute right-0 sm:right-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 bg-black/30 hover:bg-blue-600/80 text-white rounded-full transition-all duration-300 border border-white/10 hover:border-blue-500/50 backdrop-blur-md z-20"
-                  aria-label="Next image"
-                >
-                  <Icon
-                    icon="lucide:chevron-right"
-                    className="w-6 h-6 sm:w-8 sm:h-8"
-                  />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Thumbnails - Centered */}
-          {tripData.images.length > 1 && (
-            <div className="w-full bg-black/40 backdrop-blur-md border-t border-white/10 py-4 z-20 flex-shrink-0">
-              <div className="max-w-7xl mx-auto px-4">
-                <div className="flex gap-2 sm:gap-3 overflow-x-auto justify-start sm:justify-center items-center scrollbar-hide">
-                  {tripData.images.map((image, index) => (
+              {/* Main Media Area */}
+              <div
+                className="flex-1 relative flex items-center justify-center px-4 sm:px-8 pb-4 overflow-hidden"
+                onClick={
+                  currentItem.type === "image" ? closeLightbox : undefined
+                }
+              >
+                <div className="relative w-full h-full max-w-7xl flex items-center justify-center">
+                  {media.length > 1 && (
                     <button
-                      key={index}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setCurrentImageIndex(index);
+                        goToPrevImage();
                       }}
-                      className={`relative flex-shrink-0 h-14 w-14 sm:h-20 sm:w-20 rounded-lg overflow-hidden transition-all duration-300 ${
-                        index === currentImageIndex
-                          ? "ring-2 sm:ring-3 ring-blue-500 scale-105 sm:scale-110 opacity-100"
-                          : "opacity-50 hover:opacity-100 hover:scale-105"
-                      }`}
-                      aria-label={`Go to image ${index + 1}`}
+                      className="absolute left-0 sm:left-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 bg-black/30 hover:bg-blue-600/80 text-white rounded-full transition-all duration-300 border border-white/10 hover:border-blue-500/50 backdrop-blur-md z-20"
+                      aria-label="Previous"
                     >
-                      <Image
-                        src={image}
-                        alt={`Thumbnail ${index + 1}`}
-                        fill
-                        className="object-cover"
+                      <Icon
+                        icon="lucide:chevron-left"
+                        className="w-6 h-6 sm:w-8 sm:h-8"
                       />
                     </button>
-                  ))}
+                  )}
+
+                  <div
+                    className="relative w-full h-full flex items-center justify-center"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="relative w-full h-full max-h-[calc(100vh-280px)] sm:max-h-[calc(100vh-320px)]">
+                      {currentItem.type === "image" ? (
+                        <Image
+                          src={currentItem.src}
+                          alt={`${tripData.name} - Photo ${currentImageIndex + 1}`}
+                          fill
+                          className="object-contain drop-shadow-2xl"
+                          quality={100}
+                          priority
+                        />
+                      ) : (
+                        <video
+                          key={currentItem.src}
+                          src={currentItem.src}
+                          className="w-full h-full object-contain drop-shadow-2xl"
+                          controls
+                          autoPlay
+                          playsInline
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {media.length > 1 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        goToNextImage();
+                      }}
+                      className="absolute right-0 sm:right-4 top-1/2 -translate-y-1/2 p-2 sm:p-3 bg-black/30 hover:bg-blue-600/80 text-white rounded-full transition-all duration-300 border border-white/10 hover:border-blue-500/50 backdrop-blur-md z-20"
+                      aria-label="Next"
+                    >
+                      <Icon
+                        icon="lucide:chevron-right"
+                        className="w-6 h-6 sm:w-8 sm:h-8"
+                      />
+                    </button>
+                  )}
                 </div>
               </div>
+
+              {/* Thumbnails */}
+              {media.length > 1 && (
+                <div className="w-full bg-black/40 backdrop-blur-md border-t border-white/10 py-4 z-20 flex-shrink-0">
+                  <div className="max-w-7xl mx-auto px-4">
+                    <div className="flex gap-2 sm:gap-3 overflow-x-auto justify-start sm:justify-center items-center scrollbar-hide">
+                      {media.map((item, index) => (
+                        <button
+                          key={index}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentImageIndex(index);
+                          }}
+                          className={`relative flex-shrink-0 h-14 w-14 sm:h-20 sm:w-20 rounded-lg overflow-hidden transition-all duration-300 bg-black ${
+                            index === currentImageIndex
+                              ? "ring-2 sm:ring-3 ring-blue-500 scale-105 sm:scale-110 opacity-100"
+                              : "opacity-50 hover:opacity-100 hover:scale-105"
+                          }`}
+                          aria-label={`Go to item ${index + 1}`}
+                        >
+                          {item.type === "image" ? (
+                            <Image
+                              src={item.src}
+                              alt={`Thumbnail ${index + 1}`}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <>
+                              <video
+                                src={item.src}
+                                className="absolute inset-0 w-full h-full object-cover"
+                                muted
+                                preload="metadata"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                <Icon
+                                  icon="lucide:play"
+                                  className="w-4 h-4 sm:w-5 sm:h-5 text-white"
+                                />
+                              </div>
+                            </>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      )}
+          );
+        })()}
     </div>
   );
 };
