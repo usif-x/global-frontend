@@ -40,7 +40,7 @@ export default async function TestimonialShowcase() {
             </span>
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 mb-6">
-            What Our Divers Say
+            What Our Adventurers Say?
           </h2>
           <p className="text-gray-600 text-lg md:text-xl max-w-3xl mx-auto">
             Real experiences from adventurers who explored the Red Sea with us
