@@ -4,7 +4,7 @@ import Input from "@/components/ui/Input";
 import { getData } from "@/lib/axios";
 import { Icon } from "@iconify/react";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 // ---- Status configuration: drives color, icon, and copy for the big status box ----
@@ -48,6 +48,14 @@ const DEFAULT_STATUS = {
   icon: "noto:question-mark",
 };
 
+const SESSION_KEY = "fastcheck_unlocked";
+
+// Client-side gate. Set this via env var so it's not hardcoded in source,
+// but remember: NEXT_PUBLIC_* vars are bundled and visible in devtools.
+// This is a friction gate, not real security.
+const FASTCHECK_PASSWORD =
+  process.env.NEXT_PUBLIC_FASTCHECK_PASSWORD || "changeme";
+
 export default function FastInvoiceChecker() {
   const [refNumber, setRefNumber] = useState("");
   const [invoice, setInvoice] = useState(null);
@@ -55,6 +63,36 @@ export default function FastInvoiceChecker() {
   const [errors, setErrors] = useState({});
   const [pickupLoading, setPickupLoading] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
+
+  // ---- Gate state ----
+  const [authenticated, setAuthenticated] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  // Restore unlock state for this browser tab/session
+  useEffect(() => {
+    const unlocked = sessionStorage.getItem(SESSION_KEY) === "true";
+    setAuthenticated(unlocked);
+    setCheckingSession(false);
+  }, []);
+
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault();
+    if (!passwordInput.trim()) {
+      setPasswordError("Please enter the password");
+      return;
+    }
+
+    if (passwordInput === FASTCHECK_PASSWORD) {
+      sessionStorage.setItem(SESSION_KEY, "true");
+      setAuthenticated(true);
+      setPasswordError("");
+      setPasswordInput("");
+    } else {
+      setPasswordError("Incorrect password");
+    }
+  };
 
   const handleCheck = async (e) => {
     e.preventDefault();
@@ -149,6 +187,68 @@ export default function FastInvoiceChecker() {
     ? STATUS_CONFIG[invoice.status] || DEFAULT_STATUS
     : DEFAULT_STATUS;
   const showFastPickup = invoice?.status === "PAID" && !invoice?.picked_up;
+
+  // ---- Loading the session check (avoids a flash of the password screen) ----
+  if (checkingSession) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-white">
+        <Icon
+          icon="solar:loading-bold"
+          className="text-3xl text-cyan-600 animate-spin"
+        />
+      </div>
+    );
+  }
+
+  // ---- Password gate ----
+  if (!authenticated) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-white px-4 py-10">
+        <main className="w-full max-w-sm">
+          <div className="text-center mb-8">
+            <Icon
+              icon="solar:lock-keyhole-bold-duotone"
+              className="text-4xl sm:text-5xl text-cyan-600 mx-auto mb-3"
+            />
+            <h1 className="mb-2 text-xl sm:text-2xl font-bold text-gray-800">
+              Staff Access Required
+            </h1>
+            <p className="text-sm text-gray-500">
+              Enter the password to use the Fast Invoice Checker.
+            </p>
+          </div>
+
+          <form
+            onSubmit={handlePasswordSubmit}
+            noValidate
+            className="space-y-4"
+          >
+            <Input
+              icon={"solar:lock-password-bold-duotone"}
+              dir="ltr"
+              name="password"
+              type="password"
+              placeholder="Password"
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              error={passwordError}
+              color="turquoise"
+              className="w-full text-sm sm:text-base"
+              required
+              aria-label="Password"
+            />
+            <Button
+              type="submit"
+              color="cyan"
+              full
+              text="Unlock"
+              className="py-3 sm:py-4 text-sm sm:text-base font-medium"
+            />
+          </form>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center bg-white px-4 py-10 sm:px-6 lg:py-16">
