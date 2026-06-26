@@ -7,8 +7,11 @@ import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation"; // Import useRouter
-import { useState } from "react";
+import Script from "next/script";
+import { useCallback, useState } from "react";
 import { toast } from "react-toastify"; // Recommended for user feedback
+
+const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
 export default function LoginPage() {
   const login = useAuthStore((state) => state.login);
@@ -19,6 +22,7 @@ export default function LoginPage() {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false); // Add loading state for button
+  const [recaptchaReady, setRecaptchaReady] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -33,6 +37,22 @@ export default function LoginPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Wraps grecaptcha.execute in a promise
+  const getRecaptchaToken = useCallback(() => {
+    return new Promise((resolve, reject) => {
+      if (typeof window === "undefined" || !window.grecaptcha) {
+        reject(new Error("reCAPTCHA not loaded yet"));
+        return;
+      }
+      window.grecaptcha.ready(() => {
+        window.grecaptcha
+          .execute(RECAPTCHA_SITE_KEY, { action: "login" })
+          .then(resolve)
+          .catch(reject);
+      });
+    });
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) {
@@ -43,11 +63,26 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const data = await postData("/auth/login", formData); // <-- استخدم axios helper
+      let recaptchaToken;
+      try {
+        recaptchaToken = await getRecaptchaToken();
+      } catch (captchaErr) {
+        console.error("reCAPTCHA error:", captchaErr);
+        toast.error(
+          "Could not verify you're human. Please refresh and try again.",
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      const data = await postData("/auth/login", {
+        ...formData,
+        recaptcha_token: recaptchaToken,
+      });
 
       if (data.user.is_blocked || !data.user.is_active) {
         toast.error(
-          "Your account is blocked or inactive. Please contact support."
+          "Your account is blocked or inactive. Please contact support.",
         );
         return;
       }
@@ -71,6 +106,13 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col lg:flex-row">
+      {/* Load reCAPTCHA v3 script */}
+      <Script
+        src={`https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`}
+        strategy="afterInteractive"
+        onLoad={() => setRecaptchaReady(true)}
+      />
+
       {/* Image Container */}
       <div className="relative w-full h-[250px] sm:rounded-b-3xl md:rounded-b-3xl lg:rounded-none sm:h-56 md:h-64 lg:h-screen lg:w-1/2">
         <Image
@@ -147,6 +189,27 @@ export default function LoginPage() {
                 disabled={isLoading}
               />
             </div>
+
+            <p className="text-[11px] text-gray-400 text-center pt-1">
+              This site is protected by reCAPTCHA and the Google{" "}
+              <a
+                href="https://policies.google.com/privacy"
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+              >
+                Privacy Policy
+              </a>
+              <a
+                href="https://policies.google.com/terms"
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+              >
+                Terms of Service
+              </a>{" "}
+              apply.
+            </p>
           </form>
 
           {/* Footer Links */}

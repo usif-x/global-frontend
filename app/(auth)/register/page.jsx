@@ -8,9 +8,12 @@ import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import Script from "next/script";
+import { useCallback, useState } from "react";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
+
+const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
 export default function RegisterPage() {
   const login = useAuthStore((state) => state.login);
@@ -51,6 +54,22 @@ export default function RegisterPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Wraps grecaptcha.execute in a promise
+  const getRecaptchaToken = useCallback(() => {
+    return new Promise((resolve, reject) => {
+      if (typeof window === "undefined" || !window.grecaptcha) {
+        reject(new Error("reCAPTCHA not loaded yet"));
+        return;
+      }
+      window.grecaptcha.ready(() => {
+        window.grecaptcha
+          .execute(RECAPTCHA_SITE_KEY, { action: "register" })
+          .then(resolve)
+          .catch(reject);
+      });
+    });
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -62,10 +81,23 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
+      let recaptchaToken;
+      try {
+        recaptchaToken = await getRecaptchaToken();
+      } catch (captchaErr) {
+        console.error("reCAPTCHA error:", captchaErr);
+        toast.error(
+          "Could not verify you're human. Please refresh and try again.",
+        );
+        setIsLoading(false);
+        return;
+      }
+
       const dataToSend = {
         full_name: formData.fullName,
         email: formData.email,
         password: formData.password,
+        recaptcha_token: recaptchaToken,
       };
 
       const result = await postData("/auth/register", dataToSend); // ✅ باستخدام axios
@@ -102,6 +134,12 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col lg:flex-row">
+      {/* Load reCAPTCHA v3 script */}
+      <Script
+        src={`https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`}
+        strategy="afterInteractive"
+      />
+
       {/* Right Image Section */}
       <div className="relative w-full h-[250px] sm:rounded-b-3xl md:rounded-b-3xl lg:rounded-none sm:h-56 md:h-64 lg:h-screen lg:w-1/2">
         <Image
@@ -201,6 +239,27 @@ export default function RegisterPage() {
               text={isLoading ? "Creating Account..." : "Create Account"}
               disabled={isLoading}
             />
+
+            <p className="text-[11px] text-gray-400 text-center pt-1">
+              This site is protected by reCAPTCHA and the Google{" "}
+              <a
+                href="https://policies.google.com/privacy"
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+              >
+                Privacy Policy
+              </a>
+              <a
+                href="https://policies.google.com/terms"
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+              >
+                Terms of Service
+              </a>{" "}
+              apply.
+            </p>
           </form>
 
           <p className="mt-8 text-center text-gray-500">
