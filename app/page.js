@@ -3,6 +3,7 @@ import DivingCourses from "@/components/section/Course";
 import WhyChooseUs from "@/components/section/Future";
 import Hero from "@/components/section/Hero";
 import PackageTripDisplay from "@/components/section/PackageTrip";
+import Testimonials from "@/components/section/Testimonials";
 export const metadata = {
   title: {
     template: "Hurghada Trips - %s",
@@ -54,6 +55,7 @@ export default function Home() {
       <BestSellersHero />
       <DivingCourses />
       <PackageTripDisplay />
+      <Testimonials />
     </>
   );
 }

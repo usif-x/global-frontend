@@ -49,7 +49,7 @@ const StarRating = React.memo(
         ))}
       </div>
     );
-  }
+  },
 );
 
 StarRating.displayName = "StarRating";
@@ -84,7 +84,6 @@ const TestimonialCard = React.memo(({ testimonial }) => {
           <h4 className="font-semibold text-gray-800 text-lg">
             {user?.full_name || "Anonymous User"}
           </h4>
-          <p className="text-gray-500 text-sm">{formatDate(created_at)}</p>
         </div>
       </div>
     </div>
@@ -124,12 +123,12 @@ const RateUsModal = React.memo(({ isOpen, onClose, onSuccess }) => {
           ...formData,
           notes: formData.notes.trim() || null,
         },
-        true
+        true,
       );
       onSuccess();
     } catch (error) {
       toast.error(
-        error?.response?.data?.detail || "Submission failed. Please try again."
+        error?.response?.data?.detail || "Submission failed. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -267,7 +266,7 @@ export default function TestimonialClient({ testimonials = [] }) {
     return testimonials.filter(
       (t) =>
         t.description?.toLowerCase().includes(searchLower) ||
-        t.user?.full_name?.toLowerCase().includes(searchLower)
+        t.user?.full_name?.toLowerCase().includes(searchLower),
     );
   }, [testimonials, searchTerm]);
 
