@@ -309,20 +309,6 @@ export default function TestimonialClient({ testimonials = [] }) {
 
   return (
     <>
-      {/* Search Bar */}
-      {testimonials.length > 0 && (
-        <div className="max-w-md mx-auto mb-12">
-          <Input
-            icon="mdi:magnify"
-            name="search"
-            type="text"
-            placeholder="Search testimonials..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-      )}
-
       {/* Testimonials Slider */}
       {filteredTestimonials.length > 0 ? (
         <div className="relative">
