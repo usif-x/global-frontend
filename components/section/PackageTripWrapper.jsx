@@ -392,7 +392,7 @@ const PackageTripClientWrapper = ({ initialPackages, initialTrips }) => {
                 width={20}
               />
               <span className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                Trip Packages
+                Packages
               </span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">

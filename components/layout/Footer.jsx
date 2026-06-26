@@ -87,9 +87,9 @@ export default function Home() {
                       className="text-white/60 mt-1 flex-shrink-0"
                     />
                     <span className="text-white/80 text-sm">
-                      Sunrise AQUAJOY
+                      Hurghada
                       <br />
-                      Egypt Hurghada
+                      Red Sea, Egypt
                     </span>
                   </div>
                   <div className="flex items-center space-x-3">

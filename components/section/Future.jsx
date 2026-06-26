@@ -10,24 +10,6 @@ const features = [
       "Enjoy competitive prices across all Hurghada activities, with transparent rates and no hidden fees.",
   },
   {
-    icon: "mdi:emoticon-happy-outline",
-    title: "Thousands of Happy Guests",
-    description:
-      "Our guests return year after year thanks to unforgettable experiences, friendly service, and trusted quality.",
-  },
-  {
-    icon: "fa-solid:medal",
-    title: "Experienced Local Team",
-    description:
-      "Our professional team knows Hurghada inside out and ensures every trip is enjoyable, organized, and memorable.",
-  },
-  {
-    icon: "mdi:shield-check",
-    title: "Safety & Reliability",
-    description:
-      "From diving and snorkeling trips to safari adventures and boat excursions, safety always comes first.",
-  },
-  {
     icon: "mdi:calendar-check",
     title: "Easy & Flexible Booking",
     description:
