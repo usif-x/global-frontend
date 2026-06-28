@@ -9,6 +9,7 @@ import GalleryManagementPage from "@/components/admin/components/gallery/Gallery
 import PackageManagement from "@/components/admin/components/package/Package";
 import PaymentsContent from "@/components/admin/components/payment/Payment";
 import TestimonialManagementPage from "@/components/admin/components/testimonial/Testimonial";
+import TransferZoneManagement from "@/components/admin/components/transfer-zone/Zones";
 import TripManagement from "@/components/admin/components/trip/Trip";
 import UserManagementPage from "@/components/admin/components/user/ModernUser";
 import AdminService from "@/services/adminService";
@@ -359,6 +360,13 @@ const AdminDashboard = () => {
       description: "View best selling trips and packages",
     },
     {
+      id: "transfer_zones",
+      label: "Transfer Zones",
+      icon: "mdi:map-marker",
+      color: "text-blue-500",
+      description: "Manage transfer zones and locations",
+    },
+    {
       id: "coupons",
       label: "Coupons",
       icon: "mdi:ticket-percent",
@@ -508,6 +516,8 @@ const AdminDashboard = () => {
         return <CourseManagement />;
       case "best_selling":
         return <BestSellingMain />;
+      case "transfer_zones":
+        return <TransferZoneManagement />;
       case "coupons":
         return <CouponManagement />;
       case "users":
