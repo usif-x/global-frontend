@@ -848,7 +848,7 @@ const TripPage = ({ params }) => {
                     icon="mdi:cash-multiple"
                     className="w-8 h-8 mr-3 text-orange-600"
                   />
-                  Additional Fees & Pickup
+                  Additional Fees
                 </h2>
 
                 {getMandatoryFees().length > 0 && (
