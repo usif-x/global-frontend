@@ -52,7 +52,7 @@ const PublicNotificationForm = ({ notification, onSuccess, onCancel }) => {
       console.error("Error saving notification:", error);
       toast.error(
         error.response?.data?.detail ||
-          "Failed to save notification. Please try again."
+          "Failed to save notification. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -200,32 +200,28 @@ const PublicNotificationForm = ({ notification, onSuccess, onCancel }) => {
             type="button"
             onClick={onCancel}
             disabled={loading}
+            text="Cancel"
             className="px-6 py-2 bg-slate-200 text-slate-700 hover:bg-slate-300 rounded-lg font-medium transition-colors"
-          >
-            Cancel
-          </Button>
+          ></Button>
           <Button
             type="submit"
             disabled={loading}
-            className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
-          >
-            {loading ? (
-              <>
-                <Icon icon="mdi:loading" className="w-5 h-5 animate-spin" />
-                <span>Saving...</span>
-              </>
-            ) : (
-              <>
-                <Icon
-                  icon={notification ? "mdi:content-save" : "mdi:plus-circle"}
-                  className="w-5 h-5"
-                />
-                <span>
-                  {notification ? "Update Notification" : "Create Notification"}
-                </span>
-              </>
-            )}
-          </Button>
+            text={
+              loading
+                ? "Saving..."
+                : zone
+                  ? "Update Notification"
+                  : "Create Notification"
+            }
+            icon={
+              loading
+                ? "mdi:loading"
+                : zone
+                  ? "mdi:content-save"
+                  : "mdi:plus-circle"
+            }
+            className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+          />
         </div>
       </form>
     </div>

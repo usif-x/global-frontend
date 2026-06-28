@@ -256,6 +256,7 @@ const TagInput = ({ tags, onChange, disabled }) => {
           <Button
             type="button"
             onClick={addTag}
+            text="Add Tag"
             disabled={!inputValue.trim() || disabled}
             className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg disabled:opacity-50"
           >
@@ -332,7 +333,7 @@ const BlogForm = ({ blog = null, onSuccess, onCancel }) => {
     ];
     if (!validTypes.includes(file.type)) {
       toast.error(
-        "Invalid file type. Please upload an image (JPG, PNG, GIF, BMP, or WEBP)."
+        "Invalid file type. Please upload an image (JPG, PNG, GIF, BMP, or WEBP).",
       );
       return;
     }
@@ -386,7 +387,7 @@ const BlogForm = ({ blog = null, onSuccess, onCancel }) => {
     ];
     if (!validTypes.includes(file.type)) {
       toast.error(
-        "Invalid file type. Please upload an image (JPG, PNG, GIF, BMP, or WEBP)."
+        "Invalid file type. Please upload an image (JPG, PNG, GIF, BMP, or WEBP).",
       );
       return;
     }
@@ -429,7 +430,7 @@ const BlogForm = ({ blog = null, onSuccess, onCancel }) => {
     setFormData((prev) => ({
       ...prev,
       content: prev.content.map((block, i) =>
-        i === index ? updatedBlock : block
+        i === index ? updatedBlock : block,
       ),
     }));
   };
@@ -489,7 +490,7 @@ const BlogForm = ({ blog = null, onSuccess, onCancel }) => {
 
     // Check if all text blocks have content
     const emptyTextBlocks = formData.content.filter(
-      (block) => block.type === "text" && !block.content.trim()
+      (block) => block.type === "text" && !block.content.trim(),
     );
     if (emptyTextBlocks.length > 0) {
       toast.error("Please fill in all text blocks or remove empty ones.");
@@ -520,7 +521,7 @@ const BlogForm = ({ blog = null, onSuccess, onCancel }) => {
       console.error("Blog submission error:", error);
       toast.error(
         error?.response?.data?.detail ||
-          "Failed to save blog. Please try again."
+          "Failed to save blog. Please try again.",
       );
     } finally {
       setIsLoading(false);
