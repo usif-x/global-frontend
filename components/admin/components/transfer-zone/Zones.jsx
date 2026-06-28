@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import TransferZoneForm from "./ZoneForm";
-import TransferZoneList from "./ZoneList";
+import TransferZoneForm from "./ZonesForm";
+import TransferZoneList from "./ZonesList";
 
 const TransferZoneManagement = () => {
   const [currentView, setCurrentView] = useState("list"); // 'list', 'add', 'edit'
