@@ -24,7 +24,6 @@ import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import CheckStatus from "./CheckStatus";
-// --- CHANGE: REMOVED conversion logic. It's no longer needed. ---
 
 // Helper Functions
 const formatPrice = (price) => {
@@ -116,6 +115,10 @@ const TripPage = ({ params }) => {
   const [dateAvailability, setDateAvailability] = useState(null);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
 
+  // --- NEW: fees & transfer zone selection state ---
+  const [transferZoneId, setTransferZoneId] = useState("");
+  const [selectedOptionalFeeIds, setSelectedOptionalFeeIds] = useState([]);
+
   const getCurrencySymbol = (currencyCode) => {
     const currency = currencies.find((c) => c.value === currencyCode);
     return currency ? currency.symbol : currencyCode;
@@ -128,6 +131,7 @@ const TripPage = ({ params }) => {
       child: tripData.child_price || 0,
     };
   };
+
   const getMediaItems = () => {
     if (!tripData) return [];
     const images = (tripData.images || []).map((src) => ({
@@ -141,6 +145,131 @@ const TripPage = ({ params }) => {
     return [...images, ...videos];
   };
 
+  // --- NEW: fee helpers ---
+  const getMandatoryFees = () =>
+    (tripData?.fees || []).filter(
+      (f) => !f.is_optional && !f.is_included_in_price,
+    );
+
+  const getOptionalFees = () =>
+    (tripData?.fees || []).filter(
+      (f) => f.is_optional && !f.is_included_in_price,
+    );
+
+  const calculateFeeAmount = (fee, basePrice) => {
+    const adults = formData.adults;
+    const children = formData.children;
+    const people = adults + children;
+
+    let units = people;
+    if (fee.applies_to === "per_booking") units = 1;
+    else if (fee.applies_to === "per_adult") units = adults;
+    else if (fee.applies_to === "per_child") units = children;
+
+    if (fee.fee_type === "percentage") {
+      return Math.round(basePrice * (fee.value / 100));
+    }
+    // fee.value for TripFee, fee.price for TripTransferFee
+    return Math.round((fee.value ?? fee.price ?? 0) * units);
+  };
+
+  // --- REPLACED: single source-of-truth price breakdown (always computed in EGP) ---
+  const calculatePriceBreakdown = () => {
+    if (!tripData) {
+      return {
+        basePrice: 0,
+        tripDiscountAmount: 0,
+        couponDiscountAmount: 0,
+        discountedBase: 0,
+        mandatoryFeesTotal: 0,
+        optionalFeesTotal: 0,
+        transferFeeTotal: 0,
+        finalTotal: 0,
+        tripDiscount: { isApplied: false, percentage: 0 },
+      };
+    }
+
+    const pricing = getCurrentPricing();
+    const basePrice = Math.round(
+      formData.adults * pricing.adult + formData.children * pricing.child,
+    );
+
+    // Trip-level discount
+    const totalPeople = formData.adults + formData.children;
+    let tripDiscount = { isApplied: false, percentage: 0 };
+    if (tripData.has_discount) {
+      if (tripData.discount_always_available) {
+        tripDiscount = {
+          isApplied: true,
+          percentage: tripData.discount_percentage,
+        };
+      } else if (
+        tripData.discount_requires_min_people &&
+        totalPeople >= tripData.discount_min_people
+      ) {
+        tripDiscount = {
+          isApplied: true,
+          percentage: tripData.discount_percentage,
+        };
+      }
+    }
+
+    const tripDiscountAmount = tripDiscount.isApplied
+      ? Math.round(basePrice * (tripDiscount.percentage / 100))
+      : 0;
+
+    let discountedBase = basePrice - tripDiscountAmount;
+
+    // Coupon discount (applied after trip discount)
+    let couponDiscountAmount = 0;
+    if (appliedCoupon?.discount_percentage) {
+      couponDiscountAmount = Math.round(
+        discountedBase * (appliedCoupon.discount_percentage / 100),
+      );
+      discountedBase -= couponDiscountAmount;
+    }
+
+    // Mandatory fees — always charged, never discounted
+    const mandatoryFeesTotal = getMandatoryFees().reduce(
+      (sum, fee) => sum + calculateFeeAmount(fee, discountedBase),
+      0,
+    );
+
+    // Optional fees — only the ones the user opted into
+    const optionalFeesTotal = getOptionalFees()
+      .filter((fee) => selectedOptionalFeeIds.includes(fee.id))
+      .reduce((sum, fee) => sum + calculateFeeAmount(fee, discountedBase), 0);
+
+    // Transfer fee — only if a zone is selected
+    let transferFeeTotal = 0;
+    if (transferZoneId && tripData.transfer_fees?.length) {
+      const tf = tripData.transfer_fees.find(
+        (t) => t.zone_id.toString() === transferZoneId.toString(),
+      );
+      if (tf) {
+        transferFeeTotal = calculateFeeAmount(tf, discountedBase);
+      }
+    }
+
+    const finalTotal =
+      discountedBase +
+      mandatoryFeesTotal +
+      optionalFeesTotal +
+      transferFeeTotal;
+
+    return {
+      basePrice,
+      tripDiscountAmount,
+      couponDiscountAmount,
+      discountedBase,
+      mandatoryFeesTotal,
+      optionalFeesTotal,
+      transferFeeTotal,
+      finalTotal,
+      tripDiscount,
+    };
+  };
+
   useEffect(() => {
     const loadTripData = async () => {
       try {
@@ -152,20 +281,17 @@ const TripPage = ({ params }) => {
         }
         setTripData(trip);
 
-        // --- CHANGE: Enhanced logic to fetch related trips ---
         let otherTrips = [];
         if (trip.package_id) {
           try {
-            // First, get package info for the header
             const pkg = await getData(`/packages/${trip.package_id}`);
             setPackageData(pkg);
-            // Then, get other trips from that same package
             const tripsInPackage = await getData(
               `/packages/${trip.package_id}/trips`,
             );
             otherTrips = (tripsInPackage?.data || [])
               .filter((t) => t.id.toString() !== id.toString())
-              .slice(0, 3); // Show up to 3 other trips
+              .slice(0, 3);
           } catch (err) {
             console.warn(
               "Failed to load package data or trips from package:",
@@ -174,7 +300,6 @@ const TripPage = ({ params }) => {
           }
         }
 
-        // If we couldn't find trips from the package, or the trip isn't in one, get generic related trips as a fallback.
         if (otherTrips.length === 0) {
           try {
             const related = await getData(`/packages/${trip.package_id}/trips`);
@@ -184,7 +309,6 @@ const TripPage = ({ params }) => {
           }
         }
         setRelatedTrips(otherTrips);
-        // --- END CHANGE ---
       } catch (err) {
         setError("Failed to load trip data");
       } finally {
@@ -211,7 +335,7 @@ const TripPage = ({ params }) => {
     }
   }, [tripData, formData.children]);
 
-  // Fetch conversion when currency changes and not EGP
+  // --- FIXED: fetch ONE conversion for the full final total (incl. fees/transfer) ---
   useEffect(() => {
     const fetchConversion = async () => {
       setConvertedPrice(null);
@@ -219,11 +343,11 @@ const TripPage = ({ params }) => {
       if (formData.currency === "EGP" || !formData.currency) return;
       setConversionLoading(true);
       try {
-        const { final } = calculateTotalPrice();
+        const { finalTotal } = calculatePriceBreakdown();
         const res = await fetchCurrencyConversion({
           from: "EGP",
           to: formData.currency,
-          amount: final,
+          amount: finalTotal,
         });
         setConvertedPrice(res.result?.[formData.currency]);
       } catch (err) {
@@ -240,7 +364,22 @@ const TripPage = ({ params }) => {
     formData.children,
     appliedCoupon,
     tripData,
+    transferZoneId,
+    selectedOptionalFeeIds,
   ]);
+
+  // --- NEW: derive ONE conversion rate, used to display every line item consistently ---
+  const getConversionRate = (breakdown) => {
+    if (formData.currency === "EGP") return 1;
+    if (!convertedPrice || !breakdown.finalTotal) return null;
+    return convertedPrice / breakdown.finalTotal;
+  };
+
+  const convertAmount = (egpAmount, rate) => {
+    if (formData.currency === "EGP") return egpAmount;
+    if (rate === null) return egpAmount; // fallback while loading
+    return egpAmount * rate;
+  };
 
   const validateForm = () => {
     const errors = {};
@@ -263,7 +402,6 @@ const TripPage = ({ params }) => {
         errors.preferredDate = "Date cannot be in the past";
     }
 
-    // Check if selected date is available
     if (dateAvailability && !dateAvailability.is_available) {
       errors.preferredDate =
         "Selected date is not available. Please choose another date.";
@@ -278,60 +416,13 @@ const TripPage = ({ params }) => {
       errors.pricing = "Pricing not available for this trip";
     }
 
+    // NEW: require a transfer zone if the trip has transfer pricing configured
+    if (tripData?.transfer_fees?.length > 0 && !transferZoneId) {
+      errors.transferZone = "Please select your pickup zone";
+    }
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
-  };
-
-  // This function ALWAYS calculates the price in EGP
-  const calculateDiscount = () => {
-    if (!tripData || !tripData.has_discount) {
-      return { isApplied: false, percentage: 0 };
-    }
-    const totalPeople = formData.adults + formData.children;
-    if (tripData.discount_always_available) {
-      return { isApplied: true, percentage: tripData.discount_percentage };
-    }
-    if (
-      tripData.discount_requires_min_people &&
-      totalPeople >= tripData.discount_min_people
-    ) {
-      return { isApplied: true, percentage: tripData.discount_percentage };
-    }
-    return { isApplied: false, percentage: 0 };
-  };
-
-  const calculateTotalPrice = () => {
-    if (!tripData)
-      return { original: 0, final: 0, discount: null, couponDiscount: 0 };
-
-    const pricing = getCurrentPricing();
-    const originalPrice = Math.round(
-      formData.adults * pricing.adult + formData.children * pricing.child,
-    );
-
-    const discount = calculateDiscount();
-    let finalPrice = originalPrice;
-
-    // Apply trip discount first
-    if (discount.isApplied) {
-      finalPrice = Math.round(originalPrice * (1 - discount.percentage / 100));
-    }
-
-    // Apply coupon discount on top of trip discount
-    let couponDiscount = 0;
-    if (appliedCoupon && appliedCoupon.discount_percentage) {
-      couponDiscount = Math.round(
-        finalPrice * (appliedCoupon.discount_percentage / 100),
-      );
-      finalPrice = finalPrice - couponDiscount;
-    }
-
-    return {
-      original: originalPrice,
-      final: finalPrice,
-      discount,
-      couponDiscount,
-    };
   };
 
   const handleInputChange = (name, value) => {
@@ -339,7 +430,6 @@ const TripPage = ({ params }) => {
     if (formErrors[name])
       setFormErrors((prev) => ({ ...prev, [name]: undefined }));
 
-    // Check availability when date is selected
     if (name === "preferredDate" && value && tripData) {
       checkDateAvailability(value);
     }
@@ -365,7 +455,6 @@ const TripPage = ({ params }) => {
       }
     } catch (error) {
       console.error("Error checking availability:", error);
-      // If API fails, assume date is available
       setDateAvailability({ is_available: true });
     } finally {
       setCheckingAvailability(false);
@@ -420,7 +509,6 @@ const TripPage = ({ params }) => {
       const result = await CouponService.apply(couponCode.trim());
 
       if (result.success && result.coupon) {
-        // Check if coupon is valid for this activity
         if (
           result.coupon.activity !== "all" &&
           result.coupon.activity !== "trip"
@@ -468,7 +556,6 @@ const TripPage = ({ params }) => {
       return;
     }
 
-    // Show payment modal instead of directly creating invoice
     setShowPaymentModal(true);
   };
 
@@ -479,8 +566,9 @@ const TripPage = ({ params }) => {
       setIsSubmitting(true);
       setShowPaymentModal(false);
 
-      // Calculate the final price on frontend for display/validation
-      const { final: finalPrice } = calculateTotalPrice();
+      // --- FIXED: use the unified breakdown total instead of the old calculateTotalPrice() ---
+      const breakdown = calculatePriceBreakdown();
+      const finalPrice = breakdown.finalTotal;
       let converted = null;
       let amountToSend = finalPrice; // Default to EGP
       if (formData.currency !== "EGP") {
@@ -491,13 +579,12 @@ const TripPage = ({ params }) => {
             amount: finalPrice,
           });
           converted = res.result?.[formData.currency];
-          amountToSend = parseFloat(converted.toFixed(1)); // Round to 1 decimal place
+          amountToSend = parseFloat(converted.toFixed(1));
         } catch {
           // fallback: let backend handle conversion if needed
         }
       }
 
-      // Use helper utility to create properly formatted invoice payload
       const invoicePayload = createTripInvoicePayload({
         tripId: id,
         tripName: tripData.name,
@@ -514,6 +601,9 @@ const TripPage = ({ params }) => {
           hotelName: formData.hotelName,
           roomNumber: formData.roomNumber,
           specialRequests: formData.specialRequests,
+          // NEW: pass fee selections through to the invoice payload
+          transferZoneId: transferZoneId ? parseInt(transferZoneId, 10) : null,
+          selectedOptionalFeeIds,
         },
         paymentDetails: {
           amount: amountToSend,
@@ -588,11 +678,12 @@ const TripPage = ({ params }) => {
 
   const currentPricing = getCurrentPricing();
   const maxPersons = tripData.maxim_person || 10;
-  const {
-    original: originalTotalPrice,
-    final: finalTotalPrice,
-    discount: appliedDiscount,
-  } = calculateTotalPrice();
+
+  // --- NEW: single breakdown computed once per render, used everywhere below ---
+  const priceBreakdown = calculatePriceBreakdown();
+  const conversionRate = getConversionRate(priceBreakdown);
+  const showAmount = (egpAmount) =>
+    formatPrice(convertAmount(egpAmount, conversionRate));
 
   const adultOptions = Array.from({ length: maxPersons }, (_, i) => ({
     value: i + 1,
@@ -605,7 +696,7 @@ const TripPage = ({ params }) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* ... Hero Section (no changes needed here) ... */}
+      {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-900">
         <div className="absolute inset-0 bg-black/40"></div>
 
@@ -669,7 +760,7 @@ const TripPage = ({ params }) => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid lg:grid-cols-3 gap-12">
-          {/* ... Left Column (no changes needed here) ... */}
+          {/* Left Column */}
           <div className="lg:col-span-2 space-y-8">
             {(() => {
               const media = getMediaItems();
@@ -747,21 +838,85 @@ const TripPage = ({ params }) => {
               </div>
             </div>
 
+            {/* --- NEW: Fees & Pickup Info section --- */}
+            {(getMandatoryFees().length > 0 ||
+              getOptionalFees().length > 0 ||
+              tripData.transfer_fees?.length > 0) && (
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
+                  <Icon
+                    icon="mdi:cash-multiple"
+                    className="w-8 h-8 mr-3 text-orange-600"
+                  />
+                  Additional Fees & Pickup
+                </h2>
+
+                {getMandatoryFees().length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="font-semibold text-gray-700 mb-2">
+                      Included fees (added to total):
+                    </h4>
+                    <ul className="space-y-1">
+                      {getMandatoryFees().map((fee) => (
+                        <li
+                          key={fee.id}
+                          className="flex justify-between text-sm text-gray-600 border-b border-gray-100 py-1"
+                        >
+                          <span>{fee.name}</span>
+                          <span className="font-medium">
+                            {fee.fee_type === "percentage"
+                              ? `${fee.value}%`
+                              : `EGP ${fee.value}`}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {getOptionalFees().length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="font-semibold text-gray-700 mb-2">
+                      Optional add-ons:
+                    </h4>
+                    <ul className="space-y-1">
+                      {getOptionalFees().map((fee) => (
+                        <li
+                          key={fee.id}
+                          className="flex justify-between text-sm text-gray-600 border-b border-gray-100 py-1"
+                        >
+                          <span>{fee.name}</span>
+                          <span className="font-medium">
+                            {fee.fee_type === "percentage"
+                              ? `${fee.value}%`
+                              : `EGP ${fee.value}`}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {tripData.transfer_fees?.length > 0 && (
+                  <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-sm text-cyan-800">
+                    <Icon icon="mdi:bus" className="w-4 h-4 inline mr-1" />
+                    Transfer pricing varies by hotel zone — select your zone in
+                    the booking form to see your transfer cost.
+                  </div>
+                )}
+              </div>
+            )}
+
             {(tripData?.included || tripData?.not_included) &&
               (() => {
-                // Helper function to parse field data with multiple levels of JSON encoding
                 const parseFieldData = (fieldData) => {
                   let items = [];
                   let data = fieldData;
-
-                  // Keep unwrapping until we get to the actual array
                   let attempts = 0;
-                  const maxAttempts = 10; // Prevent infinite loops
+                  const maxAttempts = 10;
 
                   while (attempts < maxAttempts) {
                     attempts++;
-
-                    // If it's an array with a single string element, try to parse that string
                     if (Array.isArray(data)) {
                       if (
                         data.length === 1 &&
@@ -772,9 +927,8 @@ const TripPage = ({ params }) => {
                       ) {
                         try {
                           data = JSON.parse(data[0]);
-                          continue; // Try again with the parsed result
+                          continue;
                         } catch {
-                          // If parsing fails, treat array elements as items
                           items = data.filter(
                             (item) =>
                               item &&
@@ -783,11 +937,9 @@ const TripPage = ({ params }) => {
                           break;
                         }
                       } else if (data.length > 0 && Array.isArray(data[0])) {
-                        // If first element is an array, unwrap it
                         data = data[0];
                         continue;
                       } else {
-                        // It's an array of strings
                         items = data.filter(
                           (item) =>
                             item &&
@@ -796,17 +948,14 @@ const TripPage = ({ params }) => {
                         break;
                       }
                     } else if (typeof data === "string") {
-                      // Try to parse string
                       try {
                         data = JSON.parse(data);
-                        continue; // Try again with the parsed result
+                        continue;
                       } catch {
-                        // If parsing fails, treat as single item
                         items = [data];
                         break;
                       }
                     } else {
-                      // Unknown type, stop
                       break;
                     }
                   }
@@ -814,7 +963,6 @@ const TripPage = ({ params }) => {
                   return items;
                 };
 
-                // Parse both sections to check if they have content
                 const includedItems = parseFieldData(tripData?.included);
                 const notIncludedItems = parseFieldData(tripData?.not_included);
 
@@ -888,20 +1036,14 @@ const TripPage = ({ params }) => {
 
             {tripData?.terms_and_conditions &&
               (() => {
-                // Use the same parseFieldData function for terms_and_conditions
-                // Helper function to parse field data with multiple levels of JSON encoding
                 const parseFieldData = (fieldData) => {
                   let items = [];
                   let data = fieldData;
-
-                  // Keep unwrapping until we get to the actual array
                   let attempts = 0;
-                  const maxAttempts = 10; // Prevent infinite loops
+                  const maxAttempts = 10;
 
                   while (attempts < maxAttempts) {
                     attempts++;
-
-                    // If it's an array with a single string element, try to parse that string
                     if (Array.isArray(data)) {
                       if (
                         data.length === 1 &&
@@ -912,9 +1054,8 @@ const TripPage = ({ params }) => {
                       ) {
                         try {
                           data = JSON.parse(data[0]);
-                          continue; // Try again with the parsed result
+                          continue;
                         } catch {
-                          // If parsing fails, treat array elements as items
                           items = data.filter(
                             (item) =>
                               item &&
@@ -923,11 +1064,9 @@ const TripPage = ({ params }) => {
                           break;
                         }
                       } else if (data.length > 0 && Array.isArray(data[0])) {
-                        // If first element is an array, unwrap it
                         data = data[0];
                         continue;
                       } else {
-                        // It's an array of strings
                         items = data.filter(
                           (item) =>
                             item &&
@@ -936,17 +1075,14 @@ const TripPage = ({ params }) => {
                         break;
                       }
                     } else if (typeof data === "string") {
-                      // Try to parse string
                       try {
                         data = JSON.parse(data);
-                        continue; // Try again with the parsed result
+                        continue;
                       } catch {
-                        // If parsing fails, treat as single item
                         items = [data];
                         break;
                       }
                     } else {
-                      // Unknown type, stop
                       break;
                     }
                   }
@@ -985,7 +1121,6 @@ const TripPage = ({ params }) => {
                 ) : null;
               })()}
 
-            {/* --- NEW SECTION: YOU MIGHT ALSO PREFER --- */}
             {relatedTrips.length > 0 && (
               <div className="bg-white rounded-2xl shadow-xl p-8">
                 <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
@@ -1038,7 +1173,6 @@ const TripPage = ({ params }) => {
                 </div>
               </div>
             )}
-            {/* --- END NEW SECTION --- */}
           </div>
 
           <div className="lg:col-span-1">
@@ -1058,7 +1192,6 @@ const TripPage = ({ params }) => {
                 </div>
 
                 <form onSubmit={handleFormSubmit} className="space-y-6">
-                  {/* ... Form title and error display are unchanged ... */}
                   <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
                     <Icon
                       icon="lucide:calendar-check"
@@ -1089,7 +1222,6 @@ const TripPage = ({ params }) => {
                   )}
 
                   <div className="space-y-4">
-                    {/* ... Input fields (name, email, etc.) are unchanged ... */}
                     <Input
                       name="fullName"
                       value={formData.fullName}
@@ -1209,6 +1341,72 @@ const TripPage = ({ params }) => {
                       className="text-lg"
                       error={formErrors.roomNumber}
                     />
+
+                    {/* --- NEW: Transfer zone selection --- */}
+                    {tripData.transfer_fees?.length > 0 && (
+                      <Select
+                        name="transferZone"
+                        value={transferZoneId}
+                        onChange={({ value }) => {
+                          setTransferZoneId(value);
+                          if (formErrors.transferZone)
+                            setFormErrors((prev) => ({
+                              ...prev,
+                              transferZone: undefined,
+                            }));
+                        }}
+                        options={tripData.transfer_fees.map((tf) => ({
+                          value: tf.zone_id.toString(),
+                          label: tf.zone_name || `Zone #${tf.zone_id}`,
+                        }))}
+                        placeholder="Select your hotel pickup zone *"
+                        icon="mdi:map-marker"
+                        searchable={true}
+                        required
+                        error={formErrors.transferZone}
+                      />
+                    )}
+
+                    {/* --- NEW: Optional add-on fees --- */}
+                    {getOptionalFees().length > 0 && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-2">
+                        <p className="text-sm font-semibold text-amber-900 mb-2">
+                          Optional Add-ons
+                        </p>
+                        {getOptionalFees().map((fee) => (
+                          <label
+                            key={fee.id}
+                            className="flex items-center justify-between cursor-pointer"
+                          >
+                            <span className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedOptionalFeeIds.includes(
+                                  fee.id,
+                                )}
+                                onChange={(e) => {
+                                  setSelectedOptionalFeeIds((prev) =>
+                                    e.target.checked
+                                      ? [...prev, fee.id]
+                                      : prev.filter((fid) => fid !== fee.id),
+                                  );
+                                }}
+                                className="w-4 h-4 text-amber-600 rounded"
+                              />
+                              <span className="text-sm text-amber-900">
+                                {fee.name}
+                              </span>
+                            </span>
+                            <span className="text-sm font-medium text-amber-700">
+                              {fee.fee_type === "percentage"
+                                ? `${fee.value}%`
+                                : `EGP ${fee.value}`}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-2 gap-4">
                       <Select
                         name="adults"
@@ -1259,7 +1457,6 @@ const TripPage = ({ params }) => {
                       error={formErrors.preferredDate}
                     />
 
-                    {/* Date Availability Check */}
                     {checkingAvailability && formData.preferredDate && (
                       <div className="flex items-center space-x-2 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-cyan-500"></div>
@@ -1401,7 +1598,7 @@ const TripPage = ({ params }) => {
                     </div>
                   </div>
 
-                  {/* --- CHANGE: Price summary shows selected currency --- */}
+                  {/* --- REWRITTEN: Price summary now driven entirely by priceBreakdown --- */}
                   {(formData.adults > 0 || formData.children > 0) && (
                     <div className="bg-gray-50 rounded-xl p-4 space-y-2">
                       <h4 className="font-semibold text-gray-800 flex items-center">
@@ -1428,145 +1625,129 @@ const TripPage = ({ params }) => {
                         </div>
                       )}
                       <div className="space-y-1 text-sm">
-                        {/* Display itemized breakdown */}
                         <div className="flex justify-between text-gray-600">
                           <span>Adults ({formData.adults}x):</span>
                           <span>
                             {getCurrencySymbol(formData.currency)}{" "}
-                            {formData.currency === "EGP"
-                              ? formatPrice(
-                                  currentPricing.adult * formData.adults,
-                                )
-                              : convertedPrice
-                                ? formatPrice(
-                                    (currentPricing.adult *
-                                      formData.adults *
-                                      convertedPrice) /
-                                      finalTotalPrice,
-                                  )
-                                : formatPrice(
-                                    currentPricing.adult * formData.adults,
-                                  )}
+                            {showAmount(currentPricing.adult * formData.adults)}
                           </span>
                         </div>
+
                         {formData.children > 0 && tripData.child_allowed && (
                           <div className="flex justify-between text-gray-600">
                             <span>Children ({formData.children}x):</span>
                             <span>
                               {getCurrencySymbol(formData.currency)}{" "}
-                              {formData.currency === "EGP"
-                                ? formatPrice(
-                                    currentPricing.child * formData.children,
-                                  )
-                                : convertedPrice
-                                  ? formatPrice(
-                                      (currentPricing.child *
-                                        formData.children *
-                                        convertedPrice) /
-                                        finalTotalPrice,
-                                    )
-                                  : formatPrice(
-                                      currentPricing.child * formData.children,
-                                    )}
+                              {showAmount(
+                                currentPricing.child * formData.children,
+                              )}
                             </span>
                           </div>
                         )}
 
-                        {/* Display Trip Discount if applied */}
-                        {appliedDiscount.isApplied && (
+                        {priceBreakdown.tripDiscount.isApplied && (
                           <div className="flex justify-between text-green-600 text-xs">
                             <span>
-                              Trip Discount ({appliedDiscount.percentage}%):
+                              Trip Discount (
+                              {priceBreakdown.tripDiscount.percentage}%):
                             </span>
                             <span>
                               - {getCurrencySymbol(formData.currency)}{" "}
-                              {formData.currency === "EGP"
-                                ? formatPrice(
-                                    originalTotalPrice -
-                                      originalTotalPrice *
-                                        (1 - appliedDiscount.percentage / 100),
-                                  )
-                                : convertedPrice
-                                  ? formatPrice(
-                                      ((originalTotalPrice -
-                                        originalTotalPrice *
-                                          (1 -
-                                            appliedDiscount.percentage / 100)) *
-                                        convertedPrice) /
-                                        finalTotalPrice,
-                                    )
-                                  : formatPrice(
-                                      originalTotalPrice -
-                                        originalTotalPrice *
-                                          (1 -
-                                            appliedDiscount.percentage / 100),
-                                    )}
+                              {showAmount(priceBreakdown.tripDiscountAmount)}
                             </span>
                           </div>
                         )}
 
-                        {/* Display Coupon Discount if applied */}
-                        {(() => {
-                          const calc = calculateTotalPrice();
-                          return (
-                            calc.couponDiscount > 0 && (
-                              <div className="flex justify-between text-green-600 text-xs">
-                                <span>
-                                  Coupon Discount (
-                                  {appliedCoupon.discount_percentage}%):
-                                </span>
-                                <span>
-                                  - {getCurrencySymbol(formData.currency)}{" "}
-                                  {formData.currency === "EGP"
-                                    ? formatPrice(calc.couponDiscount)
-                                    : convertedPrice
-                                      ? formatPrice(
-                                          (calc.couponDiscount *
-                                            convertedPrice) /
-                                            finalTotalPrice,
-                                        )
-                                      : formatPrice(calc.couponDiscount)}
-                                </span>
-                              </div>
-                            )
-                          );
-                        })()}
+                        {priceBreakdown.couponDiscountAmount > 0 && (
+                          <div className="flex justify-between text-green-600 text-xs">
+                            <span>
+                              Coupon Discount (
+                              {appliedCoupon.discount_percentage}%):
+                            </span>
+                            <span>
+                              - {getCurrencySymbol(formData.currency)}{" "}
+                              {showAmount(priceBreakdown.couponDiscountAmount)}
+                            </span>
+                          </div>
+                        )}
 
-                        {/* Display Total and Discount */}
+                        {/* Mandatory fees */}
+                        {getMandatoryFees().map((fee) => (
+                          <div
+                            key={fee.id}
+                            className="flex justify-between text-gray-600 text-xs"
+                          >
+                            <span>{fee.name}:</span>
+                            <span>
+                              + {getCurrencySymbol(formData.currency)}{" "}
+                              {showAmount(
+                                calculateFeeAmount(
+                                  fee,
+                                  priceBreakdown.discountedBase,
+                                ),
+                              )}
+                            </span>
+                          </div>
+                        ))}
+
+                        {/* Selected optional fees */}
+                        {getOptionalFees()
+                          .filter((fee) =>
+                            selectedOptionalFeeIds.includes(fee.id),
+                          )
+                          .map((fee) => (
+                            <div
+                              key={fee.id}
+                              className="flex justify-between text-gray-600 text-xs"
+                            >
+                              <span>{fee.name} (optional):</span>
+                              <span>
+                                + {getCurrencySymbol(formData.currency)}{" "}
+                                {showAmount(
+                                  calculateFeeAmount(
+                                    fee,
+                                    priceBreakdown.discountedBase,
+                                  ),
+                                )}
+                              </span>
+                            </div>
+                          ))}
+
+                        {/* Transfer fee */}
+                        {priceBreakdown.transferFeeTotal > 0 && (
+                          <div className="flex justify-between text-gray-600 text-xs">
+                            <span>Transfer Fee:</span>
+                            <span>
+                              + {getCurrencySymbol(formData.currency)}{" "}
+                              {showAmount(priceBreakdown.transferFeeTotal)}
+                            </span>
+                          </div>
+                        )}
+
                         <div className="flex justify-between font-bold text-lg border-t pt-2 text-gray-800 items-end">
                           <span>Total:</span>
                           <div className="text-right">
-                            {(appliedDiscount.isApplied || appliedCoupon) && (
+                            {(priceBreakdown.tripDiscount.isApplied ||
+                              appliedCoupon) && (
                               <span className="text-gray-400 line-through text-sm mr-2">
                                 {getCurrencySymbol(formData.currency)}{" "}
-                                {formData.currency === "EGP"
-                                  ? formatPrice(originalTotalPrice)
-                                  : convertedPrice
-                                    ? formatPrice(
-                                        (originalTotalPrice * convertedPrice) /
-                                          finalTotalPrice,
-                                      )
-                                    : formatPrice(originalTotalPrice)}
+                                {showAmount(priceBreakdown.basePrice)}
                               </span>
                             )}
                             <span className="text-blue-600">
                               {getCurrencySymbol(formData.currency)}{" "}
-                              {formData.currency === "EGP"
-                                ? formatPrice(finalTotalPrice)
-                                : convertedPrice
-                                  ? formatPrice(convertedPrice)
-                                  : formatPrice(finalTotalPrice)}
+                              {showAmount(priceBreakdown.finalTotal)}
                             </span>
                           </div>
                         </div>
 
-                        {/* Discount Messaging */}
                         {tripData.has_discount && (
                           <div className="text-center pt-2">
-                            {appliedDiscount.isApplied ? (
+                            {priceBreakdown.tripDiscount.isApplied ? (
                               <p className="text-green-600 text-xs font-medium">
                                 🎉 You've unlocked a{" "}
-                                {appliedDiscount.percentage}% discount!
+                                {priceBreakdown.tripDiscount.percentage}%
+                                discount!
                               </p>
                             ) : tripData.discount_requires_min_people ? (
                               <p className="text-cyan-600 text-xs font-medium">
@@ -1580,7 +1761,6 @@ const TripPage = ({ params }) => {
                           </div>
                         )}
 
-                        {/* Coupon Success Message */}
                         {appliedCoupon && (
                           <div className="text-center pt-1">
                             <p className="text-green-600 text-xs font-medium">
@@ -1592,7 +1772,6 @@ const TripPage = ({ params }) => {
                     </div>
                   )}
 
-                  {/* --- CHANGE: Book Now button now shows payment options --- */}
                   <button
                     type="submit"
                     disabled={
@@ -1609,13 +1788,9 @@ const TripPage = ({ params }) => {
                         ? "Fetching price..."
                         : formData.currency !== "EGP" && conversionError
                           ? "Price fetch failed - Refresh page"
-                          : `Continue - ${getCurrencySymbol(formData.currency)} ${
-                              formData.currency === "EGP"
-                                ? formatPrice(finalTotalPrice)
-                                : convertedPrice
-                                  ? formatPrice(convertedPrice)
-                                  : formatPrice(finalTotalPrice)
-                            }`}
+                          : `Continue - ${getCurrencySymbol(formData.currency)} ${showAmount(
+                              priceBreakdown.finalTotal,
+                            )}`}
                   </button>
                 </form>
 
@@ -1655,16 +1830,13 @@ const TripPage = ({ params }) => {
       {/* Payment Method Selection Modal */}
       {showPaymentModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          {/* Backdrop */}
           <div
             className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
             onClick={() => setShowPaymentModal(false)}
           />
 
-          {/* Modal */}
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="relative w-full max-w-lg transform rounded-2xl bg-white shadow-2xl transition-all">
-              {/* Header */}
               <div className="relative p-6 border-b border-gray-200">
                 <button
                   onClick={() => setShowPaymentModal(false)}
@@ -1680,9 +1852,8 @@ const TripPage = ({ params }) => {
                 </p>
               </div>
 
-              {/* Content */}
               <div className="p-6">
-                {/* Trip Summary */}
+                {/* Trip Summary — now uses priceBreakdown */}
                 <div className="bg-gray-50 rounded-xl p-4 mb-6">
                   <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
                     <Icon icon="lucide:map-pin" className="w-4 h-4 mr-2" />
@@ -1715,15 +1886,20 @@ const TripPage = ({ params }) => {
                         {formData.hotelName} - Room {formData.roomNumber}
                       </span>
                     </div>
+                    {priceBreakdown.transferFeeTotal > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Transfer Fee:</span>
+                        <span className="font-medium">
+                          {getCurrencySymbol(formData.currency)}{" "}
+                          {showAmount(priceBreakdown.transferFeeTotal)}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between border-t pt-2 mt-2">
                       <span className="text-gray-600">Total Amount:</span>
                       <span className="font-bold text-lg text-blue-600">
                         {getCurrencySymbol(formData.currency)}{" "}
-                        {formData.currency === "EGP"
-                          ? formatPrice(calculateTotalPrice().final)
-                          : convertedPrice
-                            ? formatPrice(convertedPrice)
-                            : formatPrice(calculateTotalPrice().final)}
+                        {showAmount(priceBreakdown.finalTotal)}
                       </span>
                     </div>
                   </div>
@@ -1786,7 +1962,6 @@ const TripPage = ({ params }) => {
                   </button>
                 </div>
 
-                {/* Note */}
                 <div className="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-3">
                   <div className="flex items-start">
                     <Icon
@@ -1815,7 +1990,6 @@ const TripPage = ({ params }) => {
 
           return (
             <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-xl flex flex-col">
-              {/* Header Controls */}
               <div className="w-full flex justify-center items-center z-20 pt-20 sm:pt-24 pb-4 px-4">
                 <div className="w-full max-w-7xl flex justify-between items-center">
                   <div className="bg-black/30 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
@@ -1837,7 +2011,6 @@ const TripPage = ({ params }) => {
                 </div>
               </div>
 
-              {/* Main Media Area */}
               <div
                 className="flex-1 relative flex items-center justify-center px-4 sm:px-8 pb-4 overflow-hidden"
                 onClick={
@@ -1906,7 +2079,6 @@ const TripPage = ({ params }) => {
                 </div>
               </div>
 
-              {/* Thumbnails */}
               {media.length > 1 && (
                 <div className="w-full bg-black/40 backdrop-blur-md border-t border-white/10 py-4 z-20 flex-shrink-0">
                   <div className="max-w-7xl mx-auto px-4">

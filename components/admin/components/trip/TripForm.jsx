@@ -95,6 +95,240 @@ const DynamicListField = ({
 };
 
 //=================================================================
+//  FeeRow: editor for a single TripFee
+//=================================================================
+const FeeRow = ({ fee, onChange, onRemove, disabled }) => {
+  const handleField = (field, value) => {
+    onChange({ ...fee, [field]: value });
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <Input
+          dir="ltr"
+          icon="mdi:tag-text"
+          placeholder="Fee name (e.g. Marine Park Fee)"
+          value={fee.name}
+          onChange={(e) => handleField("name", e.target.value)}
+          color="orange"
+          disabled={disabled}
+        />
+        <Select
+          icon="mdi:swap-horizontal"
+          dir="ltr"
+          options={[
+            { value: "fixed", label: "Fixed amount" },
+            { value: "percentage", label: "Percentage of price" },
+          ]}
+          value={{
+            value: fee.fee_type,
+            label:
+              fee.fee_type === "fixed" ? "Fixed amount" : "Percentage of price",
+          }}
+          onChange={(opt) => handleField("fee_type", opt.value)}
+          placeholder="Fee type"
+          disabled={disabled}
+        />
+        <Input
+          dir="ltr"
+          icon="mdi:cash"
+          type="number"
+          step="0.01"
+          placeholder={
+            fee.fee_type === "percentage"
+              ? "Percentage (e.g. 5)"
+              : "Amount (EGP)"
+          }
+          value={fee.value}
+          onChange={(e) => handleField("value", e.target.value)}
+          color="orange"
+          disabled={disabled}
+        />
+        <Select
+          icon="mdi:account-group"
+          dir="ltr"
+          options={[
+            { value: "per_booking", label: "Per booking" },
+            { value: "per_person", label: "Per person" },
+            { value: "per_adult", label: "Per adult" },
+            { value: "per_child", label: "Per child" },
+          ]}
+          value={{
+            value: fee.applies_to,
+            label:
+              fee.applies_to === "per_booking"
+                ? "Per booking"
+                : fee.applies_to === "per_adult"
+                  ? "Per adult"
+                  : fee.applies_to === "per_child"
+                    ? "Per child"
+                    : "Per person",
+          }}
+          onChange={(opt) => handleField("applies_to", opt.value)}
+          placeholder="Applies to"
+          disabled={disabled}
+        />
+      </div>
+
+      <Input
+        dir="ltr"
+        icon="mdi:text"
+        placeholder="Description (optional, shown to customer)"
+        value={fee.description || ""}
+        onChange={(e) => handleField("description", e.target.value)}
+        color="orange"
+        disabled={disabled}
+      />
+
+      <div className="flex items-center justify-between">
+        <div className="flex flex-wrap gap-4">
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={fee.is_optional}
+              onChange={(e) => handleField("is_optional", e.target.checked)}
+              className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500"
+              disabled={disabled}
+            />
+            <span className="text-sm text-slate-700">Optional add-on</span>
+          </label>
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={fee.is_included_in_price}
+              onChange={(e) =>
+                handleField("is_included_in_price", e.target.checked)
+              }
+              className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500"
+              disabled={disabled}
+            />
+            <span className="text-sm text-slate-700">
+              Already included in adult/child price (display-only)
+            </span>
+          </label>
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+          disabled={disabled}
+        >
+          <Icon icon="mdi:delete" className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+//=================================================================
+//  TransferFeeRow: editor for a single TripTransferFee
+//=================================================================
+const TransferFeeRow = ({
+  transferFee,
+  zones,
+  onChange,
+  onRemove,
+  disabled,
+}) => {
+  const handleField = (field, value) => {
+    onChange({ ...transferFee, [field]: value });
+  };
+
+  const zoneOptions = zones.map((z) => ({
+    value: z.id.toString(),
+    label: z.region ? `${z.name} (${z.region})` : z.name,
+  }));
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <Select
+          icon="mdi:map-marker"
+          dir="ltr"
+          options={zoneOptions}
+          value={zoneOptions.find(
+            (z) => z.value === transferFee.zone_id?.toString(),
+          )}
+          onChange={(opt) => handleField("zone_id", parseInt(opt.value, 10))}
+          placeholder="Pickup zone"
+          searchable={true}
+          disabled={disabled}
+        />
+        <Select
+          icon="mdi:swap-horizontal"
+          dir="ltr"
+          options={[
+            { value: "fixed", label: "Fixed amount" },
+            { value: "percentage", label: "Percentage of price" },
+          ]}
+          value={{
+            value: transferFee.fee_type,
+            label:
+              transferFee.fee_type === "fixed"
+                ? "Fixed amount"
+                : "Percentage of price",
+          }}
+          onChange={(opt) => handleField("fee_type", opt.value)}
+          placeholder="Fee type"
+          disabled={disabled}
+        />
+        <Input
+          dir="ltr"
+          icon="mdi:cash"
+          type="number"
+          step="0.01"
+          placeholder={
+            transferFee.fee_type === "percentage"
+              ? "Percentage (e.g. 5)"
+              : "Price (EGP)"
+          }
+          value={transferFee.price}
+          onChange={(e) => handleField("price", e.target.value)}
+          color="cyan"
+          disabled={disabled}
+        />
+        <Select
+          icon="mdi:account-group"
+          dir="ltr"
+          options={[
+            { value: "per_booking", label: "Per booking" },
+            { value: "per_person", label: "Per person" },
+            { value: "per_adult", label: "Per adult" },
+            { value: "per_child", label: "Per child" },
+          ]}
+          value={{
+            value: transferFee.applies_to,
+            label:
+              transferFee.applies_to === "per_booking"
+                ? "Per booking"
+                : transferFee.applies_to === "per_adult"
+                  ? "Per adult"
+                  : transferFee.applies_to === "per_child"
+                    ? "Per child"
+                    : "Per person",
+          }}
+          onChange={(opt) => handleField("applies_to", opt.value)}
+          placeholder="Applies to"
+          disabled={disabled}
+        />
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={onRemove}
+          className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+          disabled={disabled}
+        >
+          <Icon icon="mdi:delete" className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+//=================================================================
 //  2. MAIN COMPONENT: TripForm
 //=================================================================
 const TripForm = ({ trip = null, onSuccess, onCancel }) => {
@@ -105,6 +339,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
   const [allTrips, setAllTrips] = useState([]);
   const [selectedTripForImport, setSelectedTripForImport] = useState(null);
   const [isLoadingTrips, setIsLoadingTrips] = useState(false);
+  const [transferZones, setTransferZones] = useState([]);
 
   // Duration unit options
   const durationUnitOptions = [
@@ -137,6 +372,8 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     videos: [], // NEW: File objects for new video uploads
     existing_videos: [], // NEW: existing video URLs
     is_image_list: false,
+    fees: [], // NEW
+    transfer_fees: [], // NEW
   });
   // Load packages and populate form
   useEffect(() => {
@@ -183,6 +420,15 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
         terms_and_conditions: trip.terms_and_conditions?.length
           ? trip.terms_and_conditions
           : [""],
+        fees: trip.fees?.length
+          ? trip.fees.map((f) => ({ ...f, value: f.value?.toString() }))
+          : [],
+        transfer_fees: trip.transfer_fees?.length
+          ? trip.transfer_fees.map((tf) => ({
+              ...tf,
+              price: tf.price?.toString(),
+            }))
+          : [],
       });
     }
   }, [trip]);
@@ -207,6 +453,18 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     loadTrips();
   }, [trip]);
 
+  useEffect(() => {
+    const loadZones = async () => {
+      try {
+        const zonesData = await tripService.getTransferZones();
+        setTransferZones(zonesData);
+      } catch (error) {
+        toast.error("Failed to load transfer zones.");
+      }
+    };
+    loadZones();
+  }, []);
+
   // All handler functions from your original TripForm
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -224,6 +482,58 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
       setErrors((prev) => ({ ...prev, description: "" }));
     }
   };
+
+  const addFee = () =>
+    setFormData((prev) => ({
+      ...prev,
+      fees: [
+        ...prev.fees,
+        {
+          name: "",
+          fee_type: "fixed",
+          value: "",
+          applies_to: "per_person",
+          is_optional: false,
+          is_included_in_price: false,
+          description: "",
+        },
+      ],
+    }));
+
+  const updateFee = (index, updatedFee) =>
+    setFormData((prev) => ({
+      ...prev,
+      fees: prev.fees.map((f, i) => (i === index ? updatedFee : f)),
+    }));
+
+  const removeFee = (index) =>
+    setFormData((prev) => ({
+      ...prev,
+      fees: prev.fees.filter((_, i) => i !== index),
+    }));
+
+  const addTransferFee = () =>
+    setFormData((prev) => ({
+      ...prev,
+      transfer_fees: [
+        ...prev.transfer_fees,
+        { zone_id: "", fee_type: "fixed", price: "", applies_to: "per_person" },
+      ],
+    }));
+
+  const updateTransferFee = (index, updatedFee) =>
+    setFormData((prev) => ({
+      ...prev,
+      transfer_fees: prev.transfer_fees.map((tf, i) =>
+        i === index ? updatedFee : tf,
+      ),
+    }));
+
+  const removeTransferFee = (index) =>
+    setFormData((prev) => ({
+      ...prev,
+      transfer_fees: prev.transfer_fees.filter((_, i) => i !== index),
+    }));
 
   const handleSelectChange = (name, selectedOption) => {
     const valueToSet = selectedOption ? selectedOption.value : "";
@@ -366,9 +676,28 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const validateStep4 = () => {
+    const newErrors = {};
+
+    formData.fees.forEach((fee, i) => {
+      if (!fee.name?.trim()) newErrors[`fee_name_${i}`] = "Fee name required";
+      if (!fee.value || parseFloat(fee.value) <= 0)
+        newErrors[`fee_value_${i}`] = "Fee value required";
+    });
+
+    formData.transfer_fees.forEach((tf, i) => {
+      if (!tf.zone_id) newErrors[`transfer_zone_${i}`] = "Zone is required";
+      if (!tf.price || parseFloat(tf.price) <= 0)
+        newErrors[`transfer_price_${i}`] = "Price required";
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateStep1() || !validateStep2()) {
+    if (!validateStep1() || !validateStep2() || !validateStep4()) {
       toast.error("Please fix the errors on all steps.");
       return;
     }
@@ -432,6 +761,32 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
         ),
       );
 
+      // Fees and transfer fees — send as JSON, with numeric fields properly typed
+      submitFormData.append(
+        "fees",
+        JSON.stringify(
+          formData.fees
+            .filter((f) => f.name?.trim())
+            .map((f) => ({
+              ...f,
+              value: parseFloat(f.value),
+            })),
+        ),
+      );
+
+      submitFormData.append(
+        "transfer_fees",
+        JSON.stringify(
+          formData.transfer_fees
+            .filter((tf) => tf.zone_id)
+            .map((tf) => ({
+              ...tf,
+              zone_id: parseInt(tf.zone_id, 10),
+              price: parseFloat(tf.price),
+            })),
+        ),
+      );
+
       // Add existing images (for updates)
       if (trip && formData.existing_images.length > 0) {
         submitFormData.append(
@@ -485,6 +840,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     { id: 1, name: "Essential Info", icon: "mdi:information-variant-circle" },
     { id: 2, name: "Logistics & Pricing", icon: "mdi:cash-multiple" },
     { id: 3, name: "Details & Media", icon: "mdi:clipboard-text-multiple" },
+    { id: 4, name: "Fees & Transfers", icon: "mdi:hail-taxi" },
   ];
 
   return (
@@ -1405,43 +1761,177 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
             </div>
           </div>
 
+          {/* Step 3 footer — replace final submit button with a "Continue" button */}
           <div className="flex items-center justify-between pt-6 border-t border-slate-200">
             <button
               type="button"
               onClick={() => setCurrentStep(2)}
-              className="flex items-center space-x-2 text-slate-600 hover:text-slate-800 font-medium transition-colors duration-200"
               disabled={isLoading}
+              className="..."
             >
               <Icon icon="mdi:arrow-left" className="w-5 h-5" />
               <span>Back</span>
             </button>
-            <div className="flex space-x-4">
-              <Button
-                type="button"
-                color="gray"
-                text="Cancel"
-                onClick={onCancel}
-                disabled={isLoading}
-                className="px-6 py-3"
-              />
+            <button
+              type="button"
+              onClick={() => setCurrentStep(4)}
+              className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+              disabled={isLoading}
+            >
+              <span>Continue to Fees</span>
+              <Icon icon="mdi:arrow-right" className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Step 4: Fees & Transfers */}
+          <div
+            className={`space-y-6 ${currentStep === 4 ? "block" : "hidden"}`}
+          >
+            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl p-6 border border-orange-100">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-800 flex items-center space-x-2">
+                    <Icon
+                      icon="mdi:cash-plus"
+                      className="w-6 h-6 text-orange-600"
+                    />
+                    <span>Additional Fees</span>
+                  </h3>
+                  <p className="text-sm text-slate-600 mt-1">
+                    Marine Park fee, equipment rental, port fees, etc. — added
+                    on top of the base price.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={addFee}
+                  className="bg-gradient-to-r from-orange-500 to-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+                  disabled={isLoading}
+                >
+                  <Icon icon="mdi:plus-circle" className="w-4 h-4" />
+                  <span>Add Fee</span>
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {formData.fees.map((fee, index) => (
+                  <FeeRow
+                    key={index}
+                    fee={fee}
+                    onChange={(updated) => updateFee(index, updated)}
+                    onRemove={() => removeFee(index)}
+                    disabled={isLoading}
+                  />
+                ))}
+                {formData.fees.length === 0 && (
+                  <div className="border-2 border-dashed border-orange-300 rounded-xl p-6 text-center">
+                    <p className="text-sm text-slate-500">
+                      No extra fees for this trip yet.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-2xl p-6 border border-cyan-100">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-800 flex items-center space-x-2">
+                    <Icon icon="mdi:bus" className="w-6 h-6 text-cyan-600" />
+                    <span>Transfer Pricing by Zone</span>
+                  </h3>
+                  <p className="text-sm text-slate-600 mt-1">
+                    Set pickup cost based on the customer's hotel zone (e.g. El
+                    Gouna, Sahl Hasheesh).
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={addTransferFee}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+                  disabled={isLoading || transferZones.length === 0}
+                >
+                  <Icon icon="mdi:plus-circle" className="w-4 h-4" />
+                  <span>Add Zone Price</span>
+                </button>
+              </div>
+
+              {transferZones.length === 0 && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 flex items-start space-x-2">
+                  <Icon
+                    icon="mdi:alert"
+                    className="w-4 h-4 text-yellow-600 mt-0.5"
+                  />
+                  <p className="text-sm text-yellow-700">
+                    No transfer zones exist yet. Create zones (e.g. El Gouna,
+                    Sahl Hasheesh) in zone settings first.
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                {formData.transfer_fees.map((tf, index) => (
+                  <TransferFeeRow
+                    key={index}
+                    transferFee={tf}
+                    zones={transferZones}
+                    onChange={(updated) => updateTransferFee(index, updated)}
+                    onRemove={() => removeTransferFee(index)}
+                    disabled={isLoading}
+                  />
+                ))}
+                {formData.transfer_fees.length === 0 && (
+                  <div className="border-2 border-dashed border-cyan-300 rounded-xl p-6 text-center">
+                    <p className="text-sm text-slate-500">
+                      No transfer pricing set for this trip yet.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Final submit */}
+            <div className="flex items-center justify-between pt-6 border-t border-slate-200">
               <button
                 type="button"
-                onClick={handleSubmit}
+                onClick={() => setCurrentStep(3)}
+                className="flex items-center space-x-2 text-slate-600 hover:text-slate-800 font-medium transition-colors duration-200"
                 disabled={isLoading}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
-                {isLoading ? (
-                  <>
-                    <Icon icon="mdi:loading" className="w-5 h-5 animate-spin" />
-                    <span>Saving...</span>
-                  </>
-                ) : (
-                  <>
-                    <Icon icon="mdi:check-circle" className="w-5 h-5" />
-                    <span>{trip ? "Update Trip" : "Create Trip"}</span>
-                  </>
-                )}
+                <Icon icon="mdi:arrow-left" className="w-5 h-5" />
+                <span>Back</span>
               </button>
+              <div className="flex space-x-4">
+                <Button
+                  type="button"
+                  color="gray"
+                  text="Cancel"
+                  onClick={onCancel}
+                  disabled={isLoading}
+                  className="px-6 py-3"
+                />
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={isLoading}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {isLoading ? (
+                    <>
+                      <Icon
+                        icon="mdi:loading"
+                        className="w-5 h-5 animate-spin"
+                      />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Icon icon="mdi:check-circle" className="w-5 h-5" />
+                      <span>{trip ? "Update Trip" : "Create Trip"}</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
