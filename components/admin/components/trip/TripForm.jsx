@@ -1782,156 +1782,151 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
               <Icon icon="mdi:arrow-right" className="w-5 h-5" />
             </button>
           </div>
+        </div>
 
-          {/* Step 4: Fees & Transfers */}
-          <div
-            className={`space-y-6 ${currentStep === 4 ? "block" : "hidden"}`}
-          >
-            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl p-6 border border-orange-100">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-800 flex items-center space-x-2">
-                    <Icon
-                      icon="mdi:cash-plus"
-                      className="w-6 h-6 text-orange-600"
-                    />
-                    <span>Additional Fees</span>
-                  </h3>
-                  <p className="text-sm text-slate-600 mt-1">
-                    Marine Park fee, equipment rental, port fees, etc. — added
-                    on top of the base price.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={addFee}
-                  className="bg-gradient-to-r from-orange-500 to-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
-                  disabled={isLoading}
-                >
-                  <Icon icon="mdi:plus-circle" className="w-4 h-4" />
-                  <span>Add Fee</span>
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                {formData.fees.map((fee, index) => (
-                  <FeeRow
-                    key={index}
-                    fee={fee}
-                    onChange={(updated) => updateFee(index, updated)}
-                    onRemove={() => removeFee(index)}
-                    disabled={isLoading}
+        {/* Step 4: Fees & Transfers */}
+        <div className={`space-y-6 ${currentStep === 4 ? "block" : "hidden"}`}>
+          <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl p-6 border border-orange-100">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800 flex items-center space-x-2">
+                  <Icon
+                    icon="mdi:cash-plus"
+                    className="w-6 h-6 text-orange-600"
                   />
-                ))}
-                {formData.fees.length === 0 && (
-                  <div className="border-2 border-dashed border-orange-300 rounded-xl p-6 text-center">
-                    <p className="text-sm text-slate-500">
-                      No extra fees for this trip yet.
-                    </p>
-                  </div>
-                )}
+                  <span>Additional Fees</span>
+                </h3>
+                <p className="text-sm text-slate-600 mt-1">
+                  Marine Park fee, equipment rental, port fees, etc. — added on
+                  top of the base price.
+                </p>
               </div>
+              <button
+                type="button"
+                onClick={addFee}
+                className="bg-gradient-to-r from-orange-500 to-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+                disabled={isLoading}
+              >
+                <Icon icon="mdi:plus-circle" className="w-4 h-4" />
+                <span>Add Fee</span>
+              </button>
             </div>
 
-            <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-2xl p-6 border border-cyan-100">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-800 flex items-center space-x-2">
-                    <Icon icon="mdi:bus" className="w-6 h-6 text-cyan-600" />
-                    <span>Transfer Pricing by Zone</span>
-                  </h3>
-                  <p className="text-sm text-slate-600 mt-1">
-                    Set pickup cost based on the customer's hotel zone (e.g. El
-                    Gouna, Sahl Hasheesh).
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={addTransferFee}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
-                  disabled={isLoading || transferZones.length === 0}
-                >
-                  <Icon icon="mdi:plus-circle" className="w-4 h-4" />
-                  <span>Add Zone Price</span>
-                </button>
-              </div>
-
-              {transferZones.length === 0 && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 flex items-start space-x-2">
-                  <Icon
-                    icon="mdi:alert"
-                    className="w-4 h-4 text-yellow-600 mt-0.5"
-                  />
-                  <p className="text-sm text-yellow-700">
-                    No transfer zones exist yet. Create zones (e.g. El Gouna,
-                    Sahl Hasheesh) in zone settings first.
+            <div className="space-y-3">
+              {formData.fees.map((fee, index) => (
+                <FeeRow
+                  key={index}
+                  fee={fee}
+                  onChange={(updated) => updateFee(index, updated)}
+                  onRemove={() => removeFee(index)}
+                  disabled={isLoading}
+                />
+              ))}
+              {formData.fees.length === 0 && (
+                <div className="border-2 border-dashed border-orange-300 rounded-xl p-6 text-center">
+                  <p className="text-sm text-slate-500">
+                    No extra fees for this trip yet.
                   </p>
                 </div>
               )}
-
-              <div className="space-y-3">
-                {formData.transfer_fees.map((tf, index) => (
-                  <TransferFeeRow
-                    key={index}
-                    transferFee={tf}
-                    zones={transferZones}
-                    onChange={(updated) => updateTransferFee(index, updated)}
-                    onRemove={() => removeTransferFee(index)}
-                    disabled={isLoading}
-                  />
-                ))}
-                {formData.transfer_fees.length === 0 && (
-                  <div className="border-2 border-dashed border-cyan-300 rounded-xl p-6 text-center">
-                    <p className="text-sm text-slate-500">
-                      No transfer pricing set for this trip yet.
-                    </p>
-                  </div>
-                )}
-              </div>
             </div>
+          </div>
 
-            {/* Final submit */}
-            <div className="flex items-center justify-between pt-6 border-t border-slate-200">
+          <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-2xl p-6 border border-cyan-100">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800 flex items-center space-x-2">
+                  <Icon icon="mdi:bus" className="w-6 h-6 text-cyan-600" />
+                  <span>Transfer Pricing by Zone</span>
+                </h3>
+                <p className="text-sm text-slate-600 mt-1">
+                  Set pickup cost based on the customer's hotel zone (e.g. El
+                  Gouna, Sahl Hasheesh).
+                </p>
+              </div>
               <button
                 type="button"
-                onClick={() => setCurrentStep(3)}
-                className="flex items-center space-x-2 text-slate-600 hover:text-slate-800 font-medium transition-colors duration-200"
-                disabled={isLoading}
+                onClick={addTransferFee}
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+                disabled={isLoading || transferZones.length === 0}
               >
-                <Icon icon="mdi:arrow-left" className="w-5 h-5" />
-                <span>Back</span>
+                <Icon icon="mdi:plus-circle" className="w-4 h-4" />
+                <span>Add Zone Price</span>
               </button>
-              <div className="flex space-x-4">
-                <Button
-                  type="button"
-                  color="gray"
-                  text="Cancel"
-                  onClick={onCancel}
-                  disabled={isLoading}
-                  className="px-6 py-3"
+            </div>
+
+            {transferZones.length === 0 && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 flex items-start space-x-2">
+                <Icon
+                  icon="mdi:alert"
+                  className="w-4 h-4 text-yellow-600 mt-0.5"
                 />
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={isLoading}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                >
-                  {isLoading ? (
-                    <>
-                      <Icon
-                        icon="mdi:loading"
-                        className="w-5 h-5 animate-spin"
-                      />
-                      <span>Saving...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Icon icon="mdi:check-circle" className="w-5 h-5" />
-                      <span>{trip ? "Update Trip" : "Create Trip"}</span>
-                    </>
-                  )}
-                </button>
+                <p className="text-sm text-yellow-700">
+                  No transfer zones exist yet. Create zones (e.g. El Gouna, Sahl
+                  Hasheesh) in zone settings first.
+                </p>
               </div>
+            )}
+
+            <div className="space-y-3">
+              {formData.transfer_fees.map((tf, index) => (
+                <TransferFeeRow
+                  key={index}
+                  transferFee={tf}
+                  zones={transferZones}
+                  onChange={(updated) => updateTransferFee(index, updated)}
+                  onRemove={() => removeTransferFee(index)}
+                  disabled={isLoading}
+                />
+              ))}
+              {formData.transfer_fees.length === 0 && (
+                <div className="border-2 border-dashed border-cyan-300 rounded-xl p-6 text-center">
+                  <p className="text-sm text-slate-500">
+                    No transfer pricing set for this trip yet.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Final submit */}
+          <div className="flex items-center justify-between pt-6 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={() => setCurrentStep(3)}
+              className="flex items-center space-x-2 text-slate-600 hover:text-slate-800 font-medium transition-colors duration-200"
+              disabled={isLoading}
+            >
+              <Icon icon="mdi:arrow-left" className="w-5 h-5" />
+              <span>Back</span>
+            </button>
+            <div className="flex space-x-4">
+              <Button
+                type="button"
+                color="gray"
+                text="Cancel"
+                onClick={onCancel}
+                disabled={isLoading}
+                className="px-6 py-3"
+              />
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isLoading}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {isLoading ? (
+                  <>
+                    <Icon icon="mdi:loading" className="w-5 h-5 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Icon icon="mdi:check-circle" className="w-5 h-5" />
+                    <span>{trip ? "Update Trip" : "Create Trip"}</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
