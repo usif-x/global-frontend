@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline';
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com;
   style-src 'self' 'unsafe-inline';
   img-src 'self' data: blob: https:;
   media-src 'self' blob: https:;
-  connect-src 'self' https://api.hurghada-trips.online;
+  connect-src 'self' https://api.hurghada-trips.online https://api.iconify.design https://api.unisvg.com https://api.simplesvg.com;
   font-src 'self' data:;
 `;
 
