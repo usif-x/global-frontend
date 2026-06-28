@@ -209,14 +209,14 @@ const PublicNotificationForm = ({ notification, onSuccess, onCancel }) => {
             text={
               loading
                 ? "Saving..."
-                : zone
+                : notification
                   ? "Update Notification"
                   : "Create Notification"
             }
             icon={
               loading
                 ? "mdi:loading"
-                : zone
+                : notification
                   ? "mdi:content-save"
                   : "mdi:plus-circle"
             }

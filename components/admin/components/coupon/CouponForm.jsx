@@ -295,12 +295,12 @@ const CouponForm = ({ coupon, onSuccess, onCancel }) => {
             type="submit"
             disabled={loading}
             text={
-              loading ? "Saving..." : zone ? "Update Coupon" : "Create Coupon"
+              loading ? "Saving..." : coupon ? "Update Coupon" : "Create Coupon"
             }
             icon={
               loading
                 ? "mdi:loading"
-                : zone
+                : coupon
                   ? "mdi:content-save"
                   : "mdi:plus-circle"
             }
