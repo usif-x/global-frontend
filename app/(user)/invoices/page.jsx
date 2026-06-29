@@ -76,15 +76,47 @@ const generateInvoicePDF = async (invoice, user) => {
     doc.text(invoice.buyer_email, 20, 85);
     doc.text(invoice.buyer_phone, 20, 90);
 
-    // --- FIX: Create a single table item from the invoice data ---
+    // --- Build itemized rows from price_breakdown when available, else fall back to a single row ---
     const tableColumn = ["Item Name", "Description", "Total Price"];
-    const tableRows = [
-      [
-        invoice.activity, // Use 'activity' as the item name
-        "Booking Details", // A generic description
-        formatCurrency(invoice.amount, invoice.currency), // Use the total amount
-      ],
-    ];
+    let tableRows = [];
+
+    if (invoice.price_breakdown) {
+      const pb = invoice.price_breakdown;
+      tableRows.push([
+        invoice.activity,
+        "Base trip price",
+        formatCurrency(pb.base_price, invoice.currency),
+      ]);
+      (pb.mandatory_fees || []).forEach((fee) => {
+        tableRows.push([
+          fee.name,
+          "Mandatory fee",
+          formatCurrency(fee.amount, invoice.currency),
+        ]);
+      });
+      (pb.optional_fees || []).forEach((fee) => {
+        tableRows.push([
+          fee.name,
+          "Optional add-on",
+          formatCurrency(fee.amount, invoice.currency),
+        ]);
+      });
+      if (pb.transfer_fee) {
+        tableRows.push([
+          "Transfer Fee",
+          "Hotel pickup",
+          formatCurrency(pb.transfer_fee.amount, invoice.currency),
+        ]);
+      }
+    } else {
+      tableRows = [
+        [
+          invoice.activity,
+          "Booking Details",
+          formatCurrency(invoice.amount, invoice.currency),
+        ],
+      ];
+    }
 
     callAutoTable({
       head: [tableColumn],
@@ -97,7 +129,7 @@ const generateInvoicePDF = async (invoice, user) => {
 
     let finalY = doc.lastAutoTable.finalY;
 
-    // --- FIX: Add the full invoice_description below the table ---
+    // --- Booking Details below the table ---
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(40, 55, 71);
@@ -109,7 +141,7 @@ const generateInvoicePDF = async (invoice, user) => {
       maxWidth: pageWidth - 40,
     });
 
-    finalY = doc.lastAutoTable.finalY + 40; // Adjust finalY
+    finalY = doc.lastAutoTable.finalY + 40;
 
     // --- Footer Notes ---
     if (invoice.status.toLowerCase() === "pending" && invoice.pay_url) {
@@ -171,7 +203,7 @@ const formatDate = (dateString) => {
   });
 };
 const formatCurrency = (amount, currency = "EGP") => {
-  const currencyCode = currency || "EGP"; // Fallback for null/empty currency
+  const currencyCode = currency || "EGP";
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -179,7 +211,6 @@ const formatCurrency = (amount, currency = "EGP") => {
       minimumFractionDigits: 2,
     }).format(amount);
   } catch (error) {
-    // This catch block handles invalid currency codes
     return `${Number(amount).toFixed(2)} ${currencyCode}`;
   }
 };
@@ -231,6 +262,159 @@ const InfoBanner = ({ message }) => (
     <p className="text-sm">{message}</p>
   </div>
 );
+
+// --- NEW: structured booking details, replacing the raw <pre> dump of invoice_description ---
+const BookingDetails = ({ invoice }) => {
+  const details = invoice.activity_details?.[0];
+  if (!details) {
+    return (
+      <pre className="text-sm text-slate-600 whitespace-pre-wrap font-sans bg-slate-50 p-3 rounded-md">
+        {invoice.invoice_description}
+      </pre>
+    );
+  }
+
+  const rows = [
+    { label: "Activity", value: details.name, icon: "mdi:airplane" },
+    {
+      label: "Date",
+      value: details.activity_date
+        ? new Date(details.activity_date).toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })
+        : null,
+      icon: "mdi:calendar",
+    },
+    {
+      label: "Guests",
+      value: `${details.adults} Adult${details.adults > 1 ? "s" : ""}${
+        details.children > 0
+          ? `, ${details.children} Child${details.children > 1 ? "ren" : ""}`
+          : ""
+      }`,
+      icon: "mdi:account-group",
+    },
+    {
+      label: "Hotel",
+      value:
+        details.hotel_name || details.room_number
+          ? `${details.hotel_name || "N/A"}${
+              details.room_number ? `, Room #${details.room_number}` : ""
+            }`
+          : null,
+      icon: "mdi:hotel",
+    },
+    {
+      label: "Special Requests",
+      value: details.special_requests || null,
+      icon: "mdi:message-text-outline",
+    },
+  ].filter((r) => r.value);
+
+  return (
+    <div className="bg-slate-50 rounded-lg p-4 space-y-2">
+      {rows.map((row) => (
+        <div key={row.label} className="flex items-start gap-2 text-sm">
+          <Icon
+            icon={row.icon}
+            className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0"
+          />
+          <span className="text-slate-500 min-w-[110px]">{row.label}:</span>
+          <span className="text-slate-800 font-medium">{row.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// --- NEW: renders the fees/transfer breakdown from invoice.price_breakdown ---
+const PriceBreakdownSection = ({ invoice }) => {
+  const pb = invoice.price_breakdown;
+  if (!pb) return null;
+
+  const hasFees =
+    (pb.mandatory_fees && pb.mandatory_fees.length > 0) ||
+    (pb.optional_fees && pb.optional_fees.length > 0) ||
+    pb.transfer_fee;
+
+  if (!hasFees) return null;
+
+  return (
+    <div>
+      <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b pb-2">
+        Fees & Transfer ({invoice.currency})
+      </h3>
+      <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-4 space-y-3">
+        <div className="flex justify-between text-sm">
+          <span className="text-slate-600">Base Price:</span>
+          <span className="font-semibold text-slate-800">
+            {invoice.currency} {pb.base_price?.toFixed(2)}
+          </span>
+        </div>
+
+        {pb.mandatory_fees?.map((fee, i) => (
+          <div key={`mandatory-${i}`} className="flex justify-between text-sm">
+            <span className="text-slate-600 flex items-center gap-1">
+              <Icon icon="mdi:cash-plus" className="w-4 h-4 text-orange-500" />
+              {fee.name}
+            </span>
+            <span className="font-medium text-slate-800">
+              + {invoice.currency} {fee.amount?.toFixed(2)}
+            </span>
+          </div>
+        ))}
+
+        {pb.optional_fees?.length > 0 && (
+          <div className="bg-amber-100/50 border border-amber-200 rounded-md p-3 space-y-1">
+            <p className="text-xs font-semibold text-amber-800 mb-1">
+              Optional Add-ons Selected
+            </p>
+            {pb.optional_fees.map((fee, i) => (
+              <div
+                key={`optional-${i}`}
+                className="flex justify-between text-sm"
+              >
+                <span className="text-amber-800">{fee.name}</span>
+                <span className="font-medium text-amber-800">
+                  + {invoice.currency} {fee.amount?.toFixed(2)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {pb.transfer_fee && (
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-600 flex items-center gap-1">
+              <Icon icon="mdi:bus" className="w-4 h-4 text-cyan-600" />
+              Transfer Fee (Zone #{pb.transfer_fee.zone_id})
+            </span>
+            <span className="font-medium text-slate-800">
+              + {invoice.currency} {pb.transfer_fee.amount?.toFixed(2)}
+            </span>
+          </div>
+        )}
+
+        <div className="flex justify-between text-sm border-t pt-2">
+          <span className="text-slate-600">Fees & Transfer Subtotal:</span>
+          <span className="font-semibold text-orange-700">
+            + {invoice.currency} {pb.addon_total?.toFixed(2)}
+          </span>
+        </div>
+
+        <div className="flex justify-between font-bold text-lg border-t pt-3">
+          <span className="text-slate-800">Final Price:</span>
+          <span className="text-blue-600">
+            {invoice.currency} {pb.final_price?.toFixed(2)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
   if (!isOpen || !invoice) return null;
@@ -323,20 +507,20 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
                 </p>
               </div>
             </div>
+
+            {/* --- REPLACED: structured booking details instead of raw description --- */}
             <div>
               <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b pb-2">
                 Booking Details
               </h3>
-              <pre className="text-sm text-slate-600 whitespace-pre-wrap font-sans bg-slate-50 p-3 rounded-md">
-                {invoice.invoice_description}
-              </pre>
+              <BookingDetails invoice={invoice} />
             </div>
 
             {/* Discount Breakdown */}
             {invoice.discount_breakdown && (
               <div>
                 <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b pb-2">
-                  Price Breakdown ({invoice.currency})
+                  Discount Breakdown ({invoice.currency})
                 </h3>
                 {invoice.currency !== "EGP" && invoice.convert_rate && (
                   <div className="mb-3 bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
@@ -367,7 +551,9 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-600">Base Price:</span>
                     <span className="font-semibold text-slate-800">
-                      {invoice.currency} {invoice.amount?.toFixed(2)}
+                      {invoice.currency}{" "}
+                      {invoice.discount_breakdown.base_price?.toFixed(2) ??
+                        invoice.amount?.toFixed(2)}
                     </span>
                   </div>
 
@@ -434,20 +620,32 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
                         Total Savings:
                       </span>
                       <span className="font-bold text-green-600">
-                        {invoice.currency} {invoice.amount?.toFixed(2)}
+                        {invoice.currency}{" "}
+                        {invoice.discount_breakdown.total_discount.toFixed(2)}
                       </span>
                     </div>
                   )}
 
                   <div className="flex justify-between font-bold text-lg border-t pt-3">
-                    <span className="text-slate-800">Final Amount:</span>
+                    <span className="text-slate-800">
+                      {invoice.price_breakdown
+                        ? "Price Before Fees:"
+                        : "Final Amount:"}
+                    </span>
                     <span className="text-blue-600">
-                      {invoice.currency} {invoice.amount?.toFixed(2)}
+                      {invoice.currency}{" "}
+                      {(
+                        invoice.discount_breakdown.final_price ?? invoice.amount
+                      )?.toFixed(2)}
                     </span>
                   </div>
                 </div>
               </div>
             )}
+
+            {/* --- NEW: Fees & Transfer breakdown (only renders if price_breakdown is present) --- */}
+            <PriceBreakdownSection invoice={invoice} />
+
             <div className="pt-6 border-t border-slate-200 flex flex-wrap gap-3">
               {invoice.status.toLowerCase() === "pending" && (
                 <>
@@ -607,7 +805,6 @@ export default function MyInvoicesPage() {
     }
   };
 
-  // --- [THE FIX IS HERE] The columns definition is updated ---
   const columns = useMemo(
     () => [
       {
@@ -641,15 +838,26 @@ export default function MyInvoicesPage() {
       },
       {
         accessorKey: "amount",
-        header: "Amount", // Header explicitly states EGP
+        header: "Amount",
         cell: ({ row }) => (
-          <span className="font-semibold text-slate-800">
-            {/* Always format the amount as EGP for this column */}
-            {formatCurrency(row.original.amount, row.original.currency)}
-          </span>
+          <div>
+            <span className="font-semibold text-slate-800">
+              {formatCurrency(row.original.amount, row.original.currency)}
+            </span>
+            {/* NEW: small indicator when the amount includes extra fees */}
+            {row.original.price_breakdown?.addon_total > 0 && (
+              <div className="text-xs text-orange-600 mt-0.5">
+                incl. +
+                {formatCurrency(
+                  row.original.price_breakdown.addon_total,
+                  row.original.currency,
+                )}{" "}
+                fees
+              </div>
+            )}
+          </div>
         ),
       },
-      // --- [NEW] New column to show the original currency ---
       {
         accessorKey: "currency",
         header: "Pay Currency",
@@ -659,7 +867,6 @@ export default function MyInvoicesPage() {
           </div>
         ),
       },
-      // --- [NEW] Payment type column ---
       {
         accessorKey: "invoice_type",
         header: "Payment Type",
@@ -758,7 +965,6 @@ export default function MyInvoicesPage() {
   const currencyNote =
     "Please note: Summary totals are shown in their original booking currencies for accuracy. When you proceed to payment for a pending invoice, you will be charged in the currency you originally selected during booking. The payment provider will handle the final conversion.";
 
-  // Check for paid/cash but unpicked invoices that NEED CONFIRMATION
   const actionRequiredInvoices = useMemo(() => {
     return allInvoices.filter(
       (inv) =>
@@ -770,7 +976,6 @@ export default function MyInvoicesPage() {
     );
   }, [allInvoices]);
 
-  // Check for confirmed invoices that are waiting for pickup
   const confirmedWaitingInvoices = useMemo(() => {
     return allInvoices.filter(
       (inv) =>
@@ -801,7 +1006,6 @@ export default function MyInvoicesPage() {
           </div>
         </div>
 
-        {/* Action Required: Confirm Your Trip (For unconfirmed invoices) */}
         {actionRequiredInvoices.length > 0 && (
           <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-l-4 border-blue-500 p-6 rounded-r-xl mb-6 shadow-lg">
             <div className="flex items-start space-x-4">
@@ -815,7 +1019,6 @@ export default function MyInvoicesPage() {
                   {actionRequiredInvoices.length > 1 ? "s" : ""}
                 </h3>
 
-                {/* Check if there are any cash invoices in the action required list */}
                 {actionRequiredInvoices.some(
                   (inv) => inv.invoice_type === "cash",
                 ) ? (
@@ -870,7 +1073,6 @@ export default function MyInvoicesPage() {
                   </p>
                 )}
 
-                {/* List of unconfirmed invoices */}
                 <div className="space-y-2 mb-4">
                   {actionRequiredInvoices.map((inv) => (
                     <div
@@ -925,7 +1127,6 @@ export default function MyInvoicesPage() {
                   ))}
                 </div>
 
-                {/* Contact options */}
                 <div className="flex flex-wrap gap-3">
                   <a
                     href="https://api.whatsapp.com/send?phone=201070440861&text=Hello! I need to confirm my trip details"
@@ -953,7 +1154,6 @@ export default function MyInvoicesPage() {
           </div>
         )}
 
-        {/* Booking Confirmed: Please Wait at Hotel (For confirmed invoices) */}
         {confirmedWaitingInvoices.length > 0 && (
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 p-6 rounded-r-xl mb-6 shadow-lg">
             <div className="flex items-start space-x-4">
@@ -970,7 +1170,7 @@ export default function MyInvoicesPage() {
                   <div key={inv.id} className="mb-4 last:mb-0">
                     <p className="text-green-800 font-medium text-lg">
                       Please wait at{" "}
-                      {inv.activity_details?.hotel_name || "(your hotel)"}{" "}
+                      {inv.activity_details?.[0]?.hotel_name || "(your hotel)"}{" "}
                       reception at 8 AM.
                     </p>
                     <div className="mt-2 text-sm text-green-700 bg-white/60 p-3 rounded-lg inline-block">
@@ -987,7 +1187,6 @@ export default function MyInvoicesPage() {
                   free to contact us below.
                 </div>
 
-                {/* Contact options (Simplified for confirmed) */}
                 <div className="flex flex-wrap gap-2 mt-4">
                   <a
                     href="https://api.whatsapp.com/send?phone=201070440861"

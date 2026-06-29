@@ -109,6 +109,161 @@ const ErrorState = ({ message }) => (
   </div>
 );
 
+// --- NEW: structured booking details, replacing the raw <pre> dump of invoice_description ---
+const BookingDetails = ({ invoice }) => {
+  const details = invoice.activity_details?.[0];
+  if (!details) {
+    return (
+      <pre className="text-sm text-slate-600 whitespace-pre-wrap font-sans bg-slate-50 p-4 rounded-lg border">
+        {invoice.invoice_description}
+      </pre>
+    );
+  }
+
+  const rows = [
+    { label: "Activity", value: details.name, icon: "mdi:airplane" },
+    {
+      label: "Date",
+      value: details.activity_date
+        ? new Date(details.activity_date).toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })
+        : null,
+      icon: "mdi:calendar",
+    },
+    {
+      label: "Guests",
+      value: `${details.adults} Adult${details.adults > 1 ? "s" : ""}${
+        details.children > 0
+          ? `, ${details.children} Child${details.children > 1 ? "ren" : ""}`
+          : ""
+      }`,
+      icon: "mdi:account-group",
+    },
+    {
+      label: "Hotel",
+      value:
+        details.hotel_name || details.room_number
+          ? `${details.hotel_name || "N/A"}${
+              details.room_number ? `, Room #${details.room_number}` : ""
+            }`
+          : null,
+      icon: "mdi:hotel",
+    },
+    {
+      label: "Special Requests",
+      value: details.special_requests || null,
+      icon: "mdi:message-text-outline",
+    },
+  ].filter((r) => r.value);
+
+  return (
+    <div className="bg-slate-50 rounded-lg p-4 border space-y-3">
+      {rows.map((row) => (
+        <div key={row.label} className="flex items-start gap-3 text-sm">
+          <Icon
+            icon={row.icon}
+            className="w-5 h-5 text-cyan-500 mt-0.5 flex-shrink-0"
+          />
+          <span className="text-slate-500 min-w-[130px]">{row.label}:</span>
+          <span className="text-slate-800 font-medium">{row.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// --- NEW: renders the fees/transfer breakdown from invoice.price_breakdown ---
+const PriceBreakdownSection = ({ invoice }) => {
+  const pb = invoice.price_breakdown;
+  if (!pb) return null;
+
+  const hasFees =
+    (pb.mandatory_fees && pb.mandatory_fees.length > 0) ||
+    (pb.optional_fees && pb.optional_fees.length > 0) ||
+    pb.transfer_fee;
+
+  if (!hasFees) return null;
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-slate-800 mb-3 border-b pb-2">
+        Fees & Transfer ({invoice.currency})
+      </h2>
+      <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-6 space-y-4">
+        <div className="flex justify-between">
+          <span className="text-slate-600">Base Price:</span>
+          <span className="font-semibold text-slate-800 text-lg">
+            {invoice.currency} {pb.base_price?.toFixed(2)}
+          </span>
+        </div>
+
+        {pb.mandatory_fees?.map((fee, i) => (
+          <div key={`mandatory-${i}`} className="flex justify-between">
+            <span className="text-slate-600 flex items-center gap-2">
+              <Icon icon="mdi:cash-plus" className="w-5 h-5 text-orange-500" />
+              {fee.name}
+            </span>
+            <span className="font-semibold text-slate-800">
+              + {invoice.currency} {fee.amount?.toFixed(2)}
+            </span>
+          </div>
+        ))}
+
+        {pb.optional_fees?.length > 0 && (
+          <div className="bg-amber-100/50 border border-amber-200 rounded-lg p-4 space-y-2">
+            <p className="text-sm font-semibold text-amber-800 mb-1">
+              Optional Add-ons Selected
+            </p>
+            {pb.optional_fees.map((fee, i) => (
+              <div key={`optional-${i}`} className="flex justify-between">
+                <span className="text-amber-800">{fee.name}</span>
+                <span className="font-semibold text-amber-800">
+                  + {invoice.currency} {fee.amount?.toFixed(2)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {pb.transfer_fee && (
+          <div className="flex justify-between">
+            <span className="text-slate-600 flex items-center gap-2">
+              <Icon icon="mdi:bus" className="w-5 h-5 text-cyan-600" />
+              Transfer Fee (Zone #{pb.transfer_fee.zone_id})
+            </span>
+            <span className="font-semibold text-slate-800">
+              + {invoice.currency} {pb.transfer_fee.amount?.toFixed(2)}
+            </span>
+          </div>
+        )}
+
+        <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg p-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-orange-100 text-sm mb-1">
+                Fees & Transfer Subtotal
+              </p>
+              <p className="font-black text-2xl">
+                + {invoice.currency} {pb.addon_total?.toFixed(2)}
+              </p>
+            </div>
+            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-right">
+              <p className="text-xs text-orange-100">Price incl. fees</p>
+              <p className="font-bold text-lg">
+                {invoice.currency} {pb.final_price?.toFixed(2)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 //=================================================================
 //  MAIN INVOICE DETAIL PAGE COMPONENT
 //=================================================================
@@ -119,14 +274,14 @@ export default function InvoiceDetailPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { isAuthenticated } = useAuthStore();
-  const { id: invoiceId } = useParams(); // Get invoice ID from URL
+  const { id: invoiceId } = useParams();
 
   const fetchInvoice = useCallback(async () => {
     if (!invoiceId) return;
 
     setError(null);
     try {
-      const data = await InvoiceService.getInvoiceById(invoiceId); // Use the new service method
+      const data = await InvoiceService.getInvoiceById(invoiceId);
       setInvoice(data);
     } catch (err) {
       const errorMessage =
@@ -154,6 +309,8 @@ export default function InvoiceDetailPage() {
     if (!invoice) return null;
     const status = invoice.status.toLowerCase();
     const isOnlinePayment = invoice.invoice_type === "online";
+    // FIXED: hotel_name lives on activity_details[0], not on the invoice itself
+    const hotelName = invoice.activity_details?.[0]?.hotel_name;
 
     if (status === "pending" || (status === "new" && invoice.pay_url)) {
       if (isOnlinePayment) {
@@ -235,7 +392,6 @@ export default function InvoiceDetailPage() {
               </div>
             </div>
 
-            {/* Contact options for pending cash invoices */}
             <div className="pt-4">
               <p className="text-sm font-medium text-green-700 mb-3">
                 Contact us to confirm your booking:
@@ -283,7 +439,6 @@ export default function InvoiceDetailPage() {
             )}
           </div>
 
-          {/* Status Messages */}
           <div className="mt-6">
             {invoice.picked_up ? (
               <div className="bg-green-50 border-l-4 border-green-500 p-6 rounded-lg">
@@ -320,8 +475,9 @@ export default function InvoiceDetailPage() {
                     </h3>
                     <p className="text-cyan-700">
                       Your booking is confirmed. Please wait in{" "}
-                      {invoice.hotel_name
-                        ? `your hotel (${invoice.hotel_name})`
+                      {/* FIXED: was invoice.hotel_name (always undefined) */}
+                      {hotelName
+                        ? `your hotel (${hotelName})`
                         : "your hotel"}{" "}
                       reception at 8:00 AM.
                     </p>
@@ -543,6 +699,17 @@ export default function InvoiceDetailPage() {
                     <p className="text-2xl font-bold text-slate-900">
                       {formatCurrency(invoice.amount, invoice.currency)}
                     </p>
+                    {/* NEW: indicate when the total includes fees */}
+                    {invoice.price_breakdown?.addon_total > 0 && (
+                      <p className="text-xs text-orange-600 mt-0.5">
+                        incl. +
+                        {formatCurrency(
+                          invoice.price_breakdown.addon_total,
+                          invoice.currency,
+                        )}{" "}
+                        fees
+                      </p>
+                    )}
                     {invoice.currency !== "EGP" && invoice.convert_rate && (
                       <div className="mt-1 text-sm text-slate-600">
                         <Icon
@@ -569,21 +736,19 @@ export default function InvoiceDetailPage() {
                   </div>
                 </div>
 
-                {/* Booking Details */}
+                {/* --- REPLACED: structured booking details instead of raw description --- */}
                 <div>
                   <h2 className="text-xl font-bold text-slate-800 mb-3 border-b pb-2">
                     Booking Details
                   </h2>
-                  <pre className="text-sm text-slate-600 whitespace-pre-wrap font-sans bg-slate-50 p-4 rounded-lg border">
-                    {invoice.invoice_description}
-                  </pre>
+                  <BookingDetails invoice={invoice} />
                 </div>
 
                 {/* Discount Breakdown */}
                 {invoice.discount_breakdown && (
                   <div>
                     <h2 className="text-xl font-bold text-slate-800 mb-3 border-b pb-2">
-                      Price Breakdown ({invoice.currency})
+                      Discount Breakdown ({invoice.currency})
                     </h2>
                     {invoice.currency !== "EGP" && invoice.convert_rate && (
                       <div className="mb-4 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
@@ -616,7 +781,11 @@ export default function InvoiceDetailPage() {
                       <div className="flex justify-between">
                         <span className="text-slate-600">Base Price:</span>
                         <span className="font-semibold text-slate-800 text-lg">
-                          {invoice.currency} {invoice.amount?.toFixed(2)}
+                          {invoice.currency}{" "}
+                          {(
+                            invoice.discount_breakdown.base_price ??
+                            invoice.amount
+                          )?.toFixed(2)}
                         </span>
                       </div>
 
@@ -699,10 +868,16 @@ export default function InvoiceDetailPage() {
                         <div className="flex justify-between items-center">
                           <div>
                             <p className="text-blue-100 text-sm mb-1">
-                              Final Amount
+                              {invoice.price_breakdown
+                                ? "Price Before Fees"
+                                : "Final Amount"}
                             </p>
                             <p className="font-black text-3xl">
-                              {invoice.currency} {invoice.amount?.toFixed(2)}
+                              {invoice.currency}{" "}
+                              {(
+                                invoice.discount_breakdown.final_price ??
+                                invoice.amount
+                              )?.toFixed(2)}
                             </p>
                           </div>
                           {invoice.discount_breakdown.total_discount > 0 && (
@@ -719,23 +894,30 @@ export default function InvoiceDetailPage() {
                         </div>
                       </div>
 
-                      {invoice.discount_breakdown.total_discount > 0 && (
-                        <div className="text-center pt-2">
-                          <p className="text-green-600 font-medium flex items-center justify-center gap-2">
-                            <Icon icon="mdi:check-circle" className="w-5 h-5" />
-                            🎉 You saved{" "}
-                            {Math.round(
-                              (invoice.discount_breakdown.total_discount /
-                                invoice.discount_breakdown.base_price) *
-                                100,
-                            )}
-                            % on this booking!
-                          </p>
-                        </div>
-                      )}
+                      {invoice.discount_breakdown.total_discount > 0 &&
+                        invoice.discount_breakdown.base_price > 0 && (
+                          <div className="text-center pt-2">
+                            <p className="text-green-600 font-medium flex items-center justify-center gap-2">
+                              <Icon
+                                icon="mdi:check-circle"
+                                className="w-5 h-5"
+                              />
+                              🎉 You saved{" "}
+                              {Math.round(
+                                (invoice.discount_breakdown.total_discount /
+                                  invoice.discount_breakdown.base_price) *
+                                  100,
+                              )}
+                              % on this booking!
+                            </p>
+                          </div>
+                        )}
                     </div>
                   </div>
                 )}
+
+                {/* --- NEW: Fees & Transfer breakdown (only renders if price_breakdown is present) --- */}
+                <PriceBreakdownSection invoice={invoice} />
 
                 {/* Footer and Actions */}
                 <div className="pt-8 border-t space-y-4">
