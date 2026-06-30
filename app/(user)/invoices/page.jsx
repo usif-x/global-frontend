@@ -1299,7 +1299,10 @@ export default function MyInvoicesPage() {
               <div className="text-xs text-orange-600 mt-0.5">
                 incl. +
                 {formatCurrency(
-                  row.original.price_breakdown.addon_total,
+                  row.original.currency?.toUpperCase() === "EGP"
+                    ? row.original.price_breakdown.addon_total
+                    : row.original.price_breakdown.addon_total /
+                        row.original.convert_rate,
                   row.original.currency,
                 )}{" "}
                 fees

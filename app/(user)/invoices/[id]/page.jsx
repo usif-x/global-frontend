@@ -704,7 +704,10 @@ export default function InvoiceDetailPage() {
                       <p className="text-xs text-orange-600 mt-0.5">
                         incl. +
                         {formatCurrency(
-                          invoice.price_breakdown.addon_total,
+                          invoice.currency?.toUpperCase() === "EGP"
+                            ? invoice.price_breakdown.addon_total
+                            : invoice.price_breakdown.addon_total /
+                                invoice.convert_rate,
                           invoice.currency,
                         )}{" "}
                         fees
