@@ -15,146 +15,612 @@ import { toast } from "react-toastify";
 //=================================================================
 //  PDF GENERATION HELPER (ADAPTED FOR YOUR DATA)
 //=================================================================
+/**
+ * generateInvoicePDF
+ *
+ * Produces a professional, activity-themed invoice PDF for Hurghada Trips.
+ * Layout: branded header → activity hero band → customer + invoice meta →
+ * itemised pricing table → discount & fee summary → payment footer.
+ */
 const generateInvoicePDF = async (invoice, user) => {
   try {
     const { default: jsPDF } = await import("jspdf");
     const autoTableModule = await import("jspdf-autotable");
     const autoTable = autoTableModule.default || autoTableModule;
 
-    const doc = new jsPDF();
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
     const callAutoTable = (options) => autoTable(doc, options);
-    const pageHeight =
-      doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
-    const pageWidth =
-      doc.internal.pageSize.width || doc.internal.pageSize.getWidth();
 
-    // --- Header ---
-    doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(40, 55, 71);
-    doc.text("INVOICE", pageWidth - 20, 30, { align: "right" });
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(123, 136, 151);
-    doc.text("Hurghada Trips", 20, 25);
-    doc.text("Sunrise AQUAJOY, hurghada - egypt", 20, 30);
-    doc.text("Website: hurghada-trips.online", 20, 35);
+    const W = doc.internal.pageSize.getWidth(); // 210
+    const H = doc.internal.pageSize.getHeight(); // 297
 
-    // --- Invoice Details ---
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(40, 55, 71);
-    doc.text(`Invoice Ref: ${invoice.customer_reference}`, pageWidth - 20, 45, {
+    // ─── Palette ────────────────────────────────────────────────────────────
+    const OCEAN = [14, 116, 144]; // cyan-700  — primary brand
+    const DEEP = [15, 23, 42]; // slate-900 — heavy text
+    const MID = [100, 116, 139]; // slate-500 — secondary text
+    const LIGHT = [241, 245, 249]; // slate-100 — table stripe
+    const WHITE = [255, 255, 255];
+    const GREEN = [22, 163, 74]; // discount green
+    const ORANGE = [234, 88, 12]; // fee orange
+    const RED = [220, 38, 38];
+    const GOLD = [202, 138, 4]; // pending amber
+
+    // ─── Helpers ────────────────────────────────────────────────────────────
+    const rgb = (c) => ({ red: c[0], green: c[1], blue: c[2] });
+    const hex3 = (c) => `rgb(${c[0]},${c[1]},${c[2]})`;
+
+    const setFill = (c) => doc.setFillColor(...c);
+    const setStroke = (c) => doc.setDrawColor(...c);
+    const setText = (c) => doc.setTextColor(...c);
+    const setFont = (w, s = "normal") =>
+      doc.setFont("helvetica", s === "bold" ? "bold" : "normal");
+
+    const fmt = (amount, currency = invoice.currency) => {
+      const code = currency || "EGP";
+      try {
+        return new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: code,
+          minimumFractionDigits: 2,
+        }).format(amount || 0);
+      } catch {
+        return `${Number(amount || 0).toFixed(2)} ${code}`;
+      }
+    };
+
+    const fmtDate = (ds) => {
+      if (!ds) return "N/A";
+      try {
+        return new Date(ds).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      } catch {
+        return ds;
+      }
+    };
+
+    const statusColor = (s) => {
+      const map = {
+        paid: GREEN,
+        pending: GOLD,
+        failed: RED,
+        cancelled: MID,
+        expired: ORANGE,
+      };
+      return map[(s || "").toLowerCase()] || MID;
+    };
+
+    // ─── Activity details from the structured array ─────────────────────────
+    const detail = invoice.activity_details?.[0] || {};
+    const pb = invoice.price_breakdown || null;
+    const db = invoice.discount_breakdown || null;
+    const actName = detail.name || invoice.activity || "Activity";
+    const actDate = fmtDate(detail.activity_date);
+    const guests =
+      detail.adults !== undefined
+        ? `${detail.adults} Adult${detail.adults !== 1 ? "s" : ""}${detail.children > 0 ? `, ${detail.children} Child${detail.children !== 1 ? "ren" : ""}` : ""}`
+        : "";
+    const hotel = detail.hotel_name
+      ? `${detail.hotel_name}${detail.room_number ? ` — Room #${detail.room_number}` : ""}`
+      : "";
+    const requests = detail.special_requests || "None";
+
+    // ════════════════════════════════════════════════════════════════════════
+    // 1. HEADER — ocean band with company name + INVOICE title
+    // ════════════════════════════════════════════════════════════════════════
+    setFill(OCEAN);
+    doc.rect(0, 0, W, 38, "F");
+
+    // Wave-like accent strip
+    setFill([8, 145, 178]); // cyan-600
+    doc.rect(0, 30, W, 8, "F");
+
+    // Company name
+    setText(WHITE);
+    doc.setFontSize(18);
+    setFont("bold");
+    doc.text("HURGHADA TRIPS", 14, 16);
+
+    doc.setFontSize(8);
+    setFont("normal");
+    setText([186, 230, 253]); // cyan-200
+    doc.text(
+      "Sea Activities · Safari · Diving  |  hurghada-trips.online",
+      14,
+      22,
+    );
+    doc.text("Sunrise AQUAJOY, Hurghada, Egypt  ·  +20 107 044 0861", 14, 27);
+
+    // INVOICE label — right side
+    setText(WHITE);
+    doc.setFontSize(26);
+    setFont("bold");
+    doc.text("INVOICE", W - 14, 20, { align: "right" });
+
+    doc.setFontSize(8.5);
+    setFont("normal");
+    setText([186, 230, 253]);
+    doc.text(`Ref: ${invoice.customer_reference || "—"}`, W - 14, 27, {
       align: "right",
     });
+    doc.text(`Issued: ${fmtDate(invoice.created_at)}`, W - 14, 32, {
+      align: "right",
+    });
+
+    let y = 46;
+
+    // ════════════════════════════════════════════════════════════════════════
+    // 2. ACTIVITY HERO BAND
+    // ════════════════════════════════════════════════════════════════════════
+    setFill(DEEP);
+    doc.rect(0, y, W, 22, "F");
+
+    // Activity icon stand-in — small compass/anchor symbol area
+    setFill(OCEAN);
+    doc.circle(22, y + 11, 7, "F");
+    setText(WHITE);
     doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text(
-      `Date Issued: ${formatDate(invoice.created_at)}`,
-      pageWidth - 20,
-      50,
-      { align: "right" },
-    );
-    doc.text(
-      `Status: ${
-        invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)
-      }`,
-      pageWidth - 20,
-      55,
-      { align: "right" },
-    );
+    setFont("bold");
+    doc.text("⚓", 22, y + 14, { align: "center" }); // fallback text; will show as square in helvetica but gives layout structure
 
-    // --- Billed To Section ---
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(40, 55, 71);
-    doc.text("Bill To:", 20, 75);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(82, 95, 111);
-    doc.text(`${invoice.buyer_name}`, 20, 80);
-    doc.text(invoice.buyer_email, 20, 85);
-    doc.text(invoice.buyer_phone, 20, 90);
+    setText(WHITE);
+    doc.setFontSize(14);
+    setFont("bold");
+    doc.text(actName, 34, y + 8);
 
-    // --- Build itemized rows from price_breakdown when available, else fall back to a single row ---
-    const tableColumn = ["Item Name", "Description", "Total Price"];
-    let tableRows = [];
+    doc.setFontSize(8);
+    setFont("normal");
+    setText([148, 163, 184]); // slate-400
+    const heroMeta = [
+      actDate ? `📅 ${actDate}` : null,
+      guests ? `👥 ${guests}` : null,
+      hotel ? `🏨 ${hotel}` : null,
+    ]
+      .filter(Boolean)
+      .join("   ·   ");
+    doc.text(heroMeta, 34, y + 15);
 
-    if (invoice.price_breakdown) {
-      const pb = invoice.price_breakdown;
+    // Status badge — far right of hero
+    const sc = statusColor(invoice.status);
+    setFill(sc);
+    doc.roundedRect(W - 44, y + 5, 30, 10, 2, 2, "F");
+    setText(WHITE);
+    doc.setFontSize(8);
+    setFont("bold");
+    const statusLabel = (invoice.status || "PENDING").toUpperCase();
+    doc.text(statusLabel, W - 29, y + 12, { align: "center" });
+
+    y += 28;
+
+    // ════════════════════════════════════════════════════════════════════════
+    // 3. CUSTOMER & INVOICE META — two columns
+    // ════════════════════════════════════════════════════════════════════════
+    const col1 = 14;
+    const col2 = W / 2 + 4;
+
+    // Left — Billed To
+    setText(OCEAN);
+    doc.setFontSize(7.5);
+    setFont("bold");
+    doc.text("BILLED TO", col1, y);
+
+    setText(DEEP);
+    doc.setFontSize(9.5);
+    setFont("bold");
+    doc.text(invoice.buyer_name || "—", col1, y + 6);
+
+    setFont("normal");
+    setText(MID);
+    doc.setFontSize(8.5);
+    doc.text(invoice.buyer_email || "—", col1, y + 12);
+    doc.text(invoice.buyer_phone || "—", col1, y + 17);
+
+    // Right — Invoice Meta
+    setText(OCEAN);
+    doc.setFontSize(7.5);
+    setFont("bold");
+    doc.text("INVOICE DETAILS", col2, y);
+
+    const metaRows = [
+      [
+        "Payment Type",
+        invoice.invoice_type === "online" ? "Online Payment" : "Cash at Center",
+      ],
+      ["Payment Method", invoice.payment_method || "—"],
+      ["Currency", invoice.currency || "EGP"],
+      ["EasyKash Ref", invoice.easykash_reference || "—"],
+    ];
+
+    doc.setFontSize(8);
+    metaRows.forEach(([label, val], i) => {
+      setFont("normal");
+      setText(MID);
+      doc.text(label, col2, y + 6 + i * 5.5);
+      setFont("bold");
+      setText(DEEP);
+      doc.text(String(val), col2 + 38, y + 6 + i * 5.5);
+    });
+
+    y += 30;
+
+    // Thin rule
+    setStroke([226, 232, 240]);
+    doc.setLineWidth(0.3);
+    doc.line(14, y, W - 14, y);
+    y += 6;
+
+    // ════════════════════════════════════════════════════════════════════════
+    // 4. ITEMISED PRICING TABLE
+    // ════════════════════════════════════════════════════════════════════════
+    const tableRows = [];
+
+    if (pb) {
+      // Base price row
       tableRows.push([
-        invoice.activity,
-        "Base trip price",
-        formatCurrency(pb.base_price, invoice.currency),
+        {
+          content: "🏄 " + actName,
+          styles: { fontStyle: "bold", textColor: rgb(DEEP) },
+        },
+        { content: "Base activity price", styles: { textColor: rgb(MID) } },
+        {
+          content: fmt(pb.base_price),
+          styles: { halign: "right", fontStyle: "bold", textColor: rgb(DEEP) },
+        },
       ]);
+
+      // Mandatory fees
       (pb.mandatory_fees || []).forEach((fee) => {
         tableRows.push([
-          fee.name,
-          "Mandatory fee",
-          formatCurrency(fee.amount, invoice.currency),
+          { content: "➕ " + fee.name, styles: { textColor: rgb(ORANGE) } },
+          { content: "Mandatory fee", styles: { textColor: rgb(MID) } },
+          {
+            content: "+ " + fmt(fee.amount),
+            styles: { halign: "right", textColor: rgb(ORANGE) },
+          },
         ]);
       });
+
+      // Optional fees
       (pb.optional_fees || []).forEach((fee) => {
         tableRows.push([
-          fee.name,
-          "Optional add-on",
-          formatCurrency(fee.amount, invoice.currency),
+          { content: "✅ " + fee.name, styles: { textColor: rgb(ORANGE) } },
+          { content: "Optional add-on", styles: { textColor: rgb(MID) } },
+          {
+            content: "+ " + fmt(fee.amount),
+            styles: { halign: "right", textColor: rgb(ORANGE) },
+          },
         ]);
       });
+
+      // Transfer fee
       if (pb.transfer_fee) {
         tableRows.push([
-          "Transfer Fee",
-          "Hotel pickup",
-          formatCurrency(pb.transfer_fee.amount, invoice.currency),
+          {
+            content: "🚐 Transfer / Pickup",
+            styles: { textColor: rgb(OCEAN) },
+          },
+          {
+            content: `Hotel pickup${detail.hotel_name ? ` (${detail.hotel_name})` : ""}`,
+            styles: { textColor: rgb(MID) },
+          },
+          {
+            content: "+ " + fmt(pb.transfer_fee.amount),
+            styles: { halign: "right", textColor: rgb(OCEAN) },
+          },
+        ]);
+      }
+
+      // Discounts
+      if (db?.group_discount) {
+        tableRows.push([
+          { content: "👥 Group Discount", styles: { textColor: rgb(GREEN) } },
+          {
+            content: `${db.group_discount.percentage}% — ${db.group_discount.applied_because || ""}`,
+            styles: { textColor: rgb(MID) },
+          },
+          {
+            content: "– " + fmt(db.group_discount.amount),
+            styles: { halign: "right", textColor: rgb(GREEN) },
+          },
+        ]);
+      }
+
+      if (db?.promo_discount) {
+        tableRows.push([
+          { content: "🎟️ Promo Code", styles: { textColor: rgb(GREEN) } },
+          {
+            content: `${db.promo_discount.percentage}% — Code: ${db.promo_discount.code || ""}`,
+            styles: { textColor: rgb(MID) },
+          },
+          {
+            content: "– " + fmt(db.promo_discount.amount),
+            styles: { halign: "right", textColor: rgb(GREEN) },
+          },
         ]);
       }
     } else {
-      tableRows = [
-        [
-          invoice.activity,
-          "Booking Details",
-          formatCurrency(invoice.amount, invoice.currency),
-        ],
-      ];
+      // No fee breakdown — single row from invoice totals
+      tableRows.push([
+        {
+          content: "🏄 " + actName,
+          styles: { fontStyle: "bold", textColor: rgb(DEEP) },
+        },
+        {
+          content:
+            invoice.invoice_description?.split("\n")[0] || "Activity booking",
+          styles: { textColor: rgb(MID) },
+        },
+        {
+          content: fmt(invoice.amount),
+          styles: { halign: "right", fontStyle: "bold", textColor: rgb(DEEP) },
+        },
+      ]);
+
+      if (db?.group_discount) {
+        tableRows.push([
+          { content: "👥 Group Discount", styles: { textColor: rgb(GREEN) } },
+          {
+            content: `${db.group_discount.percentage}%`,
+            styles: { textColor: rgb(MID) },
+          },
+          {
+            content: "– " + fmt(db.group_discount.amount),
+            styles: { halign: "right", textColor: rgb(GREEN) },
+          },
+        ]);
+      }
+
+      if (db?.promo_discount) {
+        tableRows.push([
+          { content: "🎟️ Promo Code", styles: { textColor: rgb(GREEN) } },
+          {
+            content: `Code: ${db.promo_discount.code || ""}`,
+            styles: { textColor: rgb(MID) },
+          },
+          {
+            content: "– " + fmt(db.promo_discount.amount),
+            styles: { halign: "right", textColor: rgb(GREEN) },
+          },
+        ]);
+      }
     }
 
     callAutoTable({
-      head: [tableColumn],
+      head: [
+        [
+          { content: "ITEM", styles: { halign: "left" } },
+          { content: "DESCRIPTION", styles: { halign: "left" } },
+          { content: "AMOUNT", styles: { halign: "right" } },
+        ],
+      ],
       body: tableRows,
-      startY: 100,
-      theme: "grid",
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-      styles: { font: "helvetica", fontSize: 10 },
+      startY: y,
+      theme: "plain",
+      headStyles: {
+        fillColor: OCEAN,
+        textColor: WHITE,
+        fontSize: 7.5,
+        fontStyle: "bold",
+        cellPadding: { top: 4, bottom: 4, left: 4, right: 4 },
+      },
+      bodyStyles: {
+        fontSize: 8.5,
+        cellPadding: { top: 3.5, bottom: 3.5, left: 4, right: 4 },
+        lineColor: [226, 232, 240],
+        lineWidth: 0.2,
+      },
+      alternateRowStyles: { fillColor: LIGHT },
+      columnStyles: {
+        0: { cellWidth: 62 },
+        1: { cellWidth: "auto" },
+        2: { cellWidth: 38, halign: "right" },
+      },
+      margin: { left: 14, right: 14 },
     });
 
-    let finalY = doc.lastAutoTable.finalY;
+    y = doc.lastAutoTable.finalY + 4;
 
-    // --- Booking Details below the table ---
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(40, 55, 71);
-    doc.text("Booking Details:", 20, finalY + 15);
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(82, 95, 111);
-    doc.text(invoice.invoice_description, 20, finalY + 22, {
-      maxWidth: pageWidth - 40,
-    });
+    // ════════════════════════════════════════════════════════════════════════
+    // 5. TOTAL BOX — right-aligned summary
+    // ════════════════════════════════════════════════════════════════════════
+    const totalBoxX = W / 2;
+    const totalBoxW = W / 2 - 14;
 
-    finalY = doc.lastAutoTable.finalY + 40;
-
-    // --- Footer Notes ---
-    if (invoice.status.toLowerCase() === "pending" && invoice.pay_url) {
-      doc.setTextColor(41, 128, 185);
-      doc.textWithLink(
-        "A payment link is available. Click here to pay.",
-        20,
-        finalY + 10,
-        { url: invoice.pay_url },
-      );
+    // Subtotal / savings row
+    if (db?.total_discount > 0) {
+      setFill([240, 253, 244]); // green-50
+      doc.rect(totalBoxX, y, totalBoxW, 9, "F");
+      setText(GREEN);
+      doc.setFontSize(8);
+      setFont("normal");
+      doc.text("Total Savings:", totalBoxX + 4, y + 6);
+      setFont("bold");
+      doc.text("– " + fmt(db.total_discount), W - 14, y + 6, {
+        align: "right",
+      });
+      y += 10;
     }
 
-    doc.save(`Invoice-${invoice.customer_reference}.pdf`);
+    // Multi-currency EGP equivalent
+    if (invoice.currency !== "EGP" && invoice.convert_rate) {
+      const egpEq = invoice.amount * invoice.convert_rate;
+      setFill(LIGHT);
+      doc.rect(totalBoxX, y, totalBoxW, 9, "F");
+      setText(MID);
+      doc.setFontSize(7.5);
+      setFont("normal");
+      doc.text(
+        `≈ EGP equivalent (rate: 1 ${invoice.currency} = ${invoice.convert_rate.toFixed(2)} EGP):`,
+        totalBoxX + 4,
+        y + 6,
+      );
+      setFont("bold");
+      setText(DEEP);
+      doc.text(fmt(egpEq, "EGP"), W - 14, y + 6, { align: "right" });
+      y += 10;
+    }
+
+    // Grand total — ocean band
+    setFill(OCEAN);
+    doc.rect(totalBoxX, y, totalBoxW, 13, "F");
+    setText(WHITE);
+    doc.setFontSize(9);
+    setFont("normal");
+    doc.text("TOTAL DUE", totalBoxX + 4, y + 9);
+    doc.setFontSize(13);
+    setFont("bold");
+    doc.text(fmt(invoice.amount), W - 14, y + 9, { align: "right" });
+    y += 18;
+
+    // ════════════════════════════════════════════════════════════════════════
+    // 6. BOOKING DETAILS SECTION
+    // ════════════════════════════════════════════════════════════════════════
+    y += 4;
+    setText(OCEAN);
+    doc.setFontSize(7.5);
+    setFont("bold");
+    doc.text("BOOKING DETAILS", 14, y);
+
+    y += 5;
+    setFill(LIGHT);
+    doc.rect(14, y, W - 28, guests || hotel ? 26 : 14, "F");
+
+    const bookingRows = [
+      guests ? ["Date", actDate] : null,
+      guests ? ["Guests", guests] : null,
+      hotel ? ["Hotel / Room", hotel] : null,
+      requests !== "None" ? ["Special Requests", requests] : null,
+    ].filter(Boolean);
+
+    bookingRows.forEach(([label, val], i) => {
+      const by = y + 5 + i * 6;
+      setText(MID);
+      doc.setFontSize(7.5);
+      setFont("normal");
+      doc.text(label + ":", 18, by);
+      setText(DEEP);
+      setFont("bold");
+      doc.text(String(val), 58, by);
+    });
+
+    y += Math.max(bookingRows.length * 6 + 8, 16);
+
+    // ════════════════════════════════════════════════════════════════════════
+    // 7. PAYMENT ACTION AREA
+    // ════════════════════════════════════════════════════════════════════════
+    const status = (invoice.status || "").toLowerCase();
+
+    if (
+      status === "pending" &&
+      invoice.invoice_type === "online" &&
+      invoice.pay_url
+    ) {
+      y += 4;
+      setFill([239, 246, 255]); // blue-50
+      doc.rect(14, y, W - 28, 18, "F");
+      setStroke(OCEAN);
+      doc.setLineWidth(0.4);
+      doc.rect(14, y, W - 28, 18, "S");
+
+      setText(OCEAN);
+      doc.setFontSize(8.5);
+      setFont("bold");
+      doc.text(
+        "PAYMENT REQUIRED — Click the link below to pay securely online:",
+        18,
+        y + 7,
+      );
+      doc.setFontSize(8);
+      setFont("normal");
+      doc.setTextColor(37, 99, 235); // blue-600
+      doc.textWithLink(invoice.pay_url, 18, y + 14, { url: invoice.pay_url });
+      y += 22;
+    }
+
+    if (status === "pending" && invoice.invoice_type === "cash") {
+      y += 4;
+      setFill([240, 253, 244]);
+      doc.rect(14, y, W - 28, 18, "F");
+      setStroke(GREEN);
+      doc.setLineWidth(0.4);
+      doc.rect(14, y, W - 28, 18, "S");
+      setText(GREEN);
+      doc.setFontSize(8.5);
+      setFont("bold");
+      doc.text(
+        "CASH PAYMENT — Please contact us to confirm, then pay at the diving center.",
+        18,
+        y + 7,
+      );
+      doc.setFontSize(8);
+      setFont("normal");
+      setText(MID);
+      doc.text(
+        `Amount to bring: ${fmt(invoice.amount)}  ·  Reference: ${invoice.customer_reference || "—"}`,
+        18,
+        y + 14,
+      );
+      y += 22;
+    }
+
+    if (status === "paid") {
+      y += 4;
+      setFill([240, 253, 244]);
+      doc.rect(14, y, W - 28, 12, "F");
+      setText(GREEN);
+      doc.setFontSize(9);
+      setFont("bold");
+      doc.text(
+        "✓  PAYMENT CONFIRMED — Thank you for booking with Hurghada Trips!",
+        18,
+        y + 8,
+      );
+      y += 16;
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // 8. FOOTER
+    // ════════════════════════════════════════════════════════════════════════
+    // Pin footer to bottom of page regardless of content length
+    const footerY = H - 22;
+    setFill(DEEP);
+    doc.rect(0, footerY, W, 22, "F");
+
+    setText([148, 163, 184]); // slate-400
+    doc.setFontSize(7.5);
+    setFont("normal");
+    doc.text(
+      "Hurghada Trips  ·  hurghada-trips.online  ·  +20 107 044 0861  ·  Sunrise AQUAJOY, Hurghada, Egypt",
+      W / 2,
+      footerY + 7,
+      { align: "center" },
+    );
+
+    setText([100, 116, 139]);
+    doc.setFontSize(7);
+    doc.text(
+      "This document was generated automatically. For questions contact us via WhatsApp or the website live chat.",
+      W / 2,
+      footerY + 13,
+      { align: "center" },
+    );
+    doc.text(
+      `Generated on ${new Date().toLocaleDateString("en-US", { dateStyle: "long" })}`,
+      W / 2,
+      footerY + 18,
+      { align: "center" },
+    );
+
+    // ════════════════════════════════════════════════════════════════════════
+    doc.save(
+      `HurghadaTrips-Invoice-${invoice.customer_reference || "draft"}.pdf`,
+    );
     return true;
   } catch (error) {
     console.error("PDF Generation Error:", error);
