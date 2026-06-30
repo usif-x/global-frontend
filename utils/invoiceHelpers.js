@@ -25,6 +25,8 @@
  * @param {string} params.bookingDetails.hotelName - Hotel name
  * @param {string} params.bookingDetails.roomNumber - Room number
  * @param {string} params.bookingDetails.specialRequests - Special requests (optional)
+ * @param {number|null} params.bookingDetails.transferZoneId - Transfer zone ID (null if no transfer)
+ * @param {number[]} params.bookingDetails.selectedOptionalFeeIds - IDs of selected optional fees
  * @param {Object} params.paymentDetails - Payment details
  * @param {number} params.paymentDetails.amount - Total calculated amount
  * @param {string} params.paymentDetails.currency - Currency code (e.g., "EGP", "USD")
@@ -47,6 +49,9 @@ export function createTripInvoicePayload({
     hotelName,
     roomNumber,
     specialRequests,
+    // --- FIX: destructure the two new fee/transfer fields ---
+    transferZoneId = null,
+    selectedOptionalFeeIds = [],
   } = bookingDetails;
   const { amount, currency, invoiceType, couponCode } = paymentDetails;
 
@@ -107,7 +112,9 @@ Special Requests: ${specialRequests || "None"}`;
     adults: parseInt(adults),
     children: parseInt(children),
 
-    // Activity Details (for records/display)
+    // Activity Details — MUST include transfer_zone_id and selected_optional_fee_ids
+    // so the backend FeeCalculator can reproduce the same total the frontend calculated.
+    // Without these, the backend calculates addon_total=0 and the amount verification fails.
     activity_details: [
       {
         name: tripName,
@@ -117,6 +124,9 @@ Special Requests: ${specialRequests || "None"}`;
         hotel_name: hotelName,
         room_number: roomNumber,
         special_requests: specialRequests || "",
+        // --- FIX: forward fee selections into activity_details[0] ---
+        transfer_zone_id: transferZoneId ? parseInt(transferZoneId, 10) : null,
+        selected_optional_fee_ids: selectedOptionalFeeIds || [],
       },
     ],
 
