@@ -39,19 +39,18 @@ const generateInvoicePDF = async (invoice, user) => {
     const H = doc.internal.pageSize.getHeight(); // 297
 
     // ─── Palette ────────────────────────────────────────────────────────────
-    const OCEAN = [14, 116, 144]; // cyan-700  — primary brand
-    const DEEP = [15, 23, 42]; // slate-900 — heavy text
-    const MID = [100, 116, 139]; // slate-500 — secondary text
-    const LIGHT = [241, 245, 249]; // slate-100 — table stripe
+    const OCEAN = [14, 116, 144]; // cyan-700
+    const DEEP = [15, 23, 42]; // slate-900
+    const MID = [100, 116, 139]; // slate-500
+    const LIGHT = [241, 245, 249]; // slate-100
     const WHITE = [255, 255, 255];
-    const GREEN = [22, 163, 74]; // discount green
-    const ORANGE = [234, 88, 12]; // fee orange
+    const GREEN = [22, 163, 74];
+    const ORANGE = [234, 88, 12];
     const RED = [220, 38, 38];
-    const GOLD = [202, 138, 4]; // pending amber
+    const GOLD = [202, 138, 4];
 
     // ─── Helpers ────────────────────────────────────────────────────────────
     const rgb = (c) => ({ red: c[0], green: c[1], blue: c[2] });
-    const hex3 = (c) => `rgb(${c[0]},${c[1]},${c[2]})`;
 
     const setFill = (c) => doc.setFillColor(...c);
     const setStroke = (c) => doc.setDrawColor(...c);
@@ -96,7 +95,7 @@ const generateInvoicePDF = async (invoice, user) => {
       return map[(s || "").toLowerCase()] || MID;
     };
 
-    // ─── Activity details from the structured array ─────────────────────────
+    // ─── Activity details ───────────────────────────────────────────────────
     const detail = invoice.activity_details?.[0] || {};
     const pb = invoice.price_breakdown || null;
     const db = invoice.discount_breakdown || null;
@@ -107,21 +106,19 @@ const generateInvoicePDF = async (invoice, user) => {
         ? `${detail.adults} Adult${detail.adults !== 1 ? "s" : ""}${detail.children > 0 ? `, ${detail.children} Child${detail.children !== 1 ? "ren" : ""}` : ""}`
         : "";
     const hotel = detail.hotel_name
-      ? `${detail.hotel_name}${detail.room_number ? ` — Room #${detail.room_number}` : ""}`
+      ? `${detail.hotel_name}${detail.room_number ? ` (Room #${detail.room_number})` : ""}`
       : "";
     const requests = detail.special_requests || "None";
 
     // ════════════════════════════════════════════════════════════════════════
-    // 1. HEADER — ocean band with company name + INVOICE title
+    // 1. HEADER
     // ════════════════════════════════════════════════════════════════════════
     setFill(OCEAN);
     doc.rect(0, 0, W, 38, "F");
 
-    // Wave-like accent strip
-    setFill([8, 145, 178]); // cyan-600
+    setFill([8, 145, 178]);
     doc.rect(0, 30, W, 8, "F");
 
-    // Company name
     setText(WHITE);
     doc.setFontSize(18);
     setFont("bold");
@@ -129,7 +126,7 @@ const generateInvoicePDF = async (invoice, user) => {
 
     doc.setFontSize(8);
     setFont("normal");
-    setText([186, 230, 253]); // cyan-200
+    setText([186, 230, 253]);
     doc.text(
       "Sea Activities · Safari · Diving  |  hurghada-trips.online",
       14,
@@ -137,7 +134,6 @@ const generateInvoicePDF = async (invoice, user) => {
     );
     doc.text("Sunrise AQUAJOY, Hurghada, Egypt  ·  +20 107 044 0861", 14, 27);
 
-    // INVOICE label — right side
     setText(WHITE);
     doc.setFontSize(26);
     setFont("bold");
@@ -146,7 +142,7 @@ const generateInvoicePDF = async (invoice, user) => {
     doc.setFontSize(8.5);
     setFont("normal");
     setText([186, 230, 253]);
-    doc.text(`Ref: ${invoice.customer_reference || "—"}`, W - 14, 27, {
+    doc.text(`Ref: ${invoice.customer_reference || "-"}`, W - 14, 27, {
       align: "right",
     });
     doc.text(`Issued: ${fmtDate(invoice.created_at)}`, W - 14, 32, {
@@ -161,13 +157,14 @@ const generateInvoicePDF = async (invoice, user) => {
     setFill(DEEP);
     doc.rect(0, y, W, 22, "F");
 
-    // Activity icon stand-in — small compass/anchor symbol area
+    // Replaced Emoji with a sleek initial avatar to prevent hashing
     setFill(OCEAN);
     doc.circle(22, y + 11, 7, "F");
     setText(WHITE);
     doc.setFontSize(10);
     setFont("bold");
-    doc.text("⚓", 22, y + 14, { align: "center" }); // fallback text; will show as square in helvetica but gives layout structure
+    const avatarLetter = actName ? actName.charAt(0).toUpperCase() : "A";
+    doc.text(avatarLetter, 22, y + 14.5, { align: "center" });
 
     setText(WHITE);
     doc.setFontSize(14);
@@ -176,17 +173,25 @@ const generateInvoicePDF = async (invoice, user) => {
 
     doc.setFontSize(8);
     setFont("normal");
-    setText([148, 163, 184]); // slate-400
+    setText([148, 163, 184]);
+
+    // Replaced Emojis with clean text labels to prevent calculation shifts
     const heroMeta = [
-      actDate ? `📅 ${actDate}` : null,
-      guests ? `👥 ${guests}` : null,
-      hotel ? `🏨 ${hotel}` : null,
+      actDate ? `Date: ${actDate}` : null,
+      guests ? `Guests: ${guests}` : null,
+      hotel ? `Hotel: ${hotel}` : null,
     ]
       .filter(Boolean)
-      .join("   ·   ");
-    doc.text(heroMeta, 34, y + 15);
+      .join("   |   ");
 
-    // Status badge — far right of hero
+    // Truncate meta if it's too long to prevent overlapping the status badge
+    const maxMetaLength = 80;
+    const safeHeroMeta =
+      heroMeta.length > maxMetaLength
+        ? heroMeta.substring(0, maxMetaLength) + "..."
+        : heroMeta;
+    doc.text(safeHeroMeta, 34, y + 15);
+
     const sc = statusColor(invoice.status);
     setFill(sc);
     doc.roundedRect(W - 44, y + 5, 30, 10, 2, 2, "F");
@@ -194,17 +199,16 @@ const generateInvoicePDF = async (invoice, user) => {
     doc.setFontSize(8);
     setFont("bold");
     const statusLabel = (invoice.status || "PENDING").toUpperCase();
-    doc.text(statusLabel, W - 29, y + 12, { align: "center" });
+    doc.text(statusLabel, W - 29, y + 11.5, { align: "center" });
 
     y += 28;
 
     // ════════════════════════════════════════════════════════════════════════
-    // 3. CUSTOMER & INVOICE META — two columns
+    // 3. CUSTOMER & INVOICE META
     // ════════════════════════════════════════════════════════════════════════
     const col1 = 14;
     const col2 = W / 2 + 4;
 
-    // Left — Billed To
     setText(OCEAN);
     doc.setFontSize(7.5);
     setFont("bold");
@@ -213,15 +217,14 @@ const generateInvoicePDF = async (invoice, user) => {
     setText(DEEP);
     doc.setFontSize(9.5);
     setFont("bold");
-    doc.text(invoice.buyer_name || "—", col1, y + 6);
+    doc.text(invoice.buyer_name || "-", col1, y + 6);
 
     setFont("normal");
     setText(MID);
     doc.setFontSize(8.5);
-    doc.text(invoice.buyer_email || "—", col1, y + 12);
-    doc.text(invoice.buyer_phone || "—", col1, y + 17);
+    doc.text(invoice.buyer_email || "-", col1, y + 12);
+    doc.text(invoice.buyer_phone || "-", col1, y + 17);
 
-    // Right — Invoice Meta
     setText(OCEAN);
     doc.setFontSize(7.5);
     setFont("bold");
@@ -232,9 +235,9 @@ const generateInvoicePDF = async (invoice, user) => {
         "Payment Type",
         invoice.invoice_type === "online" ? "Online Payment" : "Cash at Center",
       ],
-      ["Payment Method", invoice.payment_method || "—"],
+      ["Payment Method", invoice.payment_method || "-"],
       ["Currency", invoice.currency || "EGP"],
-      ["EasyKash Ref", invoice.easykash_reference || "—"],
+      ["EasyKash Ref", invoice.easykash_reference || "-"],
     ];
 
     doc.setFontSize(8);
@@ -249,22 +252,20 @@ const generateInvoicePDF = async (invoice, user) => {
 
     y += 30;
 
-    // Thin rule
     setStroke([226, 232, 240]);
     doc.setLineWidth(0.3);
     doc.line(14, y, W - 14, y);
     y += 6;
 
     // ════════════════════════════════════════════════════════════════════════
-    // 4. ITEMISED PRICING TABLE
+    // 4. ITEMISED PRICING TABLE (Cleaned of all emojis causing width issues)
     // ════════════════════════════════════════════════════════════════════════
     const tableRows = [];
 
     if (pb) {
-      // Base price row
       tableRows.push([
         {
-          content: "🏄 " + actName,
+          content: actName,
           styles: { fontStyle: "bold", textColor: rgb(DEEP) },
         },
         { content: "Base activity price", styles: { textColor: rgb(MID) } },
@@ -274,10 +275,9 @@ const generateInvoicePDF = async (invoice, user) => {
         },
       ]);
 
-      // Mandatory fees
       (pb.mandatory_fees || []).forEach((fee) => {
         tableRows.push([
-          { content: "➕ " + fee.name, styles: { textColor: rgb(ORANGE) } },
+          { content: fee.name, styles: { textColor: rgb(ORANGE) } },
           { content: "Mandatory fee", styles: { textColor: rgb(MID) } },
           {
             content: "+ " + fmt(fee.amount),
@@ -286,10 +286,9 @@ const generateInvoicePDF = async (invoice, user) => {
         ]);
       });
 
-      // Optional fees
       (pb.optional_fees || []).forEach((fee) => {
         tableRows.push([
-          { content: "✅ " + fee.name, styles: { textColor: rgb(ORANGE) } },
+          { content: fee.name, styles: { textColor: rgb(ORANGE) } },
           { content: "Optional add-on", styles: { textColor: rgb(MID) } },
           {
             content: "+ " + fmt(fee.amount),
@@ -298,13 +297,9 @@ const generateInvoicePDF = async (invoice, user) => {
         ]);
       });
 
-      // Transfer fee
       if (pb.transfer_fee) {
         tableRows.push([
-          {
-            content: "🚐 Transfer / Pickup",
-            styles: { textColor: rgb(OCEAN) },
-          },
+          { content: "Transfer / Pickup", styles: { textColor: rgb(OCEAN) } },
           {
             content: `Hotel pickup${detail.hotel_name ? ` (${detail.hotel_name})` : ""}`,
             styles: { textColor: rgb(MID) },
@@ -316,16 +311,15 @@ const generateInvoicePDF = async (invoice, user) => {
         ]);
       }
 
-      // Discounts
       if (db?.group_discount) {
         tableRows.push([
-          { content: "👥 Group Discount", styles: { textColor: rgb(GREEN) } },
+          { content: "Group Discount", styles: { textColor: rgb(GREEN) } },
           {
-            content: `${db.group_discount.percentage}% — ${db.group_discount.applied_because || ""}`,
+            content: `${db.group_discount.percentage}% - ${db.group_discount.applied_because || ""}`,
             styles: { textColor: rgb(MID) },
           },
           {
-            content: "– " + fmt(db.group_discount.amount),
+            content: "- " + fmt(db.group_discount.amount),
             styles: { halign: "right", textColor: rgb(GREEN) },
           },
         ]);
@@ -333,22 +327,21 @@ const generateInvoicePDF = async (invoice, user) => {
 
       if (db?.promo_discount) {
         tableRows.push([
-          { content: "🎟️ Promo Code", styles: { textColor: rgb(GREEN) } },
+          { content: "Promo Code", styles: { textColor: rgb(GREEN) } },
           {
-            content: `${db.promo_discount.percentage}% — Code: ${db.promo_discount.code || ""}`,
+            content: `${db.promo_discount.percentage}% - Code: ${db.promo_discount.code || ""}`,
             styles: { textColor: rgb(MID) },
           },
           {
-            content: "– " + fmt(db.promo_discount.amount),
+            content: "- " + fmt(db.promo_discount.amount),
             styles: { halign: "right", textColor: rgb(GREEN) },
           },
         ]);
       }
     } else {
-      // No fee breakdown — single row from invoice totals
       tableRows.push([
         {
-          content: "🏄 " + actName,
+          content: actName,
           styles: { fontStyle: "bold", textColor: rgb(DEEP) },
         },
         {
@@ -364,27 +357,13 @@ const generateInvoicePDF = async (invoice, user) => {
 
       if (db?.group_discount) {
         tableRows.push([
-          { content: "👥 Group Discount", styles: { textColor: rgb(GREEN) } },
+          { content: "Group Discount", styles: { textColor: rgb(GREEN) } },
           {
             content: `${db.group_discount.percentage}%`,
             styles: { textColor: rgb(MID) },
           },
           {
-            content: "– " + fmt(db.group_discount.amount),
-            styles: { halign: "right", textColor: rgb(GREEN) },
-          },
-        ]);
-      }
-
-      if (db?.promo_discount) {
-        tableRows.push([
-          { content: "🎟️ Promo Code", styles: { textColor: rgb(GREEN) } },
-          {
-            content: `Code: ${db.promo_discount.code || ""}`,
-            styles: { textColor: rgb(MID) },
-          },
-          {
-            content: "– " + fmt(db.promo_discount.amount),
+            content: "- " + fmt(db.group_discount.amount),
             styles: { halign: "right", textColor: rgb(GREEN) },
           },
         ]);
@@ -427,27 +406,27 @@ const generateInvoicePDF = async (invoice, user) => {
     y = doc.lastAutoTable.finalY + 4;
 
     // ════════════════════════════════════════════════════════════════════════
-    // 5. TOTAL BOX — right-aligned summary
+    // 5. TOTAL BOX
     // ════════════════════════════════════════════════════════════════════════
     const totalBoxX = W / 2;
     const totalBoxW = W / 2 - 14;
 
-    // Subtotal / savings row
+    // Added right padding (W - 18 instead of W - 14) so text doesn't touch the edge
     if (db?.total_discount > 0) {
-      setFill([240, 253, 244]); // green-50
+      setFill([240, 253, 244]);
       doc.rect(totalBoxX, y, totalBoxW, 9, "F");
       setText(GREEN);
       doc.setFontSize(8);
       setFont("normal");
       doc.text("Total Savings:", totalBoxX + 4, y + 6);
       setFont("bold");
-      doc.text("– " + fmt(db.total_discount), W - 14, y + 6, {
+      // Changed em-dash (–) to standard hyphen (-)
+      doc.text("- " + fmt(db.total_discount), W - 18, y + 6, {
         align: "right",
       });
       y += 10;
     }
 
-    // Multi-currency EGP equivalent
     if (invoice.currency !== "EGP" && invoice.convert_rate) {
       const egpEq = invoice.amount * invoice.convert_rate;
       setFill(LIGHT);
@@ -455,18 +434,19 @@ const generateInvoicePDF = async (invoice, user) => {
       setText(MID);
       doc.setFontSize(7.5);
       setFont("normal");
+
+      // Shortened the label to prevent overlap with the amount text
       doc.text(
-        `≈ EGP equivalent (rate: 1 ${invoice.currency} = ${invoice.convert_rate.toFixed(2)} EGP):`,
+        `~ EGP Eq. (1 ${invoice.currency} = ${invoice.convert_rate.toFixed(2)}):`,
         totalBoxX + 4,
         y + 6,
       );
       setFont("bold");
       setText(DEEP);
-      doc.text(fmt(egpEq, "EGP"), W - 14, y + 6, { align: "right" });
+      doc.text(fmt(egpEq, "EGP"), W - 18, y + 6, { align: "right" });
       y += 10;
     }
 
-    // Grand total — ocean band
     setFill(OCEAN);
     doc.rect(totalBoxX, y, totalBoxW, 13, "F");
     setText(WHITE);
@@ -475,7 +455,7 @@ const generateInvoicePDF = async (invoice, user) => {
     doc.text("TOTAL DUE", totalBoxX + 4, y + 9);
     doc.setFontSize(13);
     setFont("bold");
-    doc.text(fmt(invoice.amount), W - 14, y + 9, { align: "right" });
+    doc.text(fmt(invoice.amount), W - 18, y + 9, { align: "right" });
     y += 18;
 
     // ════════════════════════════════════════════════════════════════════════
@@ -522,7 +502,7 @@ const generateInvoicePDF = async (invoice, user) => {
       invoice.pay_url
     ) {
       y += 4;
-      setFill([239, 246, 255]); // blue-50
+      setFill([239, 246, 255]);
       doc.rect(14, y, W - 28, 18, "F");
       setStroke(OCEAN);
       doc.setLineWidth(0.4);
@@ -532,14 +512,19 @@ const generateInvoicePDF = async (invoice, user) => {
       doc.setFontSize(8.5);
       setFont("bold");
       doc.text(
-        "PAYMENT REQUIRED — Click the link below to pay securely online:",
+        "PAYMENT REQUIRED - Click the link below to pay securely online:",
         18,
         y + 7,
       );
       doc.setFontSize(8);
       setFont("normal");
-      doc.setTextColor(37, 99, 235); // blue-600
-      doc.textWithLink(invoice.pay_url, 18, y + 14, { url: invoice.pay_url });
+      doc.setTextColor(37, 99, 235);
+      // Safe fallback if textWithLink is unsupported by the specific jsPDF build
+      if (typeof doc.textWithLink === "function") {
+        doc.textWithLink(invoice.pay_url, 18, y + 14, { url: invoice.pay_url });
+      } else {
+        doc.text(invoice.pay_url, 18, y + 14);
+      }
       y += 22;
     }
 
@@ -554,7 +539,7 @@ const generateInvoicePDF = async (invoice, user) => {
       doc.setFontSize(8.5);
       setFont("bold");
       doc.text(
-        "CASH PAYMENT — Please contact us to confirm, then pay at the diving center.",
+        "CASH PAYMENT - Please contact us to confirm, then pay at the diving center.",
         18,
         y + 7,
       );
@@ -562,7 +547,7 @@ const generateInvoicePDF = async (invoice, user) => {
       setFont("normal");
       setText(MID);
       doc.text(
-        `Amount to bring: ${fmt(invoice.amount)}  ·  Reference: ${invoice.customer_reference || "—"}`,
+        `Amount to bring: ${fmt(invoice.amount)}  |  Reference: ${invoice.customer_reference || "-"}`,
         18,
         y + 14,
       );
@@ -577,7 +562,7 @@ const generateInvoicePDF = async (invoice, user) => {
       doc.setFontSize(9);
       setFont("bold");
       doc.text(
-        "✓  PAYMENT CONFIRMED — Thank you for booking with Hurghada Trips!",
+        "PAYMENT CONFIRMED - Thank you for booking with Hurghada Trips!",
         18,
         y + 8,
       );
@@ -587,16 +572,15 @@ const generateInvoicePDF = async (invoice, user) => {
     // ════════════════════════════════════════════════════════════════════════
     // 8. FOOTER
     // ════════════════════════════════════════════════════════════════════════
-    // Pin footer to bottom of page regardless of content length
     const footerY = H - 22;
     setFill(DEEP);
     doc.rect(0, footerY, W, 22, "F");
 
-    setText([148, 163, 184]); // slate-400
+    setText([148, 163, 184]);
     doc.setFontSize(7.5);
     setFont("normal");
     doc.text(
-      "Hurghada Trips  ·  hurghada-trips.online  ·  +20 107 044 0861  ·  Sunrise AQUAJOY, Hurghada, Egypt",
+      "Hurghada Trips  |  hurghada-trips.online  |  +20 107 044 0861  |  Sunrise AQUAJOY, Hurghada, Egypt",
       W / 2,
       footerY + 7,
       { align: "center" },
