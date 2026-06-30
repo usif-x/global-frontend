@@ -64,7 +64,6 @@ export default function Home() {
                     className="text-white/60 hover:text-white transition-colors"
                   >
                     <Icon icon="mdi:instagram" className="w-5 h-5" />
-                    <span>Instagram</span>
                   </a>
                 </div>
               </div>
