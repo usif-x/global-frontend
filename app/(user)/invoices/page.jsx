@@ -982,11 +982,12 @@ const InvoiceModal = ({ invoice, isOpen, onClose, onDownload }) => {
                       <div className="text-sm text-blue-700">
                         <p className="font-medium">Multi-Currency Invoice</p>
                         <p className="mt-1">
-                          Prices below are in EGP. {invoice.currency}
+                          Prices below are in EGP. {invoice.currency}{" "}
                           equivalent:{" "}
                           <strong>
                             {formatCurrency(
-                              invoice.amount / invoice.convert_rate,
+                              invoice.price_breakdown.final_price /
+                                invoice.convert_rate,
                               invoice.currency,
                             )}
                           </strong>{" "}

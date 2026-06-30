@@ -191,13 +191,13 @@ const PriceBreakdownSection = ({ invoice }) => {
   return (
     <div>
       <h2 className="text-xl font-bold text-slate-800 mb-3 border-b pb-2">
-        Fees & Transfer ({invoice.currency})
+        Fees & Transfer (EGP)
       </h2>
       <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-6 space-y-4">
         <div className="flex justify-between">
           <span className="text-slate-600">Base Price:</span>
           <span className="font-semibold text-slate-800 text-lg">
-            {invoice.currency} {pb.base_price?.toFixed(2)}
+            EGP {pb.base_price?.toFixed(2)}
           </span>
         </div>
 
@@ -208,7 +208,7 @@ const PriceBreakdownSection = ({ invoice }) => {
               {fee.name}
             </span>
             <span className="font-semibold text-slate-800">
-              + {invoice.currency} {fee.amount?.toFixed(2)}
+              + EGP {fee.amount?.toFixed(2)}
             </span>
           </div>
         ))}
@@ -222,7 +222,7 @@ const PriceBreakdownSection = ({ invoice }) => {
               <div key={`optional-${i}`} className="flex justify-between">
                 <span className="text-amber-800">{fee.name}</span>
                 <span className="font-semibold text-amber-800">
-                  + {invoice.currency} {fee.amount?.toFixed(2)}
+                  + EGP {fee.amount?.toFixed(2)}
                 </span>
               </div>
             ))}
@@ -236,7 +236,7 @@ const PriceBreakdownSection = ({ invoice }) => {
               Transfer Fee (Zone #{pb.transfer_fee.zone_id})
             </span>
             <span className="font-semibold text-slate-800">
-              + {invoice.currency} {pb.transfer_fee.amount?.toFixed(2)}
+              + EGP {pb.transfer_fee.amount?.toFixed(2)}
             </span>
           </div>
         )}
@@ -248,13 +248,13 @@ const PriceBreakdownSection = ({ invoice }) => {
                 Fees & Transfer Subtotal
               </p>
               <p className="font-black text-2xl">
-                + {invoice.currency} {pb.addon_total?.toFixed(2)}
+                + EGP {pb.addon_total?.toFixed(2)}
               </p>
             </div>
             <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-right">
               <p className="text-xs text-orange-100">Price incl. fees</p>
               <p className="font-bold text-lg">
-                {invoice.currency} {pb.final_price?.toFixed(2)}
+                EGP {pb.final_price?.toFixed(2)}
               </p>
             </div>
           </div>
@@ -751,7 +751,7 @@ export default function InvoiceDetailPage() {
                 {invoice.discount_breakdown && (
                   <div>
                     <h2 className="text-xl font-bold text-slate-800 mb-3 border-b pb-2">
-                      Discount Breakdown ({invoice.currency})
+                      Discount Breakdown (EGP)
                     </h2>
                     {invoice.currency !== "EGP" && invoice.convert_rate && (
                       <div className="mb-4 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
@@ -765,12 +765,13 @@ export default function InvoiceDetailPage() {
                               Multi-Currency Invoice
                             </p>
                             <p className="mt-1">
-                              Prices below are in {invoice.currency}. EGP
+                              Prices below are in EGP. {invoice.currency}{" "}
                               equivalent:{" "}
                               <strong>
                                 {formatCurrency(
-                                  invoice.amount * invoice.convert_rate,
-                                  "EGP",
+                                  invoice.price_breakdown.final_price /
+                                    invoice.convert_rate,
+                                  invoice.currency,
                                 )}
                               </strong>{" "}
                               (Rate: 1 {invoice.currency} ={" "}
@@ -784,7 +785,7 @@ export default function InvoiceDetailPage() {
                       <div className="flex justify-between">
                         <span className="text-slate-600">Base Price:</span>
                         <span className="font-semibold text-slate-800 text-lg">
-                          {invoice.currency}{" "}
+                          EGP{" "}
                           {(
                             invoice.discount_breakdown.base_price ??
                             invoice.amount
@@ -808,7 +809,7 @@ export default function InvoiceDetailPage() {
                               %)
                             </span>
                             <span className="font-bold text-green-700 text-lg">
-                              - {invoice.currency}{" "}
+                              - EGP{" "}
                               {invoice.discount_breakdown.group_discount.amount?.toFixed(
                                 2,
                               )}
@@ -839,7 +840,7 @@ export default function InvoiceDetailPage() {
                               %)
                             </span>
                             <span className="font-bold text-purple-700 text-lg">
-                              - {invoice.currency}{" "}
+                              - EGP{" "}
                               {invoice.discount_breakdown.promo_discount.amount?.toFixed(
                                 2,
                               )}
@@ -859,7 +860,7 @@ export default function InvoiceDetailPage() {
                             Total Savings:
                           </span>
                           <span className="font-bold text-green-600 text-xl">
-                            {invoice.currency}{" "}
+                            EGP{" "}
                             {invoice.discount_breakdown.total_discount?.toFixed(
                               2,
                             )}
@@ -876,7 +877,7 @@ export default function InvoiceDetailPage() {
                                 : "Final Amount"}
                             </p>
                             <p className="font-black text-3xl">
-                              {invoice.currency}{" "}
+                              EGP{" "}
                               {(
                                 invoice.discount_breakdown.final_price ??
                                 invoice.amount
@@ -887,7 +888,7 @@ export default function InvoiceDetailPage() {
                             <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
                               <p className="text-xs text-blue-100">You saved</p>
                               <p className="font-bold text-lg">
-                                {invoice.currency}{" "}
+                                EGP{" "}
                                 {invoice.discount_breakdown.total_discount?.toFixed(
                                   2,
                                 )}
