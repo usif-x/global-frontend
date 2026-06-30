@@ -5,7 +5,15 @@ const ContentSecurityPolicy = `
   style-src 'self' 'unsafe-inline';
   img-src 'self' data: blob: https:;
   media-src 'self' blob: https:;
-  connect-src 'self' https://api.hurghada-trips.online https://api.iconify.design https://api.unisvg.com https://api.simplesvg.com;
+  connect-src 'self'
+    https://api.hurghada-trips.online
+    https://api.weatherapi.com
+    https://api.exchangerate-api.com
+    https://api.iconify.design
+    https://api.unisvg.com
+    https://api.simplesvg.com
+    https://www.google.com
+    https://www.gstatic.com;
   font-src 'self' data:;
 `;
 
