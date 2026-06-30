@@ -406,6 +406,16 @@ export default function InvoiceDetailPage() {
                   <Icon icon="mdi:whatsapp" className="w-5 h-5" />
                   <span>WhatsApp Us</span>
                 </a>
+
+                <a
+                  href="https://instagram.com/hurghadatrips.online"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 text-white px-4 py-2.5 rounded-lg hover:from-purple-700 hover:via-pink-600 hover:to-orange-500 transition-all duration-300 text-sm font-semibold shadow-md hover:shadow-lg hover:scale-105"
+                >
+                  <Icon icon="mdi:instagram" className="w-5 h-5" />
+                  <span>Instagram</span>
+                </a>
                 <button
                   onClick={() => {
                     if (window.$crisp) {
@@ -555,6 +565,15 @@ export default function InvoiceDetailPage() {
                       >
                         <Icon icon="mdi:whatsapp" className="w-5 h-5" />
                         <span>WhatsApp Us</span>
+                      </a>
+                      <a
+                        href="https://instagram.com/hurghadatrips.online"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 text-white px-4 py-2.5 rounded-lg hover:from-purple-700 hover:via-pink-600 hover:to-orange-500 transition-all duration-300 text-sm font-semibold shadow-md hover:shadow-lg hover:scale-105"
+                      >
+                        <Icon icon="mdi:instagram" className="w-5 h-5" />
+                        <span>Instagram</span>
                       </a>
                       <button
                         onClick={() => {

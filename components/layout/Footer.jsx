@@ -56,6 +56,16 @@ export default function Home() {
                   >
                     <Icon icon="mdi:whatsapp" width={24} height={24} />
                   </a>
+
+                  <a
+                    href="https://instagram.com/hurghadatrips.online"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white/60 hover:text-white transition-colors"
+                  >
+                    <Icon icon="mdi:instagram" className="w-5 h-5" />
+                    <span>Instagram</span>
+                  </a>
                 </div>
               </div>
 

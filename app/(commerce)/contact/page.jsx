@@ -346,6 +346,28 @@ const ContactPage = () => {
             <p className="text-gray-600">+201070440861</p>
             <p className="text-sm text-gray-500 mt-1">Mon-Fri 1PM-12PM</p>
           </div>
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-pink-100 text-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#833AB4] via-[#E1306C] to-[#FCAF45] rounded-xl flex items-center justify-center mx-auto mb-4">
+              <Icon icon="mdi:instagram" className="w-6 h-6 text-white" />
+            </div>
+
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Follow Us
+            </h3>
+
+            <a
+              href="https://instagram.com/hurghadatrips.online"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-pink-600 hover:text-pink-700 font-medium transition-colors"
+            >
+              @hurghadatrips.online
+            </a>
+
+            <p className="text-sm text-gray-500 mt-1">
+              Daily travel inspiration & offers
+            </p>
+          </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100 text-center">
             <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl flex items-center justify-center mx-auto mb-4">
