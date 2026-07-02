@@ -82,6 +82,8 @@ const TripPage = ({ params }) => {
 
   // State
   const [tripData, setTripData] = useState(null);
+  const [unlockedOffer, setUnlockedOffer] = useState(null); // NEW
+  const [packagesData, setPackagesData] = useState([]); // CHANGED: was singular packageData
   const [packageData, setPackageData] = useState(null);
   const [relatedTrips, setRelatedTrips] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -180,6 +182,7 @@ const TripPage = ({ params }) => {
         basePrice: 0,
         tripDiscountAmount: 0,
         couponDiscountAmount: 0,
+        bundleDiscountAmount: 0, // NEW
         discountedBase: 0,
         mandatoryFeesTotal: 0,
         optionalFeesTotal: 0,
@@ -229,6 +232,24 @@ const TripPage = ({ params }) => {
       discountedBase -= couponDiscountAmount;
     }
 
+    let bundleDiscountAmount = 0;
+    if (unlockedOffer) {
+      if (unlockedOffer.discount_type === "free") {
+        bundleDiscountAmount = discountedBase;
+      } else if (unlockedOffer.discount_type === "percentage") {
+        bundleDiscountAmount = Math.round(
+          discountedBase * (unlockedOffer.discount_value / 100),
+        );
+      } else {
+        // fixed
+        bundleDiscountAmount = Math.min(
+          unlockedOffer.discount_value,
+          discountedBase,
+        );
+      }
+      discountedBase -= bundleDiscountAmount;
+    }
+
     // Mandatory fees — always charged, never discounted
     const mandatoryFeesTotal = getMandatoryFees().reduce(
       (sum, fee) => sum + calculateFeeAmount(fee, discountedBase),
@@ -261,6 +282,7 @@ const TripPage = ({ params }) => {
       basePrice,
       tripDiscountAmount,
       couponDiscountAmount,
+      bundleDiscountAmount,
       discountedBase,
       mandatoryFeesTotal,
       optionalFeesTotal,
@@ -281,34 +303,41 @@ const TripPage = ({ params }) => {
         }
         setTripData(trip);
 
-        let otherTrips = [];
-        if (trip.package_id) {
+        // --- CHANGED: load all packages this trip belongs to ---
+        if (trip.package_ids?.length > 0) {
           try {
-            const pkg = await getData(`/packages/${trip.package_id}`);
-            setPackageData(pkg);
-            const tripsInPackage = await getData(
-              `/packages/${trip.package_id}/trips`,
+            const pkgs = await Promise.all(
+              trip.package_ids.map((pid) => getData(`/packages/${pid}`)),
             );
-            otherTrips = (tripsInPackage?.data || [])
-              .filter((t) => t.id.toString() !== id.toString())
-              .slice(0, 3);
+            setPackagesData(pkgs.filter(Boolean));
           } catch (err) {
-            console.warn(
-              "Failed to load package data or trips from package:",
-              err,
-            );
+            console.warn("Failed to load package data:", err);
           }
         }
 
-        if (otherTrips.length === 0) {
+        // --- CHANGED: related trips now come directly from related_trip_ids ---
+        if (trip.related_trip_ids?.length > 0) {
           try {
-            const related = await getData(`/packages/${trip.package_id}/trips`);
-            otherTrips = related?.data || [];
+            const related = await Promise.all(
+              trip.related_trip_ids.map((tripId) =>
+                getData(`/trips/${tripId}`).catch(() => null),
+              ),
+            );
+            setRelatedTrips(related.filter(Boolean));
           } catch (err) {
-            console.warn("Failed to load generic related trips:", err);
+            console.warn("Failed to load related trips:", err);
           }
         }
-        setRelatedTrips(otherTrips);
+
+        // --- NEW: check if the logged-in user has unlocked a bundle offer on this trip ---
+        if (isAuthenticated) {
+          try {
+            const offer = await getData(`/bundles/unlocked/${id}`);
+            setUnlockedOffer(offer || null);
+          } catch (err) {
+            console.warn("Failed to check bundle offers:", err);
+          }
+        }
       } catch (err) {
         setError("Failed to load trip data");
       } finally {
@@ -316,7 +345,7 @@ const TripPage = ({ params }) => {
       }
     };
     loadTripData();
-  }, [id]);
+  }, [id, isAuthenticated]);
 
   // Auto-populate user data when available
   useEffect(() => {
@@ -363,6 +392,7 @@ const TripPage = ({ params }) => {
     formData.adults,
     formData.children,
     appliedCoupon,
+    unlockedOffer, // NEW
     tripData,
     transferZoneId,
     selectedOptionalFeeIds,
@@ -726,10 +756,17 @@ const TripPage = ({ params }) => {
               />
               <span>Back to Trips</span>
             </Link>
-            {packageData && (
-              <span className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-bold border border-white/30">
-                {packageData.name}
-              </span>
+            {packagesData.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {packagesData.map((pkg) => (
+                  <span
+                    key={pkg.id}
+                    className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-bold border border-white/30"
+                  >
+                    {pkg.name}
+                  </span>
+                ))}
+              </div>
             )}
           </div>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-8 text-white leading-tight text-shadow-lg">
@@ -904,6 +941,29 @@ const TripPage = ({ params }) => {
                     the booking form to see your transfer cost.
                   </div>
                 )}
+              </div>
+            )}
+
+            {unlockedOffer && (
+              <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-2xl shadow-lg p-6 flex items-start gap-4">
+                <div className="w-12 h-12 bg-amber-400 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Icon
+                    icon="mdi:party-popper"
+                    className="w-6 h-6 text-white"
+                  />
+                </div>
+                <div>
+                  <h3 className="font-bold text-amber-900 text-lg">
+                    You've unlocked: {unlockedOffer.name}
+                  </h3>
+                  <p className="text-amber-800 text-sm mt-1">
+                    {unlockedOffer.discount_type === "free"
+                      ? "This trip is FREE thanks to your other bookings! 🎉"
+                      : unlockedOffer.discount_type === "percentage"
+                        ? `${unlockedOffer.discount_value}% off this trip, automatically applied at checkout.`
+                        : `EGP ${unlockedOffer.discount_value} off this trip, automatically applied at checkout.`}
+                  </p>
+                </div>
               </div>
             )}
 
@@ -1671,6 +1731,16 @@ const TripPage = ({ params }) => {
                           </div>
                         )}
 
+                        {priceBreakdown.bundleDiscountAmount > 0 && (
+                          <div className="flex justify-between text-amber-600 text-xs font-semibold">
+                            <span>🎉 {unlockedOffer?.name}:</span>
+                            <span>
+                              - {getCurrencySymbol(formData.currency)}{" "}
+                              {showAmount(priceBreakdown.bundleDiscountAmount)}
+                            </span>
+                          </div>
+                        )}
+
                         {/* Mandatory fees */}
                         {getMandatoryFees().map((fee) => (
                           <div
@@ -1892,6 +1962,16 @@ const TripPage = ({ params }) => {
                         <span className="font-medium">
                           {getCurrencySymbol(formData.currency)}{" "}
                           {showAmount(priceBreakdown.transferFeeTotal)}
+                        </span>
+                      </div>
+                    )}
+
+                    {priceBreakdown.bundleDiscountAmount > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Bundle Discount:</span>
+                        <span className="font-medium text-amber-600">
+                          - {getCurrencySymbol(formData.currency)}{" "}
+                          {showAmount(priceBreakdown.bundleDiscountAmount)}
                         </span>
                       </div>
                     )}

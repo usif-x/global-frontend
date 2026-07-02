@@ -14,6 +14,61 @@ import { toast } from "react-toastify";
 /**
  * A styled component for managing dynamic lists of text inputs (e.g., "Included", "Not Included").
  */
+
+//=================================================================
+//  MultiSelectChips: toggleable chip picker for many-to-many fields
+//=================================================================
+const MultiSelectChips = ({
+  title,
+  options,
+  selectedIds,
+  onChange,
+  disabled,
+  emptyText,
+}) => {
+  const toggle = (id) => {
+    if (selectedIds.includes(id)) {
+      onChange(selectedIds.filter((v) => v !== id));
+    } else {
+      onChange([...selectedIds, id]);
+    }
+  };
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-slate-700 mb-2">
+        {title}
+      </label>
+      <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-3 bg-white rounded-xl border border-slate-200">
+        {options.length === 0 && (
+          <p className="text-sm text-slate-400">
+            {emptyText || "No options available"}
+          </p>
+        )}
+        {options.map((opt) => {
+          const active = selectedIds.includes(opt.value);
+          return (
+            <button
+              type="button"
+              key={opt.value}
+              onClick={() => toggle(opt.value)}
+              disabled={disabled}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all duration-150 flex items-center gap-1.5 ${
+                active
+                  ? "bg-cyan-600 text-white border-cyan-600"
+                  : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+              }`}
+            >
+              {active && <Icon icon="mdi:check" className="w-3.5 h-3.5" />}
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const DynamicListField = ({
   title,
   items,
@@ -352,7 +407,8 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    package_id: "",
+    package_ids: [], // CHANGED from package_id: ""
+    related_trip_ids: [],
     duration: "",
     duration_unit: "day/s",
     adult_price: "",
@@ -382,7 +438,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
         const packagesData = await tripService.getPackages();
         setPackages(
           packagesData.map((pkg) => ({
-            value: pkg.id.toString(),
+            value: pkg.id,
             label: pkg.name,
           })),
         );
@@ -414,7 +470,8 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
         discount_min_people: trip.discount_min_people?.toString() || "",
         duration: trip.duration?.toString() || "",
         duration_unit: trip.duration_unit || "day/s",
-        package_id: trip.package_id?.toString() || "",
+        package_ids: trip.package_ids || [], // CHANGED
+        related_trip_ids: trip.related_trip_ids || [], // NEW
         included: trip.included?.length ? trip.included : [""],
         not_included: trip.not_included?.length ? trip.not_included : [""],
         terms_and_conditions: trip.terms_and_conditions?.length
@@ -629,8 +686,9 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
     if (!formData.name.trim()) newErrors.name = "Trip name is required";
     if (!formData.description.trim())
       newErrors.description = "Description is required";
-    if (!formData.package_id.trim())
-      newErrors.package_id = "Package selection is required";
+    if (formData.package_ids.length === 0)
+      // CHANGED
+      newErrors.package_ids = "At least one package is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -709,7 +767,14 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
       // Add basic fields
       submitFormData.append("name", formData.name);
       submitFormData.append("description", formData.description);
-      submitFormData.append("package_id", parseInt(formData.package_id, 10));
+      submitFormData.append(
+        "package_ids",
+        JSON.stringify(formData.package_ids.map((id) => parseInt(id, 10))),
+      );
+      submitFormData.append(
+        "related_trip_ids",
+        JSON.stringify(formData.related_trip_ids.map((id) => parseInt(id, 10))),
+      );
       submitFormData.append("duration", parseInt(formData.duration, 10));
       submitFormData.append("duration_unit", formData.duration_unit);
       submitFormData.append("adult_price", parseFloat(formData.adult_price));
@@ -940,19 +1005,23 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
                   disabled={isLoading}
                 />
               </div>
-              <Select
-                icon="mdi:package-variant"
-                name="package_id"
-                dir="ltr"
+              <MultiSelectChips
+                title="Packages *"
                 options={packages}
-                placeholder="Select Package *"
-                value={packages.find((p) => p.value === formData.package_id)}
-                onChange={(opt) => handleSelectChange("package_id", opt)}
-                error={errors.package_id}
+                selectedIds={formData.package_ids}
+                onChange={(ids) => {
+                  setFormData((prev) => ({ ...prev, package_ids: ids }));
+                  if (errors.package_ids)
+                    setErrors((prev) => ({ ...prev, package_ids: "" }));
+                }}
                 disabled={isLoading}
-                searchable={true}
-                required={true}
+                emptyText="No packages available"
               />
+              {errors.package_ids && (
+                <p className="text-sm text-red-500 mt-1">
+                  {errors.package_ids}
+                </p>
+              )}
             </div>
           </div>
           <div className="flex justify-end">
@@ -963,7 +1032,7 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
               disabled={
                 !formData.name ||
                 !formData.description ||
-                !formData.package_id ||
+                formData.package_ids.length === 0 ||
                 isLoading
               }
             >
@@ -1281,6 +1350,37 @@ const TripForm = ({ trip = null, onSuccess, onCancel }) => {
         {/* Step 3: Details & Media */}
         <div className={`space-y-6 ${currentStep === 3 ? "block" : "hidden"}`}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl p-6 border border-indigo-100">
+              <div className="flex items-start space-x-3 mb-4">
+                <Icon
+                  icon="mdi:link-variant"
+                  className="w-6 h-6 text-indigo-600 mt-0.5"
+                />
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-800">
+                    Related Trips
+                  </h3>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Shown as "You might also like" on this trip's page, and used
+                    to power combo/bundle discount matching.
+                  </p>
+                </div>
+              </div>
+              <MultiSelectChips
+                title=""
+                options={allTrips.map((t) => ({ value: t.id, label: t.name }))}
+                selectedIds={formData.related_trip_ids}
+                onChange={(ids) =>
+                  setFormData((prev) => ({ ...prev, related_trip_ids: ids }))
+                }
+                disabled={isLoading || isLoadingTrips}
+                emptyText={
+                  isLoadingTrips
+                    ? "Loading trips..."
+                    : "No other trips available"
+                }
+              />
+            </div>
             <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl p-6 border border-green-100 space-y-6">
               <DynamicListField
                 title="What's Included"
