@@ -1,9 +1,9 @@
 "use client";
-import BundleOfferForm from "@/components/admin/BundleOffer/BundleOfferForm";
 import bundleService from "@/services/bundleService";
 import { Icon } from "@iconify/react";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import BundleOfferForm from "./BundleOfferForm";
 
 const AdminBundlesPage = () => {
   const [bundles, setBundles] = useState([]);
