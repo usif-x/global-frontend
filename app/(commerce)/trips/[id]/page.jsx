@@ -332,7 +332,7 @@ const TripPage = ({ params }) => {
         // --- NEW: check if the logged-in user has unlocked a bundle offer on this trip ---
         if (isAuthenticated) {
           try {
-            const offer = await getData(`/bundles/unlocked/${id}`);
+            const offer = await getData(`/bundles/unlocked/${id}`, true);
             setUnlockedOffer(offer || null);
           } catch (err) {
             console.warn("Failed to check bundle offers:", err);
