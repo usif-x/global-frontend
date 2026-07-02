@@ -3,6 +3,7 @@ import ActivityAvailability from "@/components/admin/components/activity-availab
 import AdminManagementPage from "@/components/admin/components/admin/ModernAdmin";
 import AnalyticsContent from "@/components/admin/components/analytic/AnalyticsContent";
 import BestSellingMain from "@/components/admin/components/bestselling/BestSelling";
+import AdminBundlesPage from "@/components/admin/components/BundleAndOffer/BundleOffer";
 import CouponManagement from "@/components/admin/components/coupon/Coupon";
 import DiveCenterManagementPage from "@/components/admin/components/divecenter/DiveCenter";
 import GalleryManagementPage from "@/components/admin/components/gallery/Gallery";
@@ -374,6 +375,13 @@ const AdminDashboard = () => {
       description: "Create and manage discount coupons",
     },
     {
+      id: "bundle_offers",
+      label: "Bundle Offers",
+      icon: "mdi:gift",
+      color: "text-amber-500",
+      description: "Manage bundle offers and deals",
+    },
+    {
       id: "users",
       label: "Users",
       icon: "mdi:account-group",
@@ -520,6 +528,8 @@ const AdminDashboard = () => {
         return <TransferZoneManagement />;
       case "coupons":
         return <CouponManagement />;
+      case "bundle_offers":
+        return <AdminBundlesPage />;
       case "users":
         return <UserManagementPage />;
       case "gallery":
