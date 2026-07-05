@@ -279,7 +279,7 @@ const OurLocations = () => {
             Find Our Dive Centers
           </h2>
           <p className="text-gray-600 text-lg md:text-xl max-w-3xl mx-auto">
-            Visit us at any of our dive centers across Hurghada, conveniently
+            Visit us at any of our dive centers across Red Sea, conveniently
             located near your hotel for the easiest start to your underwater
             adventure.
           </p>
