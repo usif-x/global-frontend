@@ -12,7 +12,7 @@ export default function ChatWidget() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center"
+          className="fixed bottom-6 right-6 z-[1001] w-14 h-14 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center"
           aria-label="Open chat"
         >
           <Icon icon="mdi:chat" className="w-6 h-6" />
@@ -24,14 +24,14 @@ export default function ChatWidget() {
         <>
           {/* Mobile backdrop */}
           <div
-            className="fixed inset-0 bg-black/40 z-40 md:hidden"
+            className="fixed inset-0 bg-black/40 z-[1001] md:hidden"
             onClick={() => setIsOpen(false)}
           />
 
           {/* Panel */}
           <div
             className={`
-              fixed z-50 flex flex-col bg-white overflow-hidden
+              fixed z-[1002] flex flex-col bg-white overflow-hidden
               /* Mobile: full-screen sheet */
               inset-0
               /* Desktop: fixed-size card */

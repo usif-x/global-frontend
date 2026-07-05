@@ -1,10 +1,34 @@
 "use client";
+import Link from "next/link";
 import MarkdownRenderer from "@/components/ui/MarkdownRender";
 import { Icon } from "@iconify/react";
 import Cookies from "js-cookie";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ROLE_USER } from "./types";
 import useChatStream from "./useChatStream";
+
+const ChatLink = ({ href, children }) => {
+  if (href?.startsWith("/")) {
+    return (
+      <Link
+        href={href}
+        className="text-blue-600 hover:text-blue-700 underline underline-offset-2 font-medium"
+      >
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-600 hover:text-blue-700 underline underline-offset-2 font-medium"
+    >
+      {children}
+    </a>
+  );
+};
 
 const QUICK_REPLIES = [
   "Best sellers",
@@ -79,7 +103,7 @@ export default function ChatWindow() {
   if (messages.length === 0 && !isLoading && !error) {
     return (
       <>
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 overflow-y-auto z-[99999]">
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 overflow-y-auto">
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-100 to-blue-100 flex items-center justify-center mb-4">
             <Icon icon="mdi:robot" className="w-7 h-7 text-cyan-600" />
           </div>
@@ -170,7 +194,7 @@ export default function ChatWindow() {
               ) : (
                 <div className="text-sm prose prose-sm max-w-none">
                   {msg.content ? (
-                    <MarkdownRenderer content={msg.content} />
+                    <MarkdownRenderer content={msg.content} components={{ a: ChatLink }} />
                   ) : null}
                 </div>
               )}

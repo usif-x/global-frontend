@@ -67,7 +67,109 @@ const LinkRenderer = (props) => {
   );
 };
 
-const MarkdownRenderer = ({ content }) => {
+const DEFAULT_COMPONENTS = {
+  h1: ({ children }) => (
+    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200">
+      {children}
+    </h1>
+  ),
+  h2: ({ children }) => (
+    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mt-6 mb-3">
+      {children}
+    </h2>
+  ),
+  h3: ({ children }) => (
+    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mt-5 mb-2">
+      {children}
+    </h3>
+  ),
+  h4: ({ children }) => (
+    <h4 className="text-base sm:text-lg font-semibold text-gray-800 mt-4 mb-2">
+      {children}
+    </h4>
+  ),
+  p: ({ children }) => (
+    <p className="text-gray-700 leading-relaxed my-3">{children}</p>
+  ),
+  strong: ({ children }) => (
+    <strong className="font-semibold text-gray-900">{children}</strong>
+  ),
+  em: ({ children }) => <em className="italic">{children}</em>,
+  del: ({ children }) => (
+    <del className="text-gray-400 line-through">{children}</del>
+  ),
+  a: LinkRenderer,
+  ul: ({ children }) => (
+    <ul className="list-disc pl-6 my-3 space-y-1.5 text-gray-700">
+      {children}
+    </ul>
+  ),
+  ol: ({ children }) => (
+    <ol className="list-decimal pl-6 my-3 space-y-1.5 text-gray-700">
+      {children}
+    </ol>
+  ),
+  li: ({ children, ...props }) => {
+    if (props.className?.includes("task-list-item")) {
+      return (
+        <li className="flex items-start gap-2 list-none -ml-6" {...props}>
+          {children}
+        </li>
+      );
+    }
+    return <li className="leading-relaxed">{children}</li>;
+  },
+  input: ({ checked, ...props }) => (
+    <input
+      type="checkbox"
+      checked={checked}
+      readOnly
+      className="mt-1.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+      {...props}
+    />
+  ),
+  blockquote: ({ children }) => (
+    <blockquote className="border-l-4 border-blue-300 bg-blue-50/50 pl-4 pr-3 py-2 my-4 text-gray-600 italic rounded-r-lg">
+      {children}
+    </blockquote>
+  ),
+  hr: () => <hr className="my-6 border-gray-200" />,
+  code: CodeBlock,
+  table: ({ children }) => (
+    <div className="my-5 overflow-x-auto rounded-xl border border-gray-200 shadow-sm not-prose">
+      <table className="w-full text-sm text-left border-collapse">
+        {children}
+      </table>
+    </div>
+  ),
+  thead: ({ children }) => (
+    <thead className="bg-gray-50 border-b border-gray-200">{children}</thead>
+  ),
+  tbody: ({ children }) => (
+    <tbody className="divide-y divide-gray-100">{children}</tbody>
+  ),
+  tr: ({ children }) => (
+    <tr className="hover:bg-gray-50 transition-colors">{children}</tr>
+  ),
+  th: ({ children }) => (
+    <th className="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap">
+      {children}
+    </th>
+  ),
+  td: ({ children }) => (
+    <td className="px-4 py-3 text-gray-700 align-top">{children}</td>
+  ),
+  img: ({ src, alt }) => (
+    <img
+      src={src}
+      alt={alt}
+      className="rounded-xl my-4 max-w-full border border-gray-200 shadow-sm"
+      loading="lazy"
+    />
+  ),
+};
+
+const MarkdownRenderer = ({ content, components }) => {
   if (!content) return null;
 
   return (
@@ -75,130 +177,7 @@ const MarkdownRenderer = ({ content }) => {
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw, rehypeSanitize]}
-        components={{
-          // Headings
-          h1: ({ children }) => (
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200">
-              {children}
-            </h1>
-          ),
-          h2: ({ children }) => (
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mt-6 mb-3">
-              {children}
-            </h2>
-          ),
-          h3: ({ children }) => (
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mt-5 mb-2">
-              {children}
-            </h3>
-          ),
-          h4: ({ children }) => (
-            <h4 className="text-base sm:text-lg font-semibold text-gray-800 mt-4 mb-2">
-              {children}
-            </h4>
-          ),
-
-          // Paragraphs & text
-          p: ({ children }) => (
-            <p className="text-gray-700 leading-relaxed my-3">{children}</p>
-          ),
-          strong: ({ children }) => (
-            <strong className="font-semibold text-gray-900">{children}</strong>
-          ),
-          em: ({ children }) => <em className="italic">{children}</em>,
-          del: ({ children }) => (
-            <del className="text-gray-400 line-through">{children}</del>
-          ),
-
-          // Links
-          a: LinkRenderer,
-
-          // Lists
-          ul: ({ children }) => (
-            <ul className="list-disc pl-6 my-3 space-y-1.5 text-gray-700">
-              {children}
-            </ul>
-          ),
-          ol: ({ children }) => (
-            <ol className="list-decimal pl-6 my-3 space-y-1.5 text-gray-700">
-              {children}
-            </ol>
-          ),
-          li: ({ children, ...props }) => {
-            // Task list items (- [ ] / - [x]) get checkbox rendering via remark-gfm
-            if (props.className?.includes("task-list-item")) {
-              return (
-                <li
-                  className="flex items-start gap-2 list-none -ml-6"
-                  {...props}
-                >
-                  {children}
-                </li>
-              );
-            }
-            return <li className="leading-relaxed">{children}</li>;
-          },
-          input: ({ checked, ...props }) => (
-            <input
-              type="checkbox"
-              checked={checked}
-              readOnly
-              className="mt-1.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              {...props}
-            />
-          ),
-
-          // Blockquote
-          blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-blue-300 bg-blue-50/50 pl-4 pr-3 py-2 my-4 text-gray-600 italic rounded-r-lg">
-              {children}
-            </blockquote>
-          ),
-
-          // Horizontal rule
-          hr: () => <hr className="my-6 border-gray-200" />,
-
-          // Code (inline + block)
-          code: CodeBlock,
-
-          // Tables
-          table: ({ children }) => (
-            <div className="my-5 overflow-x-auto rounded-xl border border-gray-200 shadow-sm not-prose">
-              <table className="w-full text-sm text-left border-collapse">
-                {children}
-              </table>
-            </div>
-          ),
-          thead: ({ children }) => (
-            <thead className="bg-gray-50 border-b border-gray-200">
-              {children}
-            </thead>
-          ),
-          tbody: ({ children }) => (
-            <tbody className="divide-y divide-gray-100">{children}</tbody>
-          ),
-          tr: ({ children }) => (
-            <tr className="hover:bg-gray-50 transition-colors">{children}</tr>
-          ),
-          th: ({ children }) => (
-            <th className="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap">
-              {children}
-            </th>
-          ),
-          td: ({ children }) => (
-            <td className="px-4 py-3 text-gray-700 align-top">{children}</td>
-          ),
-
-          // Images
-          img: ({ src, alt }) => (
-            <img
-              src={src}
-              alt={alt}
-              className="rounded-xl my-4 max-w-full border border-gray-200 shadow-sm"
-              loading="lazy"
-            />
-          ),
-        }}
+        components={{ ...DEFAULT_COMPONENTS, ...components }}
       >
         {content}
       </ReactMarkdown>
