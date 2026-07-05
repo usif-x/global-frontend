@@ -20,7 +20,7 @@ export default function Home() {
             style={{ fontSize: "2rem", marginBottom: "1rem" }}
             className="font-summer-splash text-center"
           >
-            YOUR HURGHADA ADVENTURE STARTS HERE
+            YOUR RED SEA ADVENTURE STARTS HERE
           </h2>
 
           <p style={{ fontSize: "1.1rem", marginBottom: "1rem" }}>

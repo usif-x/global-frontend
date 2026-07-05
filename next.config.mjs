@@ -27,7 +27,7 @@ const nextConfig = {
       },
     ],
   },
-  trailingSlash: false,
+  trailingSlash: true,
   output: "standalone",
 };
 
