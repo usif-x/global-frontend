@@ -188,7 +188,7 @@ const Navbar = () => {
           >
             <div className="relative rounded-full">
               <Image
-                src="/image/logo.jpg"
+                src="/image/logo.png"
                 alt="TopDivers Logo"
                 width={32}
                 height={32}
