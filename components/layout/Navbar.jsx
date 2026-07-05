@@ -189,7 +189,7 @@ const Navbar = () => {
             <div className="relative rounded-full">
               <Image
                 src="/image/logo.jpg"
-                alt="Hurghada Trips Logo"
+                alt="TopDivers Logo"
                 width={32}
                 height={32}
                 className="sm:w-[40px] sm:h-[40px] md:w-[45px] md:h-[45px] transition-transform duration-300 group-hover:scale-110 rounded-full"

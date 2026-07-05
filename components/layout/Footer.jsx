@@ -37,7 +37,7 @@ export default function Home() {
               {/* Company Info - Full width on mobile, spans 2 cols on large screens */}
               <div className="lg:col-span-2">
                 <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white">
-                  About Hurghada Trips
+                  About TopDivers
                 </h3>
                 <p className="text-white/80 mb-4 leading-relaxed text-sm sm:text-base">
                   Our dive base is managed and supervised by a highly
@@ -82,10 +82,10 @@ export default function Home() {
                       className="text-white/60 flex-shrink-0"
                     />
                     <a
-                      href="mailto:contact@hurghada-trips.online"
+                      href="mailto:contact@topdivers.online"
                       className="text-white/80 text-sm hover:text-white transition-colors break-all"
                     >
-                      contact@hurghada-trips.online
+                      contact@topdivers.online
                     </a>
                   </div>
                   <div className="flex items-start space-x-3">
@@ -185,8 +185,7 @@ export default function Home() {
             {/* Bottom Bar */}
             <div className="pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
               <p className="text-white/60 text-xs sm:text-sm text-center sm:text-left">
-                © {new Date().getFullYear()} Hurghada Trips. All rights
-                reserved.
+                © {new Date().getFullYear()} TopDivers. All rights reserved.
               </p>
               <div className="flex flex-col items-center sm:flex-row sm:items-center gap-3 sm:gap-4 text-xs sm:text-sm text-white/60">
                 <div className="flex flex-wrap justify-center gap-3 sm:gap-4">

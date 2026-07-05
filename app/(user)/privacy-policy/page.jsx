@@ -27,7 +27,7 @@ const PrivacyPolicy = () => {
               Account Registration Information
             </h4>
             <p className="text-blue-800 text-sm mb-3">
-              When you create an account with Hurghada Trips, we collect the
+              When you create an account with TopDivers, we collect the
               following personal information:
             </p>
             <div className="bg-white p-3 rounded border">
@@ -488,7 +488,7 @@ const PrivacyPolicy = () => {
             </p>
             <div className="bg-white p-3 rounded border">
               <p className="font-mono text-sm text-gray-800">
-                contact@hurghada-trips.online
+                contact@topdivers.online
               </p>
             </div>
             <p className="text-gray-600 text-xs mt-2">
@@ -695,7 +695,7 @@ const PrivacyPolicy = () => {
               </p>
               <div className="bg-white p-3 rounded border space-y-1">
                 <p>
-                  <strong>Email:</strong> contact@hurghada-trips.online
+                  <strong>Email:</strong> contact@topdivers.online
                 </p>
                 <p>
                   <strong>Subject Line:</strong> Privacy Policy Inquiry
@@ -756,9 +756,7 @@ const PrivacyPolicy = () => {
                 />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Hurghada Trips
-                </h1>
+                <h1 className="text-2xl font-bold text-gray-900">TopDivers</h1>
                 <p className="text-gray-600 text-sm">Privacy Policy</p>
               </div>
             </div>
@@ -838,11 +836,11 @@ const PrivacyPolicy = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <a
-                href="mailto:contact@hurghada-trips.online"
+                href="mailto:contact@topdivers.online"
                 className="inline-flex items-center gap-2 bg-white text-purple-900 px-6 py-2 rounded-lg hover:bg-purple-50 transition-colors font-medium"
               >
                 <Icon icon="solar:letter-bold" className="w-4 h-4" />
-                contact@hurghada-trips.online
+                contact@topdivers.online
               </a>
               <Link
                 href="/terms-and-conditions"

@@ -55,7 +55,7 @@ Allow: /
 
 # END Cloudflare Managed Content
 
-# Hurghada Trips - Robots.txt
+# TopDivers - Robots.txt
 # Allow all search engines to crawl the site
 
 User-agent: *
@@ -81,7 +81,7 @@ Allow: /image/
 Allow: /video/
 
 # Sitemap location
-Sitemap: https://hurghada-trips.online/sitemap.xml
+Sitemap: https://topdivers.online/sitemap.xml
 
 # Crawl-delay (optional - prevents aggressive crawling)
 # Crawl-delay: 1

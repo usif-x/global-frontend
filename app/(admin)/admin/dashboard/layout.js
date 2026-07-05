@@ -1,6 +1,6 @@
 export const metadata = {
   title: "Admin Dashboard",
-  description: "Admin dashboard for Hurghada Trips management",
+  description: "Admin dashboard for TopDivers management",
 };
 
 export const viewport = {

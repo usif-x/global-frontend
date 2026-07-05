@@ -14,19 +14,19 @@ export const metadata = {
   robots: "index, follow",
   authors: [{ name: "Yousseif Muhammad" }],
   openGraph: {
-    title: "Hurghada Trips - Diving Courses",
-    description: "Hurghada Trips - Diving Courses",
+    title: "TopDivers - Diving Courses",
+    description: "TopDivers - Diving Courses",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Hurghada Trips - Diving Courses",
-    description: "Hurghada Trips - Diving Courses",
+    title: "TopDivers - Diving Courses",
+    description: "TopDivers - Diving Courses",
   },
   icons: {
     icon: "/favicon.jpg",
   },
   alternates: {
-    canonical: "https://hurghada-trips.online/courses",
+    canonical: "https://topdivers.online/courses",
   },
   category: "education",
 };

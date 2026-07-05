@@ -18,7 +18,7 @@ import { toast } from "react-toastify";
 /**
  * generateInvoicePDF
  *
- * Produces a professional, activity-themed invoice PDF for Hurghada Trips.
+ * Produces a professional, activity-themed invoice PDF for TopDivers.
  * Layout: branded header → activity hero band → customer + invoice meta →
  * itemised pricing table → discount & fee summary → payment footer.
  */
@@ -122,16 +122,12 @@ const generateInvoicePDF = async (invoice, user) => {
     setText(WHITE);
     doc.setFontSize(18);
     setFont("bold");
-    doc.text("HURGHADA TRIPS", 14, 16);
+    doc.text("TopDivers", 14, 16);
 
     doc.setFontSize(8);
     setFont("normal");
     setText([186, 230, 253]);
-    doc.text(
-      "Sea Activities · Safari · Diving  |  hurghada-trips.online",
-      14,
-      22,
-    );
+    doc.text("Sea Activities · Safari · Diving  |  topdivers.online", 14, 22);
     doc.text("Sunrise AQUAJOY, Hurghada, Egypt  ·  +20 107 044 0861", 14, 27);
 
     setText(WHITE);
@@ -562,7 +558,7 @@ const generateInvoicePDF = async (invoice, user) => {
       doc.setFontSize(9);
       setFont("bold");
       doc.text(
-        "PAYMENT CONFIRMED - Thank you for booking with Hurghada Trips!",
+        "PAYMENT CONFIRMED - Thank you for booking with TopDivers!",
         18,
         y + 8,
       );
@@ -580,7 +576,7 @@ const generateInvoicePDF = async (invoice, user) => {
     doc.setFontSize(7.5);
     setFont("normal");
     doc.text(
-      "Hurghada Trips  |  hurghada-trips.online  |  +20 107 044 0861  |  Sunrise AQUAJOY, Hurghada, Egypt",
+      "TopDivers  |  topdivers.online  |  +20 107 044 0861  |  Sunrise AQUAJOY, Hurghada, Egypt",
       W / 2,
       footerY + 7,
       { align: "center" },

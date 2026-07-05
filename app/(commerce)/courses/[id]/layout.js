@@ -35,7 +35,7 @@ export async function generateMetadata({ params }) {
       icon: "/favicon.jpg",
     },
     alternates: {
-      canonical: `https://hurghada-trips.online/courses/${id}`,
+      canonical: `https://topdivers.online/courses/${id}`,
     },
   };
 }

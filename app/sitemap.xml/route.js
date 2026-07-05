@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL; // backend API
   const siteBaseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://hurghada-trips.online"; // public site
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://topdivers.online"; // public site
 
   try {
     // Fetch all data concurrently with timeouts

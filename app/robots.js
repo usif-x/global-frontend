@@ -1,6 +1,6 @@
 export default function robots() {
   const siteBaseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://hurghada-trips.online";
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://topdivers.online";
 
   return {
     rules: {

@@ -16,7 +16,7 @@ export const metadata = {
     icon: "/favicon.jpg",
   },
   alternates: {
-    canonical: "https://hurghada-trips.online/admin/login",
+    canonical: "https://topdivers.online/admin/login",
   },
 };
 export const viewport = {

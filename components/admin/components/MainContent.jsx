@@ -332,7 +332,7 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
 
       if (!isLevel2Admin) {
         const [all, recentUsersData] = await Promise.all([
-          fetch("https://api.hurghada-trips.online/analytics/all", {
+          fetch("https://api.topdivers.online/analytics/all", {
             headers,
           }).then((r) => r.json()),
           AdminService.getRecentUsers(),
@@ -343,10 +343,10 @@ const HeroDashboard = ({ setActiveTab, admin }) => {
         const [analytics, all, invoiceSummary, recentUsersData] =
           await Promise.all([
             AnalyticsService.getDashboardSummary(),
-            fetch("https://api.hurghada-trips.online/analytics/all", {
+            fetch("https://api.topdivers.online/analytics/all", {
               headers,
             }).then((r) => r.json()),
-            fetch("https://api.hurghada-trips.online/invoices/admin/summary", {
+            fetch("https://api.topdivers.online/invoices/admin/summary", {
               headers,
             }).then((r) => r.json()),
             AdminService.getRecentUsers(),

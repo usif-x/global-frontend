@@ -25,7 +25,7 @@ export const metadata = {
     icon: "/favicon.jpg",
   },
   alternates: {
-    canonical: "https://hurghada-trips.online/blog",
+    canonical: "https://topdivers.online/blog",
   },
 };
 
