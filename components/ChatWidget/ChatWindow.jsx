@@ -1,10 +1,10 @@
 "use client";
-import { useState, useRef, useCallback, useEffect } from "react";
+import MarkdownRenderer from "@/components/ui/MarkdownRender";
 import { Icon } from "@iconify/react";
 import Cookies from "js-cookie";
-import MarkdownRenderer from "@/components/ui/MarkdownRender";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ROLE_USER } from "./types";
 import useChatStream from "./useChatStream";
-import { ROLE_USER, ROLE_ASSISTANT } from "./types";
 
 const QUICK_REPLIES = [
   "Best sellers",
@@ -79,12 +79,9 @@ export default function ChatWindow() {
   if (messages.length === 0 && !isLoading && !error) {
     return (
       <>
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 overflow-y-auto">
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 overflow-y-auto z-[99999]">
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-100 to-blue-100 flex items-center justify-center mb-4">
-            <Icon
-              icon="mdi:robot"
-              className="w-7 h-7 text-cyan-600"
-            />
+            <Icon icon="mdi:robot" className="w-7 h-7 text-cyan-600" />
           </div>
           <h3 className="text-lg font-semibold text-gray-800 mb-1">
             TopDivers Assistant
@@ -108,7 +105,10 @@ export default function ChatWindow() {
 
           {!isAuthenticated && (
             <p className="mt-6 text-xs text-gray-400">
-              <a href="/login/" className="text-cyan-600 underline underline-offset-2 hover:text-cyan-700">
+              <a
+                href="/login/"
+                className="text-cyan-600 underline underline-offset-2 hover:text-cyan-700"
+              >
                 Sign in
               </a>{" "}
               for personalized booking assistance
@@ -214,7 +214,6 @@ export default function ChatWindow() {
             </div>
           </div>
         )}
-
       </div>
 
       {/* Auth hint */}
