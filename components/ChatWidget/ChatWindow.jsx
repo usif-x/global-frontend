@@ -1,8 +1,8 @@
 "use client";
-import Link from "next/link";
 import MarkdownRenderer from "@/components/ui/MarkdownRender";
 import { Icon } from "@iconify/react";
 import Cookies from "js-cookie";
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ROLE_USER } from "./types";
 import useChatStream from "./useChatStream";
@@ -34,7 +34,9 @@ const QUICK_REPLIES = [
   "Best sellers",
   "My bookings",
   "Bundles & discounts",
-  "Talk to a human",
+  "Trips & Packages",
+  "Our Centers locations",
+  "Courses & Certifications",
 ];
 
 export default function ChatWindow() {
@@ -194,7 +196,10 @@ export default function ChatWindow() {
               ) : (
                 <div className="text-sm prose prose-sm max-w-none">
                   {msg.content ? (
-                    <MarkdownRenderer content={msg.content} components={{ a: ChatLink }} />
+                    <MarkdownRenderer
+                      content={msg.content}
+                      components={{ a: ChatLink }}
+                    />
                   ) : null}
                 </div>
               )}
