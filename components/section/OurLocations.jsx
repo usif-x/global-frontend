@@ -1,6 +1,6 @@
 "use client";
 
-import DiveCenterService from "@/services/divingcenterService";
+import DiveCenterService from "@/services/divecenterService";
 import { getImageUrl } from "@/utils/imageUtils";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
