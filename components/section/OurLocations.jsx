@@ -4,7 +4,13 @@ import DiveCenterService from "@/services/divecenterService";
 import { getImageUrl } from "@/utils/imageUtils";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
 
 // --- Helpers ---
 const DAY_ORDER = [
@@ -120,11 +126,18 @@ const LocationCard = ({ center }) => {
     ? getImageUrl(center.images[0])
     : "/placeholder.jpg";
 
+  const todayHours = center.working_hours
+    ? center.working_hours[getTodayKey()]
+    : null;
+
   return (
-    <div className="group relative h-full">
+    <Link
+      href={`/divingcenter-locations/${center.id}`}
+      className="group relative h-full block"
+    >
       <div className="relative h-full bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-cyan-200 flex flex-col">
         {/* Image */}
-        <div className="h-56 relative overflow-hidden">
+        <div className="h-36 relative overflow-hidden">
           <Image
             src={coverImage}
             alt={center.name}
@@ -135,18 +148,18 @@ const LocationCard = ({ center }) => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
           {/* Open/Closed badge */}
-          <div className="absolute top-4 right-4 z-10">
+          <div className="absolute top-3 right-3 z-10">
             <OpenStatusBadge workingHours={center.working_hours} />
           </div>
 
           {/* Name overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
-            <h3 className="text-xl font-bold text-white drop-shadow-lg line-clamp-1">
+          <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+            <h3 className="text-lg font-bold text-white drop-shadow-lg line-clamp-1">
               {center.name}
             </h3>
             {center.hotel_name && (
-              <p className="text-white/90 text-sm flex items-center gap-1.5 mt-1">
-                <Icon icon="mdi:office-building-marker" width={16} />
+              <p className="text-white/90 text-xs flex items-center gap-1.5 mt-0.5">
+                <Icon icon="mdi:office-building-marker" width={14} />
                 {center.hotel_name}
               </p>
             )}
@@ -154,60 +167,58 @@ const LocationCard = ({ center }) => {
         </div>
 
         {/* Content */}
-        <div className="p-6 flex flex-col flex-1">
-          {center.description && (
-            <p className="text-gray-600 text-sm line-clamp-2 mb-4">
-              {center.description}
-            </p>
-          )}
-
+        <div className="p-4 flex flex-col flex-1">
           {/* Location */}
           {center.location && (
-            <div className="flex items-start gap-2 text-sm text-gray-700 mb-3">
+            <div className="flex items-center gap-1.5 text-sm text-gray-700 mb-2">
               <Icon
                 icon="mdi:map-marker"
-                className="text-cyan-500 flex-shrink-0 mt-0.5"
-                width={18}
+                className="text-cyan-500 flex-shrink-0"
+                width={16}
               />
-              <span>{center.location}</span>
+              <span className="truncate">{center.location}</span>
             </div>
           )}
 
           {/* Contact */}
-          <div className="flex flex-col gap-2 mb-4 pb-4 border-b border-gray-100">
+          <div className="flex items-center gap-4 text-xs text-gray-600 mb-3 pb-3 border-b border-gray-100">
             {center.phone && (
-              <a
-                href={`tel:${center.phone}`}
-                className="flex items-center gap-2 text-sm text-gray-700 hover:text-cyan-600 transition-colors"
-              >
-                <Icon icon="mdi:phone" className="text-cyan-500" width={18} />
+              <span className="flex items-center gap-1.5">
+                <Icon icon="mdi:phone" className="text-cyan-500" width={15} />
                 {center.phone}
-              </a>
+              </span>
             )}
             {center.email && (
-              <a
-                href={`mailto:${center.email}`}
-                className="flex items-center gap-2 text-sm text-gray-700 hover:text-cyan-600 transition-colors"
-              >
-                <Icon icon="mdi:email" className="text-cyan-500" width={18} />
+              <span className="flex items-center gap-1.5 truncate">
+                <Icon icon="mdi:email" className="text-cyan-500" width={15} />
                 <span className="truncate">{center.email}</span>
-              </a>
+              </span>
             )}
           </div>
 
-          {/* Working hours */}
-          {center.working_hours && (
-            <div className="mt-auto">
-              <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+          {/* Today's hours */}
+          {todayHours && (
+            <div className="flex items-center justify-between text-sm mb-4">
+              <span className="flex items-center gap-1.5 text-gray-500">
                 <Icon icon="mdi:clock-outline" width={16} />
-                Working Hours
-              </div>
-              <WorkingHoursList workingHours={center.working_hours} />
+                Today
+              </span>
+              <span className="font-semibold text-gray-700">
+                {todayHours.is_open
+                  ? `${formatTime(todayHours.start)} - ${formatTime(todayHours.end)}`
+                  : "Closed"}
+              </span>
             </div>
           )}
+
+          {/* View Details CTA */}
+          <button className="w-full mt-auto bg-gradient-to-r from-cyan-500 to-blue-600 group-hover:from-cyan-600 group-hover:to-blue-700 text-white font-semibold py-2.5 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-lg group-hover:shadow-cyan-500/50 transform group-hover:scale-[1.02] text-sm">
+            <Icon icon="mdi:map-marker-radius" className="w-4 h-4" />
+            <span>View Location</span>
+          </button>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
@@ -280,10 +291,51 @@ const OurLocations = () => {
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-cyan-500 border-t-transparent"></div>
           </div>
         ) : centers.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            {centers.map((center) => (
-              <LocationCard key={center.id} center={center} />
-            ))}
+          <div className="relative max-w-7xl mx-auto">
+            <Swiper
+              modules={[Autoplay, Navigation, Pagination]}
+              spaceBetween={30}
+              slidesPerView={1}
+              loop={centers.length > 3}
+              breakpoints={{
+                640: { slidesPerView: 1, spaceBetween: 20 },
+                768: { slidesPerView: 2, spaceBetween: 24 },
+                1024: { slidesPerView: 3, spaceBetween: 30 },
+              }}
+              autoplay={{ delay: 4000, disableOnInteraction: false }}
+              pagination={{
+                clickable: true,
+                el: ".swiper-pagination-locations",
+              }}
+              navigation={{
+                nextEl: ".swiper-button-next-locations",
+                prevEl: ".swiper-button-prev-locations",
+              }}
+              className="pb-16"
+            >
+              {centers.map((center) => (
+                <SwiperSlide key={center.id}>
+                  <LocationCard center={center} />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+
+            {/* Custom Navigation Arrows */}
+            <div className="swiper-button-prev-locations absolute top-1/2 -left-4 lg:-left-16 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-xl cursor-pointer z-10 hover:bg-gradient-to-r hover:from-cyan-500 hover:to-blue-600 hover:text-white transition-all duration-300 group">
+              <Icon
+                icon="mdi:chevron-left"
+                className="h-6 w-6 text-cyan-600 group-hover:text-white"
+              />
+            </div>
+            <div className="swiper-button-next-locations absolute top-1/2 -right-4 lg:-right-16 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-xl cursor-pointer z-10 hover:bg-gradient-to-r hover:from-cyan-500 hover:to-blue-600 hover:text-white transition-all duration-300 group">
+              <Icon
+                icon="mdi:chevron-right"
+                className="h-6 w-6 text-cyan-600 group-hover:text-white"
+              />
+            </div>
+
+            {/* Custom Pagination */}
+            <div className="swiper-pagination-locations flex justify-center gap-2 mt-8"></div>
           </div>
         ) : (
           <EmptyState />
