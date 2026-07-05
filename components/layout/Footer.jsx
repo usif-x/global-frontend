@@ -58,7 +58,7 @@ export default function Home() {
                   </a>
 
                   <a
-                    href="https://instagram.com/hurghadatrips.online"
+                    href="https://instagram.com/topdivers.hurghada"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-white/60 hover:text-white transition-colors"
