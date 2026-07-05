@@ -145,6 +145,7 @@ const Navbar = () => {
     { href: "/privacy-policy", label: "Privacy Policy" },
     { href: "/terms-and-conditions", label: "Terms and Conditions" },
     { href: "/safety-guidelines", label: "Safety Guidelines" },
+    { href: "/divingcenter-locations", label: "Diving Center Locations" },
   ];
 
   // Helper function to check if link is active
