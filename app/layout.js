@@ -2,6 +2,7 @@
 import ConditionalLayout from "@/components/layout/ConditionalLayout.jsx";
 import LoadingOverlay from "@/components/layout/Loading";
 import GoogleTranslateButton from "@/components/layout/TranslateButton";
+import ChatWidget from "@/components/ChatWidget/ChatWidget";
 import LoadingProvider from "@/providers/loadingProvider";
 import { Roboto } from "next/font/google";
 import Script from "next/script";
@@ -93,6 +94,7 @@ export default function RootLayout({ children }) {
               {children}
               <GoogleTranslateButton />
             </ConditionalLayout>
+            <ChatWidget />
             <LoadingOverlay />
           </LoadingProvider>
         </Suspense>
