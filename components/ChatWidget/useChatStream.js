@@ -140,18 +140,26 @@ export default function useChatStream() {
 
           for (const part of parts) {
             const lines = part.split("\n");
-            let eventType = "";
-            let data = "";
+            let rawData = "";
 
             for (const line of lines) {
-              if (line.startsWith("event: "))
-                eventType = line.slice(7).trim();
-              else if (line.startsWith("data: ")) data = line.slice(6);
+              if (line.startsWith("data: ")) {
+                rawData = line.slice(6);
+              }
             }
 
-            if (eventType === "session_id" && data) {
-              persistSession(data);
-            } else if (eventType === "message" && data) {
+            if (!rawData) continue;
+
+            let parsed;
+            try {
+              parsed = JSON.parse(rawData);
+            } catch {
+              continue;
+            }
+
+            if (parsed.type === "session_id") {
+              persistSession(parsed.session_id);
+            } else if (parsed.type === "chunk" && parsed.text) {
               if (!pendingAssistantId) {
                 pendingAssistantId = generateId();
                 setMessages((prev) => [
@@ -159,7 +167,7 @@ export default function useChatStream() {
                   {
                     id: pendingAssistantId,
                     role: ROLE_ASSISTANT,
-                    content: data,
+                    content: parsed.text,
                     timestamp: Date.now(),
                   },
                 ]);
@@ -167,7 +175,7 @@ export default function useChatStream() {
                 setMessages((prev) =>
                   prev.map((m) =>
                     m.id === pendingAssistantId
-                      ? { ...m, content: m.content + data }
+                      ? { ...m, content: m.content + parsed.text }
                       : m,
                   ),
                 );
