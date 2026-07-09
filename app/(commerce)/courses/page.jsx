@@ -1,11 +1,15 @@
 // app/courses/page.js
 
+import MarkdownRenderer from "@/components/ui/MarkdownRender";
+import { getData } from "@/lib/server-axios";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
-// ✅ Use the server-safe axios helper for server-side fetching
-import MarkdownRenderer from "@/components/ui/MarkdownRender";
-import { getData } from "@/lib/server-axios";
+
+// 🔧 Fixes stale data: forces this page to be rendered dynamically on
+// every request instead of using cached build-time HTML.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata = {
   title: "Diving Courses",
@@ -36,7 +40,7 @@ export const viewport = {
   initialScale: 1,
 };
 
-// --- Helper Functions (Updated for Course Data) ---
+// --- Helper Functions ---
 
 const formatPrice = (courseData) => {
   if (!courseData.price_available) return "Inquire for Price";
@@ -56,11 +60,6 @@ const formatPrice = (courseData) => {
   }
 
   return `EGP ${Math.round(basePrice)}`;
-};
-
-const formatDuration = (duration) => {
-  if (!duration) return "Duration TBD";
-  return `${duration} hour${duration !== 1 ? "s" : ""}`;
 };
 
 const getCourseTypeIcon = (courseType) => {
@@ -138,8 +137,8 @@ const CoursesPage = async () => {
       {/* --- Hero Section --- */}
       <div className="relative overflow-hidden bg-gradient-to-br from-sky-600 to-cyan-600 text-white">
         <div className="absolute inset-0 bg-black/20" />
-        <div className="absolute inset-0 bg-[url('/image/hero-pattern.png')] opacity-10"></div>
-        <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 bg-[url('/image/hero-pattern.png')] opacity-10" />
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
           <Icon
             icon="lucide:book-open-check"
             className="w-96 h-96 text-white/20 absolute top-10 -right-20 rotate-12"
@@ -150,17 +149,14 @@ const CoursesPage = async () => {
           />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <div className="bg-white/20 px-4 py-2 rounded-full text-sm font-bold inline-block mb-6 mt-6">
-            <Icon
-              icon="lucide:graduation-cap"
-              className="w-4 h-4 inline mr-2"
-            />
+          <div className="bg-white/20 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full text-sm font-bold inline-flex items-center gap-2 mb-6 mt-6">
+            <Icon icon="lucide:graduation-cap" className="w-4 h-4" />
             Diving Certifications
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">
             Our Diving Courses
           </h1>
-          <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto">
+          <p className="text-lg md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
             From beginner to pro, start your underwater journey with our
             certified courses.
           </p>
@@ -171,6 +167,8 @@ const CoursesPage = async () => {
             </span>
           </div>
         </div>
+
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-50/40 to-transparent" />
       </div>
 
       {/* --- Courses Grid --- */}
@@ -190,7 +188,7 @@ const CoursesPage = async () => {
             </p>
             <Link
               href="/"
-              className="bg-cyan-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-cyan-600"
+              className="bg-cyan-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-cyan-600 transition-colors"
             >
               Back to Home
             </Link>
@@ -198,7 +196,7 @@ const CoursesPage = async () => {
         ) : (
           <>
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
                 All Available Courses
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -207,7 +205,7 @@ const CoursesPage = async () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {courses.map((course) => {
                 const priceDisplay = formatPrice(course);
 
@@ -215,16 +213,16 @@ const CoursesPage = async () => {
                   <Link
                     href={`/courses/${course.id}`}
                     key={course.id}
-                    className="group flex flex-col bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2"
+                    className="group flex flex-col bg-white rounded-2xl shadow-md hover:shadow-2xl hover:shadow-blue-200/60 ring-1 ring-gray-100 transition-all duration-300 overflow-hidden hover:-translate-y-1.5"
                   >
                     {/* Course Image */}
-                    <div className="relative h-48">
+                    <div className="relative h-48 bg-gray-100">
                       {course.images?.[0] ? (
                         <Image
                           src={course.images[0]}
                           alt={course.name}
                           fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          className="object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
                       ) : (
@@ -240,7 +238,7 @@ const CoursesPage = async () => {
                       {/* Course Level Badge */}
                       <div className="absolute top-4 left-4">
                         {course.course_level && (
-                          <span className="bg-blue-600/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-semibold capitalize">
+                          <span className="bg-blue-600/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-semibold capitalize shadow-sm">
                             {course.course_level}
                           </span>
                         )}
@@ -250,7 +248,7 @@ const CoursesPage = async () => {
                       {course.has_discount &&
                         course.discount_always_available && (
                           <div className="absolute top-4 right-4">
-                            <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                            <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-sm">
                               -{course.discount_percentage}%
                             </span>
                           </div>
@@ -269,11 +267,9 @@ const CoursesPage = async () => {
 
                     {/* Course Content */}
                     <div className="p-6 flex flex-col flex-grow">
-                      <div className="flex items-start justify-between mb-3">
-                        <h3 className="text-xl font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors flex-1">
-                          {course.name}
-                        </h3>
-                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 line-clamp-2 mb-3 group-hover:text-blue-600 transition-colors">
+                        {course.name}
+                      </h3>
 
                       {/* Provider */}
                       {course.provider && (
@@ -294,7 +290,7 @@ const CoursesPage = async () => {
                       {/* Course Features */}
                       <div className="flex flex-wrap gap-2 mb-4">
                         {course.has_certificate && (
-                          <div className="flex items-center bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">
+                          <div className="flex items-center bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
                             <Icon
                               icon={getCertificateIcon(course.certificate_type)}
                               className="w-3 h-3 mr-1"
@@ -303,13 +299,13 @@ const CoursesPage = async () => {
                           </div>
                         )}
                         {course.has_online_content && (
-                          <div className="flex items-center bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">
+                          <div className="flex items-center bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
                             <Icon icon="lucide:wifi" className="w-3 h-3 mr-1" />
                             <span>Online Content</span>
                           </div>
                         )}
                         {course.course_type && (
-                          <div className="flex items-center bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs capitalize">
+                          <div className="flex items-center bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-medium capitalize">
                             <Icon
                               icon={getCourseTypeIcon(course.course_type)}
                               className="w-3 h-3 mr-1"
@@ -336,12 +332,12 @@ const CoursesPage = async () => {
                           </div>
                         )}
 
-                      {/* Course Duration and Price */}
-                      <div className="flex items-center justify-between text-sm border-t pt-4 mt-auto">
-                        <div className="flex items-center gap-2 text-gray-500">
+                      {/* Duration and Price */}
+                      <div className="flex items-center justify-between text-sm border-t border-gray-100 pt-4 mt-auto gap-2">
+                        <div className="flex items-center gap-1.5 text-gray-500">
                           <Icon
                             icon="lucide:clock"
-                            className="w-4 h-4 text-gray-400"
+                            className="w-4 h-4 text-gray-400 shrink-0"
                           />
                           <span>
                             {course.course_duration}{" "}
@@ -352,13 +348,13 @@ const CoursesPage = async () => {
                         <div className="text-right">
                           {typeof priceDisplay === "object" ? (
                             <div className="flex flex-col items-end">
-                              <span className="text-sm line-through text-gray-400">
+                              <span className="text-xs line-through text-gray-400">
                                 {priceDisplay.original}
                               </span>
                               <span className="text-lg font-bold text-green-600">
                                 {priceDisplay.discounted}
                               </span>
-                              <span className="text-xs bg-red-500 text-white px-1 rounded">
+                              <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded font-medium">
                                 -{priceDisplay.discount}%
                               </span>
                             </div>
@@ -377,8 +373,8 @@ const CoursesPage = async () => {
                       </div>
 
                       {/* Call to Action */}
-                      <div className="mt-4 pt-4 border-t">
-                        <div className="flex items-center justify-center gap-2 text-blue-600 group-hover:text-blue-700 font-medium text-sm">
+                      <div className="mt-4 pt-4 border-t border-gray-100">
+                        <div className="flex items-center justify-center gap-2 text-blue-600 group-hover:text-blue-700 font-medium text-sm transition-colors">
                           {course.price_available ? (
                             <>
                               <Icon

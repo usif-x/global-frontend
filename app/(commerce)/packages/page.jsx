@@ -1,11 +1,15 @@
 // app/(commerce)/packages/page.jsx
 
+import MarkdownRenderer from "@/components/ui/MarkdownRender";
+import { getData } from "@/lib/server-axios";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
-// ✅ Correct Import: Use the server-safe axios helper for server components
-import MarkdownRenderer from "@/components/ui/MarkdownRender";
-import { getData } from "@/lib/server-axios";
+
+// 🔧 Fixes stale data: forces this page to be rendered dynamically on
+// every request instead of using the cached build-time HTML.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata = {
   title: "Packages ",
@@ -35,18 +39,11 @@ export const viewport = {
   initialScale: 1,
 };
 
-// Helper function to get trip count for package
-const getPackageTripCount = (packages, packageId) => {
-  const pkg = packages.find((p) => p.id === packageId);
-  return pkg?.trip_count || 0;
-};
-
 const PackagesPage = async () => {
-  let packages = []; // Default to an empty array
-  let trips = []; // To calculate trip counts per package
+  let packages = [];
+  let trips = [];
 
   try {
-    // Fetch both packages and trips to get accurate trip counts
     const [packagesData, tripsData] = await Promise.all([
       getData("/packages/"),
       getData("/trips/"),
@@ -93,32 +90,23 @@ const PackagesPage = async () => {
     );
   }
 
-  // Calculate trip counts for each package
   const packagesWithTripCounts = packages.map((pkg) => {
-    const tripCount = trips.filter((trip) => trip.package_id === pkg.id).length;
     const packageTrips = trips.filter((trip) => trip.package_id === pkg.id);
+    const tripCount = packageTrips.length;
 
-    // Calculate price range for the package
     let priceRange = null;
     if (packageTrips.length > 0) {
       const prices = packageTrips.map((trip) => {
-        // Apply discount if always available
         const basePrice = trip.adult_price;
         if (trip.has_discount && trip.discount_always_available) {
           return basePrice * (1 - trip.discount_percentage / 100);
         }
         return basePrice;
       });
-      const minPrice = Math.min(...prices);
-      const maxPrice = Math.max(...prices);
-      priceRange = { min: minPrice, max: maxPrice };
+      priceRange = { min: Math.min(...prices), max: Math.max(...prices) };
     }
 
-    return {
-      ...pkg,
-      tripCount,
-      priceRange,
-    };
+    return { ...pkg, tripCount, priceRange };
   });
 
   return (
@@ -126,8 +114,8 @@ const PackagesPage = async () => {
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-sky-600 to-cyan-600 text-white">
         <div className="absolute inset-0 bg-black/20" />
-        <div className="absolute inset-0 bg-[url('/image/hero-pattern.png')] opacity-10"></div>
-        <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 bg-[url('/image/hero-pattern.png')] opacity-10" />
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
           <Icon
             icon="mdi:waves"
             className="w-96 h-96 text-white/20 absolute top-10 -right-20 rotate-12"
@@ -142,25 +130,29 @@ const PackagesPage = async () => {
           />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <div className="bg-white/20 px-4 py-2 rounded-full text-sm font-bold inline-block mb-6 mt-6">
-            <Icon icon="mdi:package-variant" className="w-4 h-4 inline mr-2" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-24 text-center">
+          <div className="bg-white/20 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full text-sm font-bold inline-flex items-center gap-2 mb-6 mt-6">
+            <Icon icon="mdi:package-variant" className="w-4 h-4" />
             Travel Packages
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">
             Discover Amazing Packages
           </h1>
-          <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto">
+          <p className="text-lg md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
             Explore our curated collection of diving and adventure packages
             designed for every type of traveler.
           </p>
           <div className="flex items-center justify-center mt-8 text-white/90">
             <Icon icon="mdi:map-marker" className="w-5 h-5 mr-2" />
             <span className="text-lg">
-              {packages.length} Packages Available
+              {packages.length} Package{packages.length !== 1 ? "s" : ""}{" "}
+              Available
             </span>
           </div>
         </div>
+
+        {/* soft bottom fade into page bg */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-50/40 to-transparent" />
       </div>
 
       {/* Packages Grid */}
@@ -179,7 +171,7 @@ const PackagesPage = async () => {
             </p>
             <Link
               href="/"
-              className="bg-cyan-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-cyan-600"
+              className="bg-cyan-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-cyan-600 transition-colors"
             >
               Back to Home
             </Link>
@@ -187,7 +179,7 @@ const PackagesPage = async () => {
         ) : (
           <>
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
                 Our Adventure Packages
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -196,20 +188,20 @@ const PackagesPage = async () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {packagesWithTripCounts.map((pkg) => (
                 <Link
                   href={`/packages/${pkg.id}`}
                   key={pkg.id}
-                  className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1"
+                  className="group bg-white rounded-2xl shadow-md hover:shadow-2xl hover:shadow-sky-200/60 ring-1 ring-gray-100 transition-all duration-300 overflow-hidden flex flex-col hover:-translate-y-1.5"
                 >
-                  <div className="relative h-64 overflow-hidden">
+                  <div className="relative h-56 md:h-64 overflow-hidden bg-gray-100">
                     {pkg.images?.[0] ? (
                       <Image
                         src={pkg.images[0]}
                         alt={pkg.name}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
                     ) : (
@@ -220,11 +212,10 @@ const PackagesPage = async () => {
                         />
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                    {/* Trip Count Badge */}
                     {pkg.tripCount > 0 && (
-                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-sky-700 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                      <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm text-sky-700 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-sm">
                         <Icon
                           icon="mdi:map-marker-multiple"
                           className="w-4 h-4"
@@ -233,22 +224,21 @@ const PackagesPage = async () => {
                       </div>
                     )}
 
-                    {/* Image Gallery Indicator */}
                     {pkg.images && pkg.images.length > 1 && (
-                      <div className="absolute bottom-4 right-4 bg-black/70 text-white px-2 py-1 rounded-lg text-sm flex items-center gap-1">
-                        <Icon icon="lucide:camera" className="w-4 h-4" />
+                      <div className="absolute bottom-4 right-4 bg-black/70 text-white px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1">
+                        <Icon icon="lucide:camera" className="w-3.5 h-3.5" />
                         {pkg.images.length}
                       </div>
                     )}
                   </div>
 
-                  <div className="p-6 flex flex-col">
+                  <div className="p-6 flex flex-col flex-grow">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="bg-sky-100 text-sky-600 px-3 py-1 rounded-full text-sm font-semibold">
+                      <span className="bg-sky-100 text-sky-600 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide">
                         Package
                       </span>
                       {pkg.tripCount > 0 && (
-                        <div className="flex items-center text-gray-500 text-sm">
+                        <div className="flex items-center text-gray-500 text-xs font-medium">
                           <Icon
                             icon="mdi:compass-outline"
                             className="w-4 h-4 mr-1"
@@ -258,7 +248,7 @@ const PackagesPage = async () => {
                       )}
                     </div>
 
-                    <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-sky-600 transition-colors duration-200">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-sky-600 transition-colors duration-200">
                       {pkg.name}
                     </h3>
 
@@ -266,7 +256,6 @@ const PackagesPage = async () => {
                       <MarkdownRenderer content={pkg.description} />
                     </div>
 
-                    {/* Price Range Display */}
                     {pkg.priceRange && (
                       <div className="mb-4 p-3 bg-sky-50 rounded-lg border border-sky-100">
                         <div className="flex items-center justify-between">
@@ -292,7 +281,6 @@ const PackagesPage = async () => {
                       </div>
                     )}
 
-                    {/* No Trips Available State */}
                     {pkg.tripCount === 0 && (
                       <div className="mb-4 p-3 bg-orange-50 rounded-lg border border-orange-100">
                         <div className="flex items-center text-orange-700 text-sm">
@@ -305,21 +293,19 @@ const PackagesPage = async () => {
                       </div>
                     )}
 
-                    <div className="mt-auto">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sky-600 group-hover:text-sky-700 font-semibold text-sm flex items-center gap-1 transition-colors">
-                          View Details
-                          <Icon
-                            icon="mdi:arrow-right"
-                            className="w-4 h-4 transition-transform group-hover:translate-x-1"
-                          />
-                        </div>
-                        {pkg.tripCount > 0 && (
-                          <div className="bg-sky-500 text-white px-3 py-1 rounded-full text-xs font-medium group-hover:bg-sky-600 transition-colors duration-200">
-                            Explore
-                          </div>
-                        )}
+                    <div className="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between">
+                      <div className="text-sky-600 group-hover:text-sky-700 font-semibold text-sm flex items-center gap-1 transition-colors">
+                        View Details
+                        <Icon
+                          icon="mdi:arrow-right"
+                          className="w-4 h-4 transition-transform group-hover:translate-x-1"
+                        />
                       </div>
+                      {pkg.tripCount > 0 && (
+                        <div className="bg-sky-500 text-white px-3 py-1 rounded-full text-xs font-medium group-hover:bg-sky-600 transition-colors duration-200">
+                          Explore
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Link>

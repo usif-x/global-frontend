@@ -9,16 +9,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+// 🔧 Fixes stale data: forces this page to be rendered dynamically on
+// every request instead of using cached build-time HTML.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 // --- Helper Functions ---
 const formatPrice = (
   price,
   hasDiscount,
   discountPercentage,
-  discountAlwaysAvailable
+  discountAlwaysAvailable,
 ) => {
   if (price == null) return { original: "0", discounted: null, discount: null };
 
-  // Only apply discount if it's always available or if conditions are met
   if (hasDiscount && discountPercentage && discountAlwaysAvailable) {
     const discountedPrice = price * (1 - discountPercentage / 100);
     return {
@@ -51,7 +55,6 @@ const getDiscountBadgeText = (trip) => {
 const PackagePage = async ({ params }) => {
   const { id } = await params;
 
-  // STEP 1: Fetch all necessary data on the server in parallel
   let packageData, trips;
 
   try {
@@ -60,64 +63,61 @@ const PackagePage = async ({ params }) => {
       getData(`/packages/${id}/trips`),
     ]);
 
-    // Check if the critical package data was fetched successfully
     if (packageResult.status === "rejected") {
-      throw packageResult.reason; // If package fails, we can't render the page
+      throw packageResult.reason;
     }
     packageData = packageResult.value;
 
-    // Trips are also important, but we can potentially render a page with no trips
     if (tripsResult.status === "rejected") {
       console.warn(
         `Could not fetch trips for package ${id}:`,
-        tripsResult.reason.message
+        tripsResult.reason.message,
       );
-      trips = []; // Default to an empty array on failure
+      trips = [];
     } else {
       trips = tripsResult.value || [];
     }
   } catch (error) {
     console.error(`Failed to fetch data for package ${id}:`, error.message);
-    notFound(); // Renders the not-found.js page if critical data fails
+    notFound();
   }
 
-  // STEP 2: Render the page with the fetched data
   return (
     <div className="min-h-screen bg-gray-50">
       {/* --- Hero Section --- */}
       <div className="relative overflow-hidden bg-gradient-to-br from-sky-600 to-cyan-600 text-white">
-        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute inset-0 bg-black/20" />
         {packageData.images?.[0] && (
           <div className="absolute inset-0">
             <Image
               src={packageData.images[0]}
               alt={packageData.name}
               fill
-              className="object-cover opacity-30 blur-sm"
+              className="object-cover opacity-30 blur-sm scale-105"
               priority
             />
           </div>
         )}
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="flex items-center mb-6 mt-6">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+          <div className="flex items-center flex-wrap gap-4 mb-6 mt-6">
             <Link
               href="/packages"
-              className="flex items-center text-white/80 hover:text-white transition-colors duration-200 mr-4"
+              className="flex items-center text-white/80 hover:text-white transition-colors duration-200 text-sm font-medium"
             >
               <Icon icon="lucide:arrow-left" className="w-5 h-5 mr-2" />
               Back to Packages
             </Link>
-            <div className="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-bold">
+            <div className="bg-white/20 backdrop-blur-sm border border-white/20 text-white px-3 py-1 rounded-full text-sm font-bold">
               Package
             </div>
           </div>
           <h1
-            className="text-4xl md:text-6xl font-bold mb-6 text-white"
+            className="text-4xl md:text-6xl font-bold mb-6 text-white tracking-tight"
             style={{ textShadow: "1px 1px 5px rgba(0,0,0,0.4)" }}
           >
             {packageData.name}
           </h1>
-          <div className="text-xl md:text-2xl text-blue-100 max-w-3xl leading-relaxed">
+          <div className="text-lg md:text-2xl text-blue-100 max-w-3xl leading-relaxed">
             <MarkdownRenderer content={packageData.description} />
           </div>
           <div className="flex items-center mt-8 text-white/90">
@@ -127,6 +127,8 @@ const PackagePage = async ({ params }) => {
             </span>
           </div>
         </div>
+
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-50/40 to-transparent" />
       </div>
 
       {/* --- Main Content --- */}
@@ -156,23 +158,24 @@ const PackagePage = async ({ params }) => {
         ) : (
           <>
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
                 Available Trips
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Choose from {trips.length} exciting trip/s in the "
-                {packageData.name}" package.
+                Choose from {trips.length} exciting trip
+                {trips.length !== 1 ? "s" : ""} in the "{packageData.name}"
+                package.
               </p>
             </div>
 
-            {/* --- Trips Grid with Trips Page Card Design --- */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {/* --- Trips Grid --- */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {trips.map((trip) => {
                 const pricing = formatPrice(
                   trip.adult_price,
                   trip.has_discount,
                   trip.discount_percentage,
-                  trip.discount_always_available
+                  trip.discount_always_available,
                 );
                 const discountBadgeText = getDiscountBadgeText(trip);
 
@@ -182,24 +185,24 @@ const PackagePage = async ({ params }) => {
                     href={`/trips/${trip.id}`}
                     className="group"
                   >
-                    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden h-full flex flex-col relative">
+                    <div className="bg-white rounded-2xl shadow-md hover:shadow-2xl hover:shadow-sky-200/60 ring-1 ring-gray-100 transition-all duration-300 overflow-hidden h-full flex flex-col relative hover:-translate-y-1.5">
                       {/* Discount Badge */}
                       {discountBadgeText && (
-                        <div className="absolute top-4 left-4 z-10 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-                          <Icon icon="lucide:gift" className="w-4 h-4" />
+                        <div className="absolute top-4 left-4 z-10 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm">
+                          <Icon icon="lucide:gift" className="w-3.5 h-3.5" />
                           {discountBadgeText}
                         </div>
                       )}
 
                       {/* Child Not Allowed Badge */}
                       {!trip.child_allowed && (
-                        <div className="absolute top-4 right-4 z-10 bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-                          <Icon icon="lucide:user-x" className="w-4 h-4" />
+                        <div className="absolute top-4 right-4 z-10 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm">
+                          <Icon icon="lucide:user-x" className="w-3.5 h-3.5" />
                           Adults Only
                         </div>
                       )}
 
-                      <div className="relative h-48 overflow-hidden">
+                      <div className="relative h-48 overflow-hidden bg-gray-100">
                         {trip.images && trip.images.length > 0 ? (
                           <Image
                             src={
@@ -208,7 +211,7 @@ const PackagePage = async ({ params }) => {
                             }
                             alt={trip.name}
                             fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                           />
                         ) : (
@@ -219,12 +222,15 @@ const PackagePage = async ({ params }) => {
                             />
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         {trip.is_image_list &&
                           trip.images &&
                           trip.images.length > 1 && (
-                            <div className="absolute bottom-4 right-4 bg-black/70 text-white px-2 py-1 rounded-lg text-sm flex items-center gap-1">
-                              <Icon icon="lucide:camera" className="w-4 h-4" />
+                            <div className="absolute bottom-4 right-4 bg-black/70 text-white px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1">
+                              <Icon
+                                icon="lucide:camera"
+                                className="w-3.5 h-3.5"
+                              />
                               {trip.images.length}
                             </div>
                           )}
@@ -232,7 +238,7 @@ const PackagePage = async ({ params }) => {
 
                       <div className="p-6 flex flex-col flex-grow">
                         <div className="flex items-center justify-between mb-3 text-sm">
-                          <div className="flex items-center text-gray-600">
+                          <div className="flex items-center text-gray-500 font-medium">
                             <Icon
                               icon="lucide:clock"
                               className="w-4 h-4 mr-1"
@@ -272,10 +278,10 @@ const PackagePage = async ({ params }) => {
                             </div>
                           )}
 
-                        <div className="border-t pt-4 mt-auto">
-                          <div className="flex items-center justify-between">
+                        <div className="border-t border-gray-100 pt-4 mt-auto">
+                          <div className="flex items-center justify-between gap-3">
                             <div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 {pricing.discounted ? (
                                   <>
                                     <span className="text-gray-400 line-through text-sm">
@@ -304,7 +310,7 @@ const PackagePage = async ({ params }) => {
                                 )}
                               </div>
                             </div>
-                            <div className="bg-cyan-500 text-white px-4 py-2 rounded-full font-semibold text-sm group-hover:bg-cyan-600 transition-colors duration-200">
+                            <div className="bg-cyan-500 text-white px-4 py-2 rounded-full font-semibold text-sm group-hover:bg-cyan-600 transition-colors duration-200 whitespace-nowrap">
                               View Details
                             </div>
                           </div>
