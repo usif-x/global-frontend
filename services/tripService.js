@@ -31,7 +31,7 @@ class TripService {
     return await postData("/transfer-zones/", data, true);
   }
   static async updateTransferZone(id, data) {
-    return await putData(`/transfer-zones/${id}`, data);
+    return await putData(`/transfer-zones/${id}`, data, true);
   }
   static async deleteTransferZone(id) {
     return await deleteData(`/transfer-zones/${id}`, true);
