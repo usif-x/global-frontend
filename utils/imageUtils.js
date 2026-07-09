@@ -8,12 +8,9 @@
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
 
-  // If it's already a full URL, return as is
   if (imagePath.startsWith("http")) return imagePath;
 
-  // Otherwise, construct the full URL
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://0.0.0.0:8000";
-  return `${apiUrl}/storage/images/${imagePath}`;
+  return `https://storage.topdivers.online/${imagePath}`;
 };
 
 /**

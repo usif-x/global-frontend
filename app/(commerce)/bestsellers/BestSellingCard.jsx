@@ -45,7 +45,7 @@ const BestSellingItemCard = ({ item }) => {
       {/* Image Section */}
       <div className="relative h-52">
         <Image
-          src={getImageUrl(item.image) || "/placeholder-image.png"}
+          src={getImageUrl(item.images?.[0]) || "/placeholder-image.png"}
           alt={item.name}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
