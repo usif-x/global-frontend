@@ -375,14 +375,15 @@ const TripList = ({ onEdit, onAdd }) => {
 
   const filterTrips = () => {
     if (!selectedPackageId) {
-      // Show all trips
       setFilteredTrips(trips);
     } else {
-      // Filter trips by selected package using package_id field
+      // Filter using package_ids array (many-to-many), not package_id
       const filtered = trips.filter(
         (trip) =>
-          trip.package_id &&
-          trip.package_id.toString() === selectedPackageId.toString()
+          Array.isArray(trip.package_ids) &&
+          trip.package_ids.some(
+            (id) => id.toString() === selectedPackageId.toString(),
+          ),
       );
       setFilteredTrips(filtered);
     }
@@ -520,8 +521,10 @@ const TripList = ({ onEdit, onAdd }) => {
                     {packages.map((pkg) => {
                       const tripCount = trips.filter(
                         (trip) =>
-                          trip.package_id &&
-                          trip.package_id.toString() === pkg.id.toString()
+                          Array.isArray(trip.package_ids) &&
+                          trip.package_ids.some(
+                            (id) => id.toString() === pkg.id.toString(),
+                          ),
                       ).length;
 
                       return (
