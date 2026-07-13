@@ -193,18 +193,18 @@ ${urls
       { url: `${siteBaseUrl}/courses/`, priority: "0.9", changefreq: "daily" },
       {
         url: `${siteBaseUrl}/divingcenter-locations/`,
-        priority: "0.8",
-        changefreq: "weekly",
+        priority: "0.6",
+        changefreq: "monthly",
       },
       {
         url: `${siteBaseUrl}/dive-sites/`,
-        priority: "0.8",
-        changefreq: "weekly",
+        priority: "0.3",
+        changefreq: "yearly",
       },
       {
         url: `${siteBaseUrl}/destinations/`,
-        priority: "0.8",
-        changefreq: "weekly",
+        priority: "0.3",
+        changefreq: "yearly",
       },
       {
         url: `${siteBaseUrl}/bestsellers/`,
@@ -213,13 +213,13 @@ ${urls
       },
       {
         url: `${siteBaseUrl}/blog/`,
-        priority: "0.7",
-        changefreq: "weekly",
+        priority: "0.6",
+        changefreq: "monthly",
       },
       {
         url: `${siteBaseUrl}/contact/`,
-        priority: "0.6",
-        changefreq: "monthly",
+        priority: "0.3",
+        changefreq: "yearly",
       },
       {
         url: `${siteBaseUrl}/privacy-policy/`,

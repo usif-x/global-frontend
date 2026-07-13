@@ -4,10 +4,7 @@ import BestSellingService from "@/services/bestsellingService";
 import { Icon } from "@iconify/react";
 import BestSellingItemCard from "./BestSellingCard";
 
-// 🔧 Fixes stale data: forces this page to be rendered dynamically on
-// every request instead of using cached build-time HTML.
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 86400;
 
 // This function transforms the complex API item into a simple, predictable object.
 const normalizeApiItem = (apiItem) => {

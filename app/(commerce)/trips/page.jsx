@@ -8,11 +8,7 @@ import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
 
-// 🔧 Explicit safety net for stale data — this page also reads
-// searchParams, which already forces dynamic rendering, but this
-// keeps behavior consistent and explicit with your other pages.
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 86400;
 
 export const metadata = {
   title: "Trips ",

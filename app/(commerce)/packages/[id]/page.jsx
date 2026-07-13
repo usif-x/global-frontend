@@ -9,10 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-// 🔧 Fixes stale data: forces this page to be rendered dynamically on
-// every request instead of using cached build-time HTML.
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 86400;
 
 // --- Helper Functions ---
 const formatPrice = (
