@@ -71,6 +71,8 @@ export async function GET() {
 
     // Generate URLs for sitemap (with trailing slash)
     const staticUrls = [
+      { url: `${siteBaseUrl}/login`, priority: "0.5", changefreq: "yearly" },
+      { url: `${siteBaseUrl}/register`, priority: "0.5", changefreq: "yearly" },
       { url: `${siteBaseUrl}/`, priority: "1.0", changefreq: "daily" },
       { url: `${siteBaseUrl}/trips/`, priority: "0.9", changefreq: "daily" },
       { url: `${siteBaseUrl}/packages/`, priority: "0.9", changefreq: "daily" },
@@ -187,6 +189,8 @@ ${urls
     console.error("Error generating sitemap:", error);
 
     const fallbackUrls = [
+      { url: `${siteBaseUrl}/login`, priority: "0.5", changefreq: "yearly" },
+      { url: `${siteBaseUrl}/register`, priority: "0.5", changefreq: "yearly" },
       { url: `${siteBaseUrl}/`, priority: "1.0", changefreq: "daily" },
       { url: `${siteBaseUrl}/trips/`, priority: "0.9", changefreq: "daily" },
       { url: `${siteBaseUrl}/packages/`, priority: "0.9", changefreq: "daily" },
