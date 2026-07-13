@@ -4,7 +4,6 @@ import WhyChooseUs from "@/components/section/Future";
 import Hero from "@/components/section/Hero";
 import OurLocations from "@/components/section/OurLocations";
 import PackageTripDisplay from "@/components/section/PackageTrip";
-import TestimonialShowcase from "@/components/section/Testimonial";
 export const metadata = {
   title: {
     template: "TopDivers - %s",
@@ -57,7 +56,7 @@ export default function Home() {
       <BestSellersHero />
       <DivingCourses />
       <PackageTripDisplay />
-      <TestimonialShowcase />
+      {/* <TestimonialShowcase /> */}
     </>
   );
 }
