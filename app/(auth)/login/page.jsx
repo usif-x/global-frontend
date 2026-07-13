@@ -191,24 +191,7 @@ export default function LoginPage() {
             </div>
 
             <p className="text-[11px] text-gray-400 text-center pt-1">
-              This site is protected by reCAPTCHA and the Google{" "}
-              <a
-                href="https://policies.google.com/privacy"
-                target="_blank"
-                rel="noreferrer"
-                className="underline"
-              >
-                Privacy Policy
-              </a>
-              <a
-                href="https://policies.google.com/terms"
-                target="_blank"
-                rel="noreferrer"
-                className="underline"
-              >
-                Terms of Service
-              </a>{" "}
-              apply.
+              This site is protected by reCAPTCHA.
             </p>
           </form>
 
