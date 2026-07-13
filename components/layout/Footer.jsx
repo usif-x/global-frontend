@@ -210,7 +210,7 @@ export default function Home() {
                 </div>
                 <span className="text-white/40 hidden sm:inline">|</span>
                 <a
-                  href="https://yousseif.xyz/portfolio"
+                  href="https://yousseif.xyz/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors whitespace-nowrap"
