@@ -63,7 +63,7 @@ export default function Home() {
                     rel="noopener noreferrer"
                     className="text-white/60 hover:text-white transition-colors"
                   >
-                    <Icon icon="mdi:instagram" className="w-5 h-5" />
+                    <Icon icon="mdi:instagram" width={24} height={24} />
                   </a>
                 </div>
               </div>
