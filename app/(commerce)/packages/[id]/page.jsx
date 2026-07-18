@@ -115,7 +115,10 @@ const PackagePage = async ({ params }) => {
             {packageData.name}
           </h1>
           <div className="text-lg md:text-2xl text-blue-100 max-w-3xl leading-relaxed">
-            <MarkdownRenderer content={packageData.description} />
+            <MarkdownRenderer
+              content={packageData.description}
+              style={{ textColor: "white" }}
+            />
           </div>
           <div className="flex items-center mt-8 text-white/90">
             <Icon icon="lucide:calendar-check" className="w-5 h-5 mr-2" />
