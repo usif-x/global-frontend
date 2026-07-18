@@ -51,7 +51,14 @@ const TripCard = ({ trip, packages }) => {
     trip.discount_percentage,
     trip.discount_always_available,
   );
-  const packageInfo = packages.find((p) => p.id === trip.package_id);
+
+  // Trip can now belong to more than one package (many-to-many).
+  // Resolve all matching package objects from trip.package_ids against the
+  // top-level packages list so we can render their names.
+  const tripPackages = (trip.package_ids || [])
+    .map((pid) => packages.find((p) => p.id === pid))
+    .filter(Boolean);
+
   const discountBadgeText = getDiscountBadgeText(trip);
 
   return (
@@ -113,10 +120,19 @@ const TripCard = ({ trip, packages }) => {
 
           {/* Stats */}
           <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 mb-4 pb-4 border-b border-gray-100">
-            {packageInfo && (
-              <div className="flex items-center gap-1">
-                <Icon icon="lucide:package" className="w-4 h-4 text-cyan-500" />
-                <span>{packageInfo.name}</span>
+            {tripPackages.length > 0 && (
+              <div className="flex items-center gap-1 flex-wrap">
+                <Icon
+                  icon="lucide:package"
+                  className="w-4 h-4 text-cyan-500 shrink-0"
+                />
+                {tripPackages.length === 1 ? (
+                  <span>{tripPackages[0].name}</span>
+                ) : (
+                  <span>
+                    {tripPackages[0].name} +{tripPackages.length - 1} more
+                  </span>
+                )}
               </div>
             )}
             <div className="flex items-center gap-1">
@@ -192,7 +208,10 @@ const TripCard = ({ trip, packages }) => {
 
 // --- PackageCard component ---
 const PackageCard = ({ pkg, trips }) => {
-  const tripCount = trips.filter((trip) => trip.package_id === pkg.id).length;
+  // A trip now belongs to a package if pkg.id is present in its package_ids array.
+  const tripCount = trips.filter((trip) =>
+    (trip.package_ids || []).includes(pkg.id),
+  ).length;
 
   return (
     <Link href={`/packages/${pkg.id}`}>
@@ -284,10 +303,16 @@ const PackageTripClientWrapper = ({ initialPackages, initialTrips }) => {
 
   const displayedTrips = trips.slice(0, 8);
 
-  // Get unique package IDs from trips (only if trips exist)
+  // Get unique package IDs from trips (only if trips exist).
+  // A trip can now reference multiple packages via package_ids, so flatten
+  // across all trips before de-duplicating.
   const tripPackageIds =
     trips.length > 0
-      ? [...new Set(trips.map((trip) => trip.package_id).filter(Boolean))]
+      ? [
+          ...new Set(
+            trips.flatMap((trip) => trip.package_ids || []).filter(Boolean),
+          ),
+        ]
       : [];
 
   // Show packages: if trips exist, show only those with trips; otherwise show all

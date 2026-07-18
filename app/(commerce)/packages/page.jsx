@@ -88,7 +88,11 @@ const PackagesPage = async () => {
   }
 
   const packagesWithTripCounts = packages.map((pkg) => {
-    const packageTrips = trips.filter((trip) => trip.package_id === pkg.id);
+    // A trip can now belong to more than one package (many-to-many),
+    // so match against the package_ids array instead of a single FK.
+    const packageTrips = trips.filter((trip) =>
+      (trip.package_ids || []).includes(pkg.id),
+    );
     const tripCount = packageTrips.length;
 
     let priceRange = null;
