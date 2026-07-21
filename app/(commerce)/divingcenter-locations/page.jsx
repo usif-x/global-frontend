@@ -1,221 +1,337 @@
-import DiveCenterService from "@/services/divecenterService"; // Make sure this path is correct
+// Target path: app/divingcenter-locations/page.jsx
+import DiveCenterService from "@/services/divecenterService";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
 
-// Updated metadata to be more general
 export const metadata = {
-  title: "Our Dive Center Locations | TopDivers",
+  title: "Our Dive Centers | TopDivers",
   description:
-    "Explore our premier dive centers in Hurghada. Your gateways to unforgettable Red Sea diving adventures with state-of-the-art facilities.",
+    "Explore our dive centers in Hurghada — logged with coordinates, hours, and the fastest way to reach us for unforgettable Red Sea diving.",
   keywords:
     "diving, Hurghada, dive centers, Red Sea, scuba diving, dive locations",
   robots: "index, follow",
   authors: [{ name: "Yousseif Muhammad" }],
   openGraph: {
-    title: "Our Dive Center Locations | TopDivers",
+    title: "Our Dive Centers | TopDivers",
     description:
-      "Explore our premier dive centers in Hurghada. Your gateways to unforgettable Red Sea diving adventures.",
-    images: [{ url: "/image/dive-center-hero.webp" }], // A general hero image
+      "Explore our dive centers in Hurghada — your gateways to unforgettable Red Sea diving adventures.",
+    images: [{ url: "/image/dive-center-hero.webp" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Our Dive Center Locations | TopDivers",
+    title: "Our Dive Centers | TopDivers",
     description:
-      "Explore our premier dive centers in Hurghada. Your gateways to unforgettable Red Sea diving adventures.",
+      "Explore our dive centers in Hurghada — your gateways to unforgettable Red Sea diving adventures.",
   },
-  icons: {
-    icon: "/favicon.jpg",
-  },
-  alternates: {
-    canonical: "https://topdivers.online/divingcenter-locations",
-  },
+  icons: { icon: "/favicon.jpg" },
+  alternates: { canonical: "https://topdivers.online/divingcenter-locations" },
 };
 
-export const viewport = {
-  width: "device-width",
-  initialScale: 1,
-};
+export const viewport = { width: "device-width", initialScale: 1 };
 
-// Helper component to display working hours elegantly
-const WorkingHoursDisplay = ({ hours }) => {
-  const days = Object.keys(hours);
+// "Open now" depends on the real clock at request time — keep this route
+// dynamic so the stamp never goes stale behind a cached page.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+// ---------- helpers ----------
+
+function getOpenStatus(hours) {
+  if (!hours) return { isOpen: false };
   const today = new Date()
     .toLocaleString("en-US", { weekday: "long" })
     .toLowerCase();
   const todaysHours = hours[today];
+  if (!todaysHours || !todaysHours.is_open) return { isOpen: false };
 
-  const isOpenNow = () => {
-    if (!todaysHours || !todaysHours.is_open) return false;
-    const now = new Date();
-    const [startHour, startMinute] = todaysHours.start.split(":").map(Number);
-    const [endHour, endMinute] = todaysHours.end.split(":").map(Number);
+  const [startHour, startMinute] = todaysHours.start.split(":").map(Number);
+  const [endHour, endMinute] = todaysHours.end.split(":").map(Number);
+  const now = new Date();
+  const start = new Date();
+  start.setHours(startHour, startMinute, 0, 0);
+  const end = new Date();
+  end.setHours(endHour, endMinute, 0, 0);
 
-    const startTime = new Date();
-    startTime.setHours(startHour, startMinute, 0, 0);
+  return { isOpen: now >= start && now <= end };
+}
 
-    const endTime = new Date();
-    endTime.setHours(endHour, endMinute, 0, 0);
+function getMapsUrl(coordinates) {
+  if (!coordinates) return null;
+  const { latitude, longitude } = coordinates;
+  if (!latitude && !longitude) return null;
+  return `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+}
 
-    return now >= startTime && now <= endTime;
-  };
+function formatCoords(coordinates) {
+  const { latitude, longitude } = coordinates;
+  const latDir = latitude >= 0 ? "N" : "S";
+  const lngDir = longitude >= 0 ? "E" : "W";
+  return `${Math.abs(latitude).toFixed(4)}°${latDir} ${Math.abs(longitude).toFixed(4)}°${lngDir}`;
+}
 
-  const status = isOpenNow();
+// ---------- presentational pieces ----------
 
+function Stamp({ open }) {
+  const color = open ? "var(--teal)" : "var(--flag-red)";
+  const label = open ? "Dive Ready" : "Closed";
   return (
-    <div className="mt-6 border-t border-gray-200 pt-4">
-      <h4 className="font-semibold text-gray-800 flex items-center">
-        <Icon icon="mdi:clock-outline" className="mr-2 h-5 w-5" />
-        Working Hours
-        <span
-          className={`ml-auto text-xs font-bold px-2 py-1 rounded-full ${
-            status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-          }`}
-        >
-          {status ? "Open Now" : "Closed"}
-        </span>
-      </h4>
-      <ul className="mt-3 text-sm text-gray-600 space-y-1">
-        {days.map((day) => (
-          <li key={day} className="flex justify-between capitalize">
-            <span>{day}</span>
-            <span
-              className={`font-medium ${
-                hours[day].is_open ? "text-gray-800" : "text-gray-400"
-              }`}
-            >
-              {hours[day].is_open
-                ? `${hours[day].start} - ${hours[day].end}`
-                : "Closed"}
-            </span>
-          </li>
-        ))}
-      </ul>
+    <div
+      className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] px-2.5 py-1 border-2 -rotate-[4deg] select-none"
+      style={{ color, borderColor: color }}
+    >
+      {label}
     </div>
   );
-};
+}
+
+function DiveCenterCard({ center, index }) {
+  const { isOpen } = getOpenStatus(center.working_hours);
+  const mapsUrl = getMapsUrl(center.coordinates);
+  const hasImage = center.images && center.images.length > 0;
+
+  return (
+    <article
+      className="relative border font-body transition-transform duration-300 hover:-translate-y-1"
+      style={{ background: "#F7F4E9", borderColor: "var(--paper-line)" }}
+    >
+      <div className="flex items-start justify-between px-6 pt-6">
+        <span
+          className="font-mono text-xs tracking-widest"
+          style={{ color: "var(--ink-soft)" }}
+        >
+          ENTRY — {String(index + 1).padStart(3, "0")}
+        </span>
+        <Stamp open={isOpen} />
+      </div>
+
+      <Link
+        href={`/divingcenter-locations/${center.id}`}
+        className="group block"
+      >
+        <div
+          className="relative h-56 mt-4 mx-6 border overflow-hidden"
+          style={{ borderColor: "var(--paper-line)" }}
+        >
+          {hasImage ? (
+            <Image
+              src={center.images[0]}
+              alt={`View of the ${center.name} dive center`}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div
+              className="flex h-full w-full items-center justify-center"
+              style={{ background: "var(--abyss)" }}
+            >
+              <Icon
+                icon="mdi:image-off-outline"
+                className="h-8 w-8"
+                style={{ color: "var(--teal-bright)" }}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="px-6 pt-6">
+          <h2
+            className="font-display text-2xl sm:text-3xl font-semibold group-hover:underline"
+            style={{ color: "var(--ink)" }}
+          >
+            {center.name}
+          </h2>
+          {center.description && (
+            <p
+              className="mt-3 text-sm leading-relaxed line-clamp-2"
+              style={{ color: "var(--ink-soft)" }}
+            >
+              {center.description}
+            </p>
+          )}
+
+          <div
+            className="mt-5 space-y-2 text-sm"
+            style={{ color: "var(--ink-soft)" }}
+          >
+            <div className="flex items-start gap-2">
+              <Icon
+                icon="mdi:map-marker"
+                className="h-4 w-4 mt-0.5 flex-shrink-0"
+                style={{ color: "var(--teal)" }}
+              />
+              <span>{center.location}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Icon
+                icon="mdi:phone"
+                className="h-4 w-4 flex-shrink-0"
+                style={{ color: "var(--teal)" }}
+              />
+              <span className="font-mono">{center.phone}</span>
+            </div>
+          </div>
+        </div>
+      </Link>
+
+      <div className="px-6 pb-6">
+        <div
+          className="mt-6 flex items-center justify-between border-t pt-4"
+          style={{ borderColor: "var(--paper-line)" }}
+        >
+          <span
+            className="font-mono text-xs"
+            style={{ color: "var(--ink-soft)" }}
+          >
+            {mapsUrl
+              ? formatCoords(center.coordinates)
+              : "COORDINATES NOT LOGGED"}
+          </span>
+          {mapsUrl && (
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-xs font-semibold uppercase tracking-wide flex items-center gap-1 hover:gap-2 transition-all"
+              style={{ color: "var(--teal)" }}
+            >
+              Plot Course
+              <Icon icon="mdi:arrow-top-right" className="h-3.5 w-3.5" />
+            </a>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+// ---------- page ----------
 
 export default async function LocationsPage() {
   let diveCenters = [];
   try {
-    // Fetch data from the service on the server
     diveCenters = await DiveCenterService.getAll();
-    console.log(diveCenters);
   } catch (error) {
     console.error("Failed to fetch dive centers:", error);
-    // You can render an error message component here if you wish
   }
-
-  // Helper to create URL-friendly slugs from names
-  const createSlug = (name) => name.toLowerCase().replace(/\s+/g, "-");
 
   return (
     <>
-      <section className="relative bg-gradient-to-br from-blue-900 via-cyan-700 to-teal-600 py-32 text-center text-white">
-        <div className="absolute inset-0 bg-[url('/image/dive-center-hero.webp')] bg-cover bg-center opacity-10"></div>
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center mb-10">
-            <div className="bg-white/20 p-6 rounded-2xl shadow-xl backdrop-blur-lg">
-              <Icon
-                icon="mdi:diving-scuba-flag"
-                className="h-16 w-16 text-white"
-              />
-            </div>
-          </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight drop-shadow-lg">
-            Our Dive Centers
+      <style jsx global>{`
+        @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap");
+
+        :root {
+          --paper: #edead9;
+          --paper-line: #d6cfb4;
+          --abyss: #0a1920;
+          --teal: #0f6e76;
+          --teal-bright: #1fa6a6;
+          --flag-red: #b23b2e;
+          --ink: #10202a;
+          --ink-soft: #4b5a60;
+          --white: #f7f5ec;
+        }
+        .font-display {
+          font-family: "Space Grotesk", sans-serif;
+        }
+        .font-mono {
+          font-family: "IBM Plex Mono", monospace;
+        }
+        .font-body {
+          font-family: "Inter", sans-serif;
+        }
+      `}</style>
+
+      {/* Hero — instrument panel */}
+      <section
+        className="relative overflow-hidden font-body"
+        style={{ background: "var(--abyss)" }}
+      >
+        <svg
+          className="absolute inset-0 h-full w-full opacity-[0.15]"
+          preserveAspectRatio="none"
+          viewBox="0 0 1200 500"
+        >
+          <path
+            d="M0,80 C300,150 500,20 800,90 C1000,140 1100,60 1200,100"
+            stroke="var(--teal-bright)"
+            strokeWidth="1"
+            fill="none"
+          />
+          <path
+            d="M0,180 C300,250 550,120 800,190 C1000,240 1100,160 1200,200"
+            stroke="var(--teal-bright)"
+            strokeWidth="1"
+            fill="none"
+          />
+          <path
+            d="M0,280 C300,350 550,220 800,290 C1000,340 1100,260 1200,300"
+            stroke="var(--teal-bright)"
+            strokeWidth="1"
+            fill="none"
+          />
+          <path
+            d="M0,380 C300,450 550,320 800,390 C1000,440 1100,360 1200,400"
+            stroke="var(--teal-bright)"
+            strokeWidth="1"
+            fill="none"
+          />
+        </svg>
+
+        <div className="relative max-w-6xl mx-auto px-6 sm:px-8 py-28 sm:py-36">
+          <p
+            className="font-mono text-xs sm:text-sm tracking-[0.25em] uppercase"
+            style={{ color: "var(--teal-bright)" }}
+          >
+            Red Sea · Hurghada, Egypt — 27.25°N 33.81°E
+          </p>
+          <h1
+            className="font-display mt-6 text-4xl sm:text-6xl md:text-7xl font-semibold tracking-tight"
+            style={{ color: "var(--white)" }}
+          >
+            Dive Center Log
           </h1>
-          <p className="mt-6 max-w-3xl mx-auto text-lg sm:text-xl opacity-90">
-            Discover our world-class dive centers in Hurghada, offering
-            unparalleled access to the Red Sea’s vibrant marine life.
+          <p
+            className="mt-6 max-w-2xl text-base sm:text-lg"
+            style={{ color: "rgba(247,245,236,0.7)" }}
+          >
+            Every station below is a shore base for the water you're about to
+            enter — logged with its coordinates, hours, and the fastest way to
+            reach us.
           </p>
         </div>
       </section>
 
-      <main className="bg-gray-50 py-24">
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main
+        className="py-20 sm:py-28 font-body"
+        style={{ background: "var(--paper)" }}
+      >
+        <section className="max-w-6xl mx-auto px-6 sm:px-8">
           {diveCenters && diveCenters.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              {diveCenters.map((center) => (
-                <Link
-                  key={center.id}
-                  href={`/divingcenter-locations/${center.id}`}
-                  className="block group"
-                >
-                  <div className="bg-white rounded-3xl shadow-xl overflow-hidden transform transition-all duration-300 flex flex-col hover:shadow-2xl hover:scale-105">
-                    <div className="relative h-64 w-full">
-                      <Image
-                        src={center.images[0]}
-                        alt={`View of the ${center.name} dive center`}
-                        layout="fill"
-                        objectFit="cover"
-                        className="transition-transform duration-300 group-hover:scale-110"
-                      />
-                    </div>
-                    <div className="p-8 flex-grow flex flex-col">
-                      <h2 className="text-3xl font-bold text-blue-900">
-                        {center.name}
-                      </h2>
-                      <p className="mt-3 text-gray-600 flex-grow">
-                        {center.description}
-                      </p>
-
-                      <div className="mt-6 space-y-4">
-                        <div className="flex items-start">
-                          <Icon
-                            icon="mdi:map-marker"
-                            className="h-6 w-6 text-cyan-600 mr-3 flex-shrink-0 mt-1"
-                          />
-                          <span className="text-gray-700">
-                            {center.location}
-                          </span>
-                        </div>
-                        <div className="flex items-center">
-                          <Icon
-                            icon="mdi:phone"
-                            className="h-6 w-6 text-cyan-600 mr-3"
-                          />
-                          <a
-                            href={`tel:${center.phone}`}
-                            className="text-gray-700 hover:text-cyan-700"
-                          >
-                            {center.phone}
-                          </a>
-                        </div>
-                        <div className="flex items-center">
-                          <Icon
-                            icon="mdi:email"
-                            className="h-6 w-6 text-cyan-600 mr-3"
-                          />
-                          <a
-                            href={`mailto:${center.email}`}
-                            className="text-gray-700 hover:text-cyan-700"
-                          >
-                            {center.email}
-                          </a>
-                        </div>
-                      </div>
-
-                      {center.working_hours && (
-                        <WorkingHoursDisplay hours={center.working_hours} />
-                      )}
-                    </div>
-                  </div>
-                </Link>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10">
+              {diveCenters.map((center, index) => (
+                <DiveCenterCard key={center.id} center={center} index={index} />
               ))}
             </div>
           ) : (
-            <div className="text-center py-16">
+            <div
+              className="text-center py-24 border"
+              style={{ borderColor: "var(--paper-line)" }}
+            >
               <Icon
                 icon="mdi:compass-off-outline"
-                className="h-16 w-16 mx-auto text-gray-400"
+                className="h-10 w-10 mx-auto"
+                style={{ color: "var(--ink-soft)" }}
               />
-              <h3 className="mt-4 text-2xl font-semibold text-gray-800">
-                No Dive Centers Found
+              <h3
+                className="font-display mt-5 text-xl font-semibold"
+                style={{ color: "var(--ink)" }}
+              >
+                No Entries Logged
               </h3>
-              <p className="mt-2 text-gray-500">
-                We couldn't find any locations at the moment. Please check back
-                later!
+              <p className="mt-2 text-sm" style={{ color: "var(--ink-soft)" }}>
+                We couldn't find any dive centers yet. Check back soon.
               </p>
             </div>
           )}
