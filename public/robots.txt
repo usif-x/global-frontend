@@ -21,5 +21,6 @@ Allow: /image/
 Allow: /image/logo.png
 Allow: /video/
 
-# Sitemap location
+# Host & Sitemap location 
+Host: https://topdivers.online
 Sitemap: https://topdivers.online/sitemap.xml
