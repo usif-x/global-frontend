@@ -1,8 +1,8 @@
 // app/layout.js
+import ChatWidget from "@/components/ChatWidget/ChatWidget";
 import ConditionalLayout from "@/components/layout/ConditionalLayout.jsx";
 import LoadingOverlay from "@/components/layout/Loading";
 import GoogleTranslateButton from "@/components/layout/TranslateButton";
-import ChatWidget from "@/components/ChatWidget/ChatWidget";
 import LoadingProvider from "@/providers/loadingProvider";
 import { Roboto } from "next/font/google";
 import Script from "next/script";
@@ -113,6 +113,11 @@ export default function RootLayout({ children }) {
           gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
         `}
       </Script>
+      <Script
+        defer
+        src="https://cloud.umami.is/script.js"
+        data-website-id="f16e6623-b003-4f7b-94d4-38eb8c675521"
+      ></Script>
     </html>
   );
 }
