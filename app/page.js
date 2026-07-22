@@ -4,6 +4,8 @@ import WhyChooseUs from "@/components/section/Future";
 import Hero from "@/components/section/Hero";
 import OurLocations from "@/components/section/OurLocations";
 import PackageTripDisplay from "@/components/section/PackageTrip";
+import Script from "next/script";
+
 export const metadata = {
   title: {
     template: "TopDivers - %s",
@@ -47,6 +49,7 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
 };
+
 export default function Home() {
   return (
     <>
@@ -56,6 +59,14 @@ export default function Home() {
       <BestSellersHero />
       <DivingCourses />
       <PackageTripDisplay />
+
+      {/* Elfsight Google Reviews | Topdivers Reviews */}
+      <Script src="https://elfsightcdn.com/platform.js" strategy="lazyOnload" />
+      <div
+        className="elfsight-app-730ccae9-c828-41e9-a9cf-f55a9f3ee28c"
+        data-elfsight-app-lazy
+      ></div>
+
       {/* <TestimonialShowcase /> */}
     </>
   );
