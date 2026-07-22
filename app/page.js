@@ -2,6 +2,7 @@ import BestSellersHero from "@/components/section/BestSelling";
 import DivingCourses from "@/components/section/Course";
 import WhyChooseUs from "@/components/section/Future";
 import Hero from "@/components/section/Hero";
+import ExperienceShowcase from "@/components/section/OurExperience";
 import OurLocations from "@/components/section/OurLocations";
 import PackageTripDisplay from "@/components/section/PackageTrip";
 import Script from "next/script";
@@ -67,7 +68,7 @@ export default function Home() {
         data-elfsight-app-lazy
       ></div>
 
-      {/* <ExperienceShowcase /> */}
+      <ExperienceShowcase />
 
       {/* <TestimonialShowcase /> */}
     </>
