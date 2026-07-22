@@ -98,26 +98,27 @@ export default function RootLayout({ children }) {
             <LoadingOverlay />
           </LoadingProvider>
         </Suspense>
-      </body>
-      <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-        strategy="afterInteractive"
-      />
 
-      <Script id="google-analytics" strategy="afterInteractive">
-        {`
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
 
           gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
         `}
-      </Script>
-      <Script
-        defer
-        src="https://cloud.umami.is/script.js"
-        data-website-id="f16e6623-b003-4f7b-94d4-38eb8c675521"
-      ></Script>
+        </Script>
+        <Script
+          defer
+          src="https://cloud.umami.is/script.js"
+          data-website-id="f16e6623-b003-4f7b-94d4-38eb8c675521"
+        ></Script>
+      </body>
     </html>
   );
 }
