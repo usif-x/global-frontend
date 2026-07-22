@@ -900,6 +900,7 @@ const TripPage = ({ params }) => {
                           className="flex justify-between text-sm text-gray-600 border-b border-gray-100 py-1"
                         >
                           <span>{fee.name}</span>
+                          <p>{fee.description}</p>
                           <span className="font-medium">
                             {fee.fee_type === "percentage"
                               ? `${fee.value}%`
@@ -923,6 +924,7 @@ const TripPage = ({ params }) => {
                           className="flex justify-between text-sm text-gray-600 border-b border-gray-100 py-1"
                         >
                           <span>{fee.name}</span>
+                          <p>{fee.description}</p>
                           <span className="font-medium">
                             {fee.fee_type === "percentage"
                               ? `${fee.value}%`
