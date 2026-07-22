@@ -325,7 +325,7 @@ export default function ExperienceShowcase({ items = [] }) {
 
   return (
     <section className="relative py-20 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-sky-50 via-cyan-50/40 to-white" />
+      <div className="absolute inset-0" />
 
       <div className="container relative mx-auto px-4">
         {/* Header */}

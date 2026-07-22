@@ -69,13 +69,13 @@ export default async function Home() {
       <DivingCourses />
       <PackageTripDisplay />
 
+      <ExperienceShowcase items={experiences} />
+
       <Script src="https://elfsightcdn.com/platform.js" strategy="lazyOnload" />
       <div
         className="elfsight-app-730ccae9-c828-41e9-a9cf-f55a9f3ee28c"
         data-elfsight-app-lazy
       ></div>
-
-      <ExperienceShowcase items={experiences} />
 
       {/* <TestimonialShowcase /> */}
     </>
