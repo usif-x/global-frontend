@@ -301,7 +301,7 @@ const PackageTripClientWrapper = ({ initialPackages, initialTrips }) => {
   const packages = initialPackages || [];
   const trips = initialTrips || [];
 
-  const displayedTrips = trips.slice(0, 8);
+  const displayedTrips = trips.slice(0, 5);
 
   // Get unique package IDs from trips (only if trips exist).
   // A trip can now reference multiple packages via package_ids, so flatten
