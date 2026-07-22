@@ -83,19 +83,39 @@ const normalizeApiItem = (apiItem) => {
   // Parse the included items properly
   const includedItems = parseFieldData(itemData.included);
 
+  // --- Price handling ---
+  // Courses expose `price_available`; trips are always considered priced.
+  const priceAvailable = isCourse ? itemData.price_available !== false : true;
+  const rawPrice = isCourse ? itemData.price : itemData.adult_price;
+
+  // --- Child price handling ---
+  // `child_price` can legitimately be 0 when no child price is offered.
+  // Only treat it as a real value when it's a positive number, otherwise
+  // fall back to null so `{item.childPrice && ...}` doesn't render a bare "0".
+  const rawChildPrice = !isCourse ? itemData.child_price : null;
+  const childPrice =
+    typeof rawChildPrice === "number" && rawChildPrice > 0
+      ? rawChildPrice
+      : null;
+
   return {
     id: itemData.id,
     type: apiItem.item_type,
     name: itemData.name,
     description: itemData.description,
     image: getImageUrl(itemData.images?.[0]),
-    price: isCourse ? itemData.price : itemData.adult_price,
-    childPrice: !isCourse ? itemData.child_price : null,
+    price: rawPrice,
+    priceAvailable,
+    childPrice,
     href: isCourse ? `/courses/${itemData.id}` : `/trips/${itemData.id}`,
     rank: apiItem.ranking_position,
     included: includedItems,
-    duration: itemData.duration,
-    durationUnit: itemData.duration_unit || (isCourse ? "days" : "hour/s"),
+    // Courses store duration under course_duration / course_duration_unit,
+    // trips under duration / duration_unit — read the right pair for each type.
+    duration: isCourse ? itemData.course_duration : itemData.duration,
+    durationUnit:
+      (isCourse ? itemData.course_duration_unit : itemData.duration_unit) ||
+      (isCourse ? "days" : "hour/s"),
     hasDiscount: !isCourse ? itemData.has_discount : false,
     discountPercentage: !isCourse ? itemData.discount_percentage : null,
   };
@@ -104,6 +124,7 @@ const normalizeApiItem = (apiItem) => {
 // --- Best Seller Card Component ---
 const BestSellerCard = ({ item }) => {
   const isCourse = item.type === "course";
+  const showPrice = item.priceAvailable && Number(item.price) > 0;
 
   return (
     <Link href={item.href}>
@@ -141,7 +162,7 @@ const BestSellerCard = ({ item }) => {
           </div>
 
           {/* Discount Badge */}
-          {item.hasDiscount && (
+          {item.hasDiscount && item.discountPercentage > 0 && (
             <div className="absolute bottom-4 right-4 z-10">
               <span className="bg-red-500 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg">
                 -{item.discountPercentage}% OFF
@@ -189,15 +210,33 @@ const BestSellerCard = ({ item }) => {
           </div>
 
           {/* Price */}
-          <div className="flex items-baseline justify-between mb-4">
+          <div className="flex items-end justify-between mb-4 min-h-[3.25rem]">
             <div>
-              <span className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
-                EGP {parseFloat(item.price).toFixed(0)}
-              </span>
-              {item.childPrice && (
-                <span className="text-sm text-gray-500 block mt-1">
-                  EGP {item.childPrice} (child)
-                </span>
+              {showPrice ? (
+                <>
+                  <span className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                    EGP {Math.round(Number(item.price)).toLocaleString()}
+                  </span>
+                  <span className="text-xs text-gray-400 ml-1.5 align-middle">
+                    / person
+                  </span>
+                  {item.childPrice && (
+                    <span className="text-sm text-gray-500 block mt-1">
+                      EGP {item.childPrice.toLocaleString()}{" "}
+                      <span className="text-gray-400">(child)</span>
+                    </span>
+                  )}
+                </>
+              ) : (
+                <div className="flex items-center gap-2 text-gray-500">
+                  <Icon
+                    icon="mdi:chat-question-outline"
+                    className="w-5 h-5 text-cyan-500"
+                  />
+                  <span className="text-lg font-semibold">
+                    Inquire for Price
+                  </span>
+                </div>
               )}
             </div>
           </div>
