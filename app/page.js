@@ -5,6 +5,7 @@ import Hero from "@/components/section/Hero";
 import ExperienceShowcase from "@/components/section/OurExperience";
 import OurLocations from "@/components/section/OurLocations";
 import PackageTripDisplay from "@/components/section/PackageTrip";
+import ExperienceService from "@/services/experienceService";
 import Script from "next/script";
 
 export const metadata = {
@@ -51,7 +52,14 @@ export const viewport = {
   initialScale: 1,
 };
 
-export default function Home() {
+export default async function Home() {
+  let experiences = [];
+  try {
+    experiences = await ExperienceService.getAll();
+  } catch (error) {
+    console.error("Failed to fetch experiences:", error);
+  }
+
   return (
     <>
       <Hero />
@@ -61,14 +69,13 @@ export default function Home() {
       <DivingCourses />
       <PackageTripDisplay />
 
-      {/* Elfsight Google Reviews | Topdivers Reviews */}
       <Script src="https://elfsightcdn.com/platform.js" strategy="lazyOnload" />
       <div
         className="elfsight-app-730ccae9-c828-41e9-a9cf-f55a9f3ee28c"
         data-elfsight-app-lazy
       ></div>
 
-      <ExperienceShowcase />
+      <ExperienceShowcase items={experiences} />
 
       {/* <TestimonialShowcase /> */}
     </>
