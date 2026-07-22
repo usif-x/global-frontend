@@ -161,7 +161,7 @@ const SuccessDisplay = ({ invoice }) => (
                 <span>WhatsApp Us</span>
               </a>
               <a
-                href="https://instagram.com/topdivers.hurghada"
+                href="https://instagram.com/topdivers.online"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 text-white px-4 py-2.5 rounded-lg hover:from-purple-700 hover:via-pink-600 hover:to-orange-500 transition-all duration-300 text-sm font-semibold shadow-md hover:shadow-lg hover:scale-105"
@@ -170,7 +170,7 @@ const SuccessDisplay = ({ invoice }) => (
                 <span>Instagram</span>
               </a>
               <a
-                href="https://instagram.com/topdivers.hurghada"
+                href="https://instagram.com/topdivers.online"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 text-white px-4 py-2.5 rounded-lg hover:from-purple-700 hover:via-pink-600 hover:to-orange-500 transition-all duration-300 text-sm font-semibold shadow-md hover:shadow-lg hover:scale-105"

@@ -356,7 +356,7 @@ const ContactPage = () => {
             </h3>
 
             <a
-              href="https://instagram.com/topdivers.hurghada"
+              href="https://instagram.com/topdivers.online"
               target="_blank"
               rel="noopener noreferrer"
               className="text-pink-600 hover:text-pink-700 font-medium transition-colors"
