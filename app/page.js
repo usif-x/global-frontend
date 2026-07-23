@@ -1,12 +1,12 @@
 import BestSellersHero from "@/components/section/BestSelling";
 import DivingCourses from "@/components/section/Course";
 import WhyChooseUs from "@/components/section/Future";
+import GoogleReviewsSection from "@/components/section/GoogleReviewsSection";
 import Hero from "@/components/section/Hero";
 import ExperienceShowcase from "@/components/section/OurExperience";
 import OurLocations from "@/components/section/OurLocations";
 import PackageTripDisplay from "@/components/section/PackageTrip";
 import ExperienceService from "@/services/experienceService";
-import Script from "next/script";
 
 export const metadata = {
   title: {
@@ -70,12 +70,7 @@ export default async function Home() {
       <PackageTripDisplay />
 
       <ExperienceShowcase items={experiences} />
-
-      <Script src="https://elfsightcdn.com/platform.js" strategy="lazyOnload" />
-      <div
-        className="elfsight-app-730ccae9-c828-41e9-a9cf-f55a9f3ee28c"
-        data-elfsight-app-lazy
-      ></div>
+      <GoogleReviewsSection />
 
       {/* <TestimonialShowcase /> */}
     </>
