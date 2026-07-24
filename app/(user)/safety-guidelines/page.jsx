@@ -175,10 +175,7 @@ const SafetyGuidelines = () => {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="bg-white border border-gray-200 p-4 rounded-lg">
               <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <Icon
-                  icon="solar:speedometer-bold"
-                  className="w-4 h-4 text-red-500"
-                />
+                <Icon icon="cbi:pool-depth" className="w-4 h-4 text-red-500" />
                 Depth & Time Limits
               </h4>
               <div className="space-y-2 text-sm">
@@ -652,7 +649,7 @@ const SafetyGuidelines = () => {
             <div className="bg-white border border-gray-200 p-4 rounded-lg">
               <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                 <Icon
-                  icon="solar:weather-bold"
+                  icon="arcticons:weather"
                   className="w-4 h-4 text-blue-500"
                 />
                 Weather & Water Conditions
@@ -685,10 +682,7 @@ const SafetyGuidelines = () => {
 
             <div className="bg-white border border-gray-200 p-4 rounded-lg">
               <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <Icon
-                  icon="solar:recycle-bold"
-                  className="w-4 h-4 text-green-500"
-                />
+                <Icon icon="mdi:recycle" className="w-4 h-4 text-green-500" />
                 Environmental Protection
               </h4>
               <ul className="text-gray-700 space-y-2 text-sm">
@@ -1081,7 +1075,7 @@ const SafetyGuidelines = () => {
             <div className="bg-white border border-gray-200 p-4 rounded-lg">
               <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                 <Icon
-                  icon="solar:weather-bold"
+                  icon="arcticons:weather"
                   className="w-4 h-4 text-orange-500"
                 />
                 Weather & Water Conditions
@@ -1116,7 +1110,7 @@ const SafetyGuidelines = () => {
             <div className="bg-white border border-gray-200 p-4 rounded-lg">
               <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                 <Icon
-                  icon="solar:fish-bold"
+                  icon="carbon:marine-warning"
                   className="w-4 h-4 text-green-500"
                 />
                 Marine Life Safety

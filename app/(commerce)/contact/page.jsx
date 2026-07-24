@@ -361,7 +361,7 @@ const ContactPage = () => {
               rel="noopener noreferrer"
               className="text-pink-600 hover:text-pink-700 font-medium transition-colors"
             >
-              @hurghadatrips.online
+              @topdivers.online
             </a>
 
             <p className="text-sm text-gray-500 mt-1">
@@ -405,7 +405,7 @@ const ContactPage = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Visit Us
             </h3>
-            <p className="text-gray-600">Sunrise AQUAJOY</p>
+            <p className="text-gray-600">Sunrise Alma Bay Resort</p>
             <p className="text-sm text-gray-500 mt-1">
               Egypt, Red Sea, Hurghada
             </p>

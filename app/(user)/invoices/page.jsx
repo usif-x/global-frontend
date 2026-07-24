@@ -598,9 +598,7 @@ const generateInvoicePDF = async (invoice, user) => {
     );
 
     // ════════════════════════════════════════════════════════════════════════
-    doc.save(
-      `HurghadaTrips-Invoice-${invoice.customer_reference || "draft"}.pdf`,
-    );
+    doc.save(`topdivers-Invoice-${invoice.customer_reference || "draft"}.pdf`);
     return true;
   } catch (error) {
     console.error("PDF Generation Error:", error);
